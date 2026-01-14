@@ -47,9 +47,8 @@ You should see:
 Before creating a new branch, sync your `main`:
 
 ```bash
-git checkout main
-git fetch upstream
-git merge upstream/main
+git switch main
+git pull upstream main
 git push origin main
 ```
 
@@ -75,7 +74,7 @@ git commit -m "Short, clear message"
 
 Push your branch to your fork:
 ```bash
-git push -u origin feature/<short-description>
+git push origin branch-name
 ```
 
 ---
@@ -86,7 +85,6 @@ Open a PR **from your fork branch → `Acoustic-Resonance/AcousticTracer:main`**
 
 ### Draft PR rule
 Open the PR as **Draft** until:
-- you’ve built the LaTeX successfully (if applicable)
 - you’ve done a self-review
 - the PR description is complete
 
@@ -97,21 +95,11 @@ When ready:
 
 ---
 
-## 6) Merge policy (Squash)
-After 1 approval (and any required checks), merge using:
-
-- **Squash and merge**
-
-This keeps `main` history clean (one commit per PR).
-
----
-
-## 7) After merge (everyone syncs)
+## 6) After merge (everyone syncs)
 
 ```bash
-git checkout main
-git fetch upstream
-git merge upstream/main
+git switch main
+git pull upstream main
 git push origin main
 ```
 
@@ -123,7 +111,7 @@ git push origin --delete feature/<short-description>
 
 ---
 
-## 8) Repo conventions (for this project)
+## 7) Repo conventions (for this project)
 
 ### Project structure 
 - `docs/` for LaTeX and other markdown sources 
