@@ -5,3 +5,4 @@
 docs/*
 !docs/*.md
 !docs/*.tex
+!docs/*.pdf
