@@ -71,17 +71,17 @@ if(USE_DEBUG_RAYLIB)
     endif()
 
     # Link the built raylib library
-    target_link_libraries(myapp PRIVATE raylib)
+    target_link_libraries(at PRIVATE raylib)
 endif()
 
 if(APPLE)
-  target_link_libraries(app PRIVATE
+  target_link_libraries(at PRIVATE
       "-framework Cocoa"
       "-framework Metal"
       "-framework QuartzCore"
       "-framework IOKit"
   )
-
+endif()
 
 # Build instructions
 #
@@ -89,6 +89,6 @@ if(APPLE)
 # 2. `cd build`
 # 3. `cmake .. -DDEV_FILE=main.c`
 # to include raylib
-# 4. `cmake .. -USE_DEBUG_RAYLIB=ON -DDEV_FILE=main.c`
+# 4. `cmake .. -DUSE_DEBUG_RAYLIB=ON -DDEV_FILE=main.c`
 # 5. `make`
 # 6. `./at`
