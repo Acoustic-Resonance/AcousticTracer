@@ -2,13 +2,13 @@
 
 Upstream repository: `Acoustic-Resonance/AcousticTracer`  
 Default branch: `main`  
-Merge strategy: **Squash merge**  
+Merge strategy: **Merge commit**  
 Review requirement: **1 approval**  
 PRs should start as: **Draft**
 
 ---
 
-## 1) Roles and definitions
+## 1) Roles and Definitions
 
 - **Upstream**: `Acoustic-Resonance/AcousticTracer` (shared team repo)
 - **Fork**: each member’s GitHub copy of the upstream repo
@@ -19,7 +19,7 @@ Rule: **Nobody pushes to `upstream/main` directly.** Everything goes through PRs
 
 ---
 
-## 2) One-time setup (each teammate)
+## 2) One-time Setup (each teammate)
 
 ### Fork on GitHub
 
@@ -46,7 +46,7 @@ You should see:
 
 ---
 
-## 3) Starting work (always sync first)
+## 3) Starting Work (always sync first)
 
 Before creating a new branch, sync your `main`:
 
@@ -58,7 +58,7 @@ git push origin main
 
 ---
 
-## 4) Create a branch (never work on `main`)
+## 4) Create a Branch (never work on `main`)
 
 Branch naming:
 
@@ -106,7 +106,7 @@ When ready:
 
 ---
 
-## 6) After merge (everyone syncs)
+## 6) After Merge (everyone syncs)
 
 ```bash
 git switch main
@@ -123,10 +123,27 @@ git push origin --delete feature/<short-description>
 
 ---
 
-## 7) Repo conventions (for this project)
+## 7) Repo Conventions (for this project)
 
-### Project structure
+### Commit Conventions
 
-- `docs/` for LaTeX and other markdown sources
-- `src/` for C / Python later
-- `frontend/` for React later
+Commits should be written in the imperative, with the first letter capitalised.
+The title of the commit should be less than 50 characters, any extra information should be in the commit body.
+
+### Project Structure
+
+<pre><code style="color: white; font-size: 12pt">.
+├── core <em><sub>{Core C code for render calculations}</sub></em>
+│   └── src <sub><em>{Core C simulation code}</sub></em>
+│   └── core_dev <sub><em>{Debug code for the simulation}</sub></em>
+│   └── external_libs <sub><em>{External libraries}</sub></em>
+├── render <em><sub>{Code for rendering the scene}</sub></em>
+│   └── web <sub><em>{Backend code for web app}</sub></em>
+│   └── cli <sub><em>{Backend code for the terminal app}</sub></em>
+├── app <em><sub>{Code for web/C-ui frontend application}</sub></em>
+├── genetics <em><sub>{Code for optimizing the speaker placement}</sub></em>
+├── assets <em><sub>{Assets folder for code}</sub></em>
+│   └── stl <sub><em>{Object files defining points}</sub></em>
+├── docs <em><sub>{Documentation for the project}</sub></em>
+└── contributors <em><sub>{Files specifying every ones contributions}</sub></em>
+</code></pre>
