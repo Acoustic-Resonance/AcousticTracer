@@ -6,3 +6,6 @@ docs/*
 !docs/*.md
 !docs/*.tex
 !docs/*.pdf
+
+# Core C
+**/build/*
