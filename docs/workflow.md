@@ -143,7 +143,8 @@ The title of the commit should be less than 50 characters, any extra information
 ├── app <em><sub>{Code for web/C-ui frontend application}</sub></em>
 ├── genetics <em><sub>{Code for optimizing the speaker placement}</sub></em>
 ├── assets <em><sub>{Assets folder for code}</sub></em>
-│   └── stl <sub><em>{Object files defining points}</sub></em>
+│   └── glb <sub><em>{Object files defining points}</sub></em>
+├── blender <em><sub>{Blender files containing the simulated rooms}</sub></em>
 ├── docs <em><sub>{Documentation for the project}</sub></em>
 └── contributors <em><sub>{Files specifying every ones contributions}</sub></em>
 </code></pre>
