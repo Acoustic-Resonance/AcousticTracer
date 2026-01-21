@@ -65,6 +65,7 @@ Branch naming:
 - `feature/<short-description>`
 - `fix/<short-description>`
 - `docs/<short-description>`
+- `<issue-num>/<issue-description>`
 
 Create:
 
