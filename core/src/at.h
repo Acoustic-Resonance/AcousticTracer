@@ -28,14 +28,6 @@ typedef struct {
 } AT_AABB;
 
 typedef struct {
-    const char *url;
-    uint32_t timeout_ms;
-    int *http_status_out;
-    char *response_buf;
-    size_t response_buf_size;
-} AT_NetworkConfig;
-
-typedef struct {
     AT_Vec3 position;
     AT_Vec3 direction;
     float intensity; // Decibels
@@ -96,18 +88,6 @@ AT_Result AT_simulation_run(
 
 void AT_simulation_destroy(
     AT_Simulation *simulation
-);
-
-AT_Result AT_scene_to_json(
-    char *json,
-    size_t max_len,
-    size_t *bytes_written_out,
-    const AT_Scene *scene
-);
-
-AT_Result AT_send_json_to_url(
-    const char *json,
-    const AT_NetworkConfig *config
 );
 
 #endif // AT_H
