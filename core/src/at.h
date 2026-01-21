@@ -36,12 +36,18 @@ typedef struct {
 } AT_NetworkConfig;
 
 typedef struct {
+    AT_Vec3 position;
+    AT_Vec3 direction;
+    float intensity;
+} AT_Source;
+
+typedef struct {
+    const AT_Source source; // Assuming one source for now
     uint32_t num_rays;
-    uint32_t num_bounces;
-    uint8_t num_sources;
+    uint32_t max_bounces;
     AT_Material material;
 
-    // borrowed: must remain valid for the entire lifetime of the scene
+    // Borrowed: must remain valid for the entire lifetime of the scene
     const AT_Model *environment;
     const AT_AABB *observer_area;
 } AT_SceneConfig;
