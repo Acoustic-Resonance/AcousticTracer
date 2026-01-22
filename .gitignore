@@ -6,6 +6,7 @@ docs/*
 !docs/*.md
 !docs/*.tex
 !docs/*.pdf
+!docs/core/
 
 # C files
 **/build/*
