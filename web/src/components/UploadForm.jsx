@@ -7,14 +7,6 @@ import { useState } from "react";
 
 export default function UploadForm() {
   const [file, setFile] = useState(null);
-
-  async function onRun() {
-    if (!file) return;
-
-    const params = {
-      voxelSize: 0.25,
-    };
-  }
   return (
     <div>
       <h3>Upload Room (.glb/.gltf)</h3>
