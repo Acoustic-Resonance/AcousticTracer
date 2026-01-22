@@ -133,18 +133,18 @@ The title of the commit should be less than 50 characters, any extra information
 
 ### Project Structure
 
-<pre><code style="color: white; font-size: 12pt">.
+<pre><code style="font-size: 12pt">.
 ├── core <em><sub>{Core C code for render calculations}</sub></em>
-│   └── src <sub><em>{Core C simulation code}</sub></em>
-│   └── core_dev <sub><em>{Debug code for the simulation}</sub></em>
-│   └── external_libs <sub><em>{External libraries}</sub></em>
+│   └── src <em><sub>{Core C simulation code}</sub></em>
+│   └── core_dev <em><sub>{Debug code for the simulation}</sub></em>
+│   └── external_libs <em><sub>{External libraries}</sub></em>
 ├── render <em><sub>{Code for rendering the scene}</sub></em>
-│   └── web <sub><em>{Backend code for web app}</sub></em>
-│   └── cli <sub><em>{Backend code for the terminal app}</sub></em>
+│   └── web <em><sub>{Backend code for web app}</sub></em>
+│   └── cli <em><sub>{Backend code for the terminal app}</sub></em>
 ├── app <em><sub>{Code for web/C-ui frontend application}</sub></em>
 ├── genetics <em><sub>{Code for optimizing the speaker placement}</sub></em>
 ├── assets <em><sub>{Assets folder for code}</sub></em>
-│   └── glb <sub><em>{Object files defining points}</sub></em>
+│   └── glb <em><sub>{Object files defining points}</sub></em>
 ├── blender <em><sub>{Blender files containing the simulated rooms}</sub></em>
 ├── docs <em><sub>{Documentation for the project}</sub></em>
 └── contributors <em><sub>{Files specifying every ones contributions}</sub></em>
