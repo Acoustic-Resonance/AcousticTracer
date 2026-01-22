@@ -35,7 +35,6 @@ typedef struct {
 typedef struct {
     const AT_Source *source;
     uint32_t num_sources;
-    uint32_t num_rays;
     AT_Material material;
 
     // Borrowed: must remain valid for the entire lifetime of the scene
@@ -44,6 +43,7 @@ typedef struct {
 
 typedef struct {
     float voxel_size; // Render resolution
+    uint32_t num_rays;
     uint8_t fps; // Bin width is always one frame
 } AT_Settings;
 
