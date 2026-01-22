@@ -3,6 +3,7 @@
 //
 // Suggested imports (when you implement):
 // - components/UploadForm
+import UploadForm from "./components/UploadForm";
 // - components/SimulationStatus
 // - components/PlaybackView
 
@@ -18,6 +19,9 @@ export default function App() {
         <div className="muted">
           TODO: Implement upload, polling, and playback.
         </div>
+      </div>
+      <div className="upload">
+          <UploadForm />
       </div>
     </div>
   );

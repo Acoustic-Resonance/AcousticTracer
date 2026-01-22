@@ -3,7 +3,26 @@
 // - Pick a .glb/.gltf
 // - Configure params
 // - POST /api/simulations (multipart)
+import { useState } from "react";
 
 export default function UploadForm() {
-  return null;
+  const [file, setFile] = useState(null);
+
+  async function onRun() {
+    if (!file) return;
+
+    const params = {
+      voxelSize: 0.25,
+    };
+  }
+  return (
+    <div>
+      <h3>Upload Room (.glb/.gltf)</h3>
+      <input
+        type="file"
+        accept=".glb,.gltf"
+        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+      />
+    </div>
+  );
 }
