@@ -1,16 +1,17 @@
 #include <stdio.h>
 
-#include "../external_libs/raylib.h"
+#include "../external/raylib.h"
 
 #define CGLFT_IMPLEMENTATION
 
-#include "../external_libs/cgltf.h"
+#include "../external/cgltf.h"
 
 int main(void)
 {
     cgltf_options options = {0};
     cgltf_data* data = NULL;
     cgltf_result result = cgltf_parse_file(&options, "scene.gltf", &data);
+    printf("%i", result);
     // Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = 800;

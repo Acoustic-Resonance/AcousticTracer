@@ -9,7 +9,12 @@ docs/*
 
 # C files
 **/build/*
+build/
+.cache/
+*.o
+*.a
+*.exe
 
 # Mac files
 **/.DS_Store
-
+.DS_Store
