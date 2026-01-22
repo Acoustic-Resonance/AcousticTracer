@@ -1,5 +1,7 @@
 # Documentation
 
+> [Project documentation](./core/html/index.html)
+
 ## Project Proposal
 
 > [Project proposal](./proposal.pdf)
