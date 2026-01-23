@@ -1,5 +1,6 @@
 #include "acoustic/at_model.h"
 #include "../src/at_internal.h"
+#include "acoustic/at.h"
 
 #define CGLTF_IMPLEMENTATION
 #include "../external/cgltf.h"
@@ -106,6 +107,13 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
     cgltf_free(data);
     return AT_OK;
 }
+
+
+void AT_model_to_AABB(AT_AABB *aabb, const AT_Model *model)
+{
+    printf("test"); //TODO: implement
+}
+
 
 void AT_model_destroy(AT_Model *model)
 {
