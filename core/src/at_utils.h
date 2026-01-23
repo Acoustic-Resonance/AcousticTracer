@@ -52,7 +52,6 @@
         (da)->count = 0;\
         (da)->capacity = 0;\
     } while(0)
-#endif
 
 #define AT_da_clear(da) ((da)->count = 0)
 #define AT_da_is_empty(da) ((da)->count == 0)
@@ -108,3 +107,5 @@
         AT_FREE((da)->items); \
         AT_da_init(da); \
     } while(0)
+
+#endif //AT_UTILS_H
