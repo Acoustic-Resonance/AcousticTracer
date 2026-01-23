@@ -2,25 +2,11 @@
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
 #include "acoustic/at_scene.h"
-#include "acoustic/at_ray.h"
-#include "acoustic/at_internal.h"
+#include "../src/at_internal.h"
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
-
-//TODO: move to at_internal.h when merged
-struct AT_Simulation {
-    AT_Voxel *voxel_grid;
-    AT_Ray *rays;
-    AT_Vec3 origin;
-    AT_Vec3 dimensions;
-    AT_Vec3 grid_dimensions;
-    float voxel_size;
-    uint32_t num_rays;
-    float bin_width;
-    uint8_t fps;
-};
 
 AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *scene, const AT_Settings *settings)
 {

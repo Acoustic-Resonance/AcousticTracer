@@ -1,8 +1,7 @@
 #include "acoustic/at_model.h"
-#include "../src/internal.h"
+#include "../src/at_internal.h"
 
 #define CGLTF_IMPLEMENTATION
-
 #include "../external/cgltf.h"
 
 #include <stdio.h>
