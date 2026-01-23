@@ -1,17 +1,12 @@
 #include "acoustic/at_scene.h"
 #include "acoustic/at.h"
+#include "../src/at_internal.h"
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-struct AT_Scene {
-    AT_Source *sources;
-    AT_AABB world_AABB;
-    uint32_t num_sources;
-    AT_Material material;
-    const AT_Model *environment;
-};
+
 
 AT_Result AT_scene_create(AT_Scene **out_scene, const AT_SceneConfig* config)
 {

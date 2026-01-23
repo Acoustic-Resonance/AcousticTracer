@@ -1,25 +1,11 @@
 #ifndef AT_RAY_H
 #define AT_RAY_H
 
-#include "at_math.h"
+#include "acoustic/at_math.h"
+#include "../src/at_internal.h"
 
 #include <stdint.h>
 #include <stdbool.h>
-
-typedef struct {
-    AT_Vec3 origin;
-    AT_Vec3 direction;
-    float energy;
-    float total_distance;
-    uint32_t ray_id;
-    uint32_t bounce_count;
-} AT_Ray;
-
-typedef struct {
-    AT_Vec3 position;
-    AT_Vec3 normal;
-    float t;
-} AT_RayHit;
 
 static inline AT_Ray AT_ray_init(
     const AT_Vec3 *origin,
@@ -55,7 +41,7 @@ static inline AT_Vec3 AT_ray_reflect(
 
 bool AT_ray_triangle_intersect(
     const AT_Ray *ray,
-    const AT_Triangle *triangle, //TODO: define AT_Triangle somewhere
+    const AT_Triangle *triangle,
     AT_RayHit *out_hit
 );
 
