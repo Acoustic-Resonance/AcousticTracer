@@ -39,6 +39,7 @@ int main()
 
    if (AT_simulation_run(sim) != AT_OK) {
        fprintf(stderr, "Error running simulation\n");
+       return 1;
    }
 
 
