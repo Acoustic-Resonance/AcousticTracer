@@ -46,7 +46,7 @@ struct AT_Scene {
 
 struct AT_Model {
     AT_Vec3 *vertices;
-    // TODO: normals
+    AT_Vec3 *normals;
     uint32_t *indices;
     size_t vertex_count;
     size_t index_count;
