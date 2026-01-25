@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 
-#include "../external/raylib.h"
 #include "raylib.h"
 
 #define SCREEN_WIDTH 500
@@ -32,6 +31,10 @@ int main()
     if (AT_ray_triangle_intersect(&ray, &t1, &ray_hit)) {
         printf("RAY HIT!\n");
     }
+    printf("Hit Position: {%.2f, %.2f, %.2f} - Hit Normal: {%.2f, %.2f, %.2f} - t: %.2f\n",
+        ray_hit.position.x, ray_hit.position.y, ray_hit.position.z,
+        ray_hit.normal.x, ray_hit.normal.y, ray_hit.normal.z,
+        ray_hit.t);
 
     SetTargetFPS(60);
 
