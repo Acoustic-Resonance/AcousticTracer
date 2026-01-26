@@ -25,6 +25,12 @@ typedef struct {
     float t;
 } AT_RayHit;
 
+typedef struct {
+    AT_RayHit *items;
+    size_t count;
+    size_t capacity;
+} AT_RayHits;
+
 // dynamic array structure
 // called "items" instead of "bins" since the dynamic array macros are
 // to be universal, can use them with any types.
