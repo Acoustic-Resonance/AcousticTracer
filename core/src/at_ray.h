@@ -1,10 +1,9 @@
 #ifndef AT_RAY_H
 #define AT_RAY_H
 
-#include "acoustic/at_math.h"
 #include "../src/at_internal.h"
+#include "acoustic/at_math.h"
 
-#include <stdint.h>
 #include <stdbool.h>
 
 static inline AT_Ray AT_ray_init(
@@ -31,13 +30,13 @@ static inline AT_Vec3 AT_ray_at(
     return (AT_vec3_add(ray->origin, AT_vec3_scale(ray->direction, t)));
 }
 
-static inline AT_Vec3 AT_ray_reflect(
-    AT_Vec3 incident,
-    AT_Vec3 normal
-) {
-    return (AT_Vec3){0}; //TODO: Impelement ray reflection
-}
+static inline AT_Vec3 AT_ray_reflect(AT_Vec3 incident, AT_Vec3 normal) {
+    AT_Vec3 u = AT_vec3_scale(
+        normal, (AT_vec3_dot(incident, normal) / AT_vec3_dot(normal, normal)));
+    AT_Vec3 w = AT_vec3_sub(incident, u);
 
+    return AT_vec3_sub(w, u);
+}
 
 bool AT_ray_triangle_intersect(
     const AT_Ray *ray,
@@ -47,4 +46,4 @@ bool AT_ray_triangle_intersect(
 
 
 
-#endif //AT_RAY_H
+#endif // AT_RAY_H
