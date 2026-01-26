@@ -1,5 +1,6 @@
 # VsCode files
 .vscode/*
+.github
 
 # Documentation whitelist
 docs/*
