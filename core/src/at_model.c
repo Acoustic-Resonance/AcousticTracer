@@ -1,9 +1,7 @@
 #include "acoustic/at_model.h"
 #include "../src/at_internal.h"
 #include "acoustic/at.h"
-
-#define CGLTF_IMPLEMENTATION
-#include "../external/cgltf.h"
+#include "cgltf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,12 +86,13 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         cgltf_accessor_read_uint(idx_accessor, i, &idx, 1);
         indices[i] = idx;
     }
-    
+
     // Normals
     cgltf_accessor *norm_accessor = NULL;
     for (size_t i = 0; i < primitive->attributes_count; i++) {
         if (primitive->attributes[i].type == cgltf_attribute_type_normal) {
             norm_accessor = primitive->attributes[i].data;
+            break;
         }
     }
     if (!norm_accessor) {
@@ -102,7 +101,7 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         free(indices);
         return AT_ERR_INVALID_ARGUMENT;
     }
-    
+
     AT_Vec3 *normals = malloc(sizeof(AT_Vec3) * norm_accessor->count);
     for (size_t i = 0; i < norm_accessor->count; i++) {
         float n[3];

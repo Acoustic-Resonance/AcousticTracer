@@ -71,6 +71,9 @@ if(USE_DEBUG_RAYLIB)
         endif()
     endif()
 
+    target_include_directories(at PRIVATE
+        ${raylib_SOURCE_DIR}/src/external
+    )
     target_link_libraries(at PRIVATE raylib)
     target_compile_definitions(at PRIVATE USE_RAYLIB)
 endif()
