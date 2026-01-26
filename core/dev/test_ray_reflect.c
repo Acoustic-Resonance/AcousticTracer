@@ -15,7 +15,7 @@ int main()
     SetTargetFPS(60);
 
     AT_Ray ray = AT_ray_init(&(AT_Vec3){0.0f, 0.0f, 0.0f},
-                             &(AT_Vec3){4.0f, 3.0f, 0.5f}, 0.0f, 0);
+                             &(AT_Vec3){4.0f, 3.0f, 0.5f}, 0);
     AT_Triangle triangle = (AT_Triangle){
         AT_vec3(2.0f, -1.0f, -2.0f),
         AT_vec3(2.0f, -1.0f, 5.0f),
