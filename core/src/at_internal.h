@@ -20,7 +20,7 @@ typedef struct {
     AT_RayHit *items;
     size_t count;
     size_t capacity;
-} AT_RayHits;
+} AT_RayHitList;
 
 typedef struct {
     AT_Vec3 origin;
@@ -29,7 +29,7 @@ typedef struct {
     float total_distance;
     uint32_t ray_id;
     uint32_t bounce_count;
-    AT_RayHits *hits;
+    AT_RayHitList *hits;
 } AT_Ray;
 
 // dynamic array structure

@@ -15,7 +15,7 @@ static inline AT_Ray AT_ray_init(
     const AT_Vec3 direction,
     uint32_t ray_id
 ) {
-    AT_RayHits hits = {0};
+    AT_RayHitList hits = {0};
     AT_da_init(&hits);
 
     AT_Ray ray = {
