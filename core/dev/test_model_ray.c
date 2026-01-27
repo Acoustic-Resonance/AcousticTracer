@@ -11,6 +11,12 @@
 #include <float.h>
 
 #define MAX_RAYS 50
+#define MAX_COLORS_COUNT    21
+
+const char *colorNames[MAX_COLORS_COUNT] = {
+     "DARKGRAY", "MAROON", "ORANGE", "DARKGREEN", "DARKBLUE", "DARKPURPLE",
+     "DARKBROWN", "GRAY", "RED", "GOLD", "LIME", "BLUE", "VIOLET", "BROWN",
+     "LIGHTGRAY", "PINK", "YELLOW", "GREEN", "SKYBLUE", "PURPLE", "BEIGE" };
 
 AT_Triangle *AT_model_get_triangles(const AT_Model *model)
 {
@@ -26,31 +32,21 @@ AT_Triangle *AT_model_get_triangles(const AT_Model *model)
     return ts;
 }
 
-// AT_RayHit AT_ray_get_closest_hit(const AT_Ray *ray)
-// {
-//     AT_RayHit closest_hit = {0};
-//     float smallest_dist = FLT_MAX;
-//     for (uint32_t i = 0; i < ray->hits.count; i++) {
-//         float curr_dist = AT_vec3_distance_sq(ray->origin, ray->hits.items[i].position);
-//         if (curr_dist < smallest_dist) {
-//             smallest_dist = curr_dist;
-//             closest_hit = ray->hits.items[i];
-//         }
-//     }
-//     //*dist = smallest_dist;
-//     return closest_hit;
+AT_RayHit AT_ray_get_closest_hit(const AT_Ray *ray)
+{
+    AT_RayHit closest_hit = {{0}, {0}, FLT_MAX};
+    float smallest_dist = FLT_MAX;
+    for (uint32_t i = 0; i < ray->hits.count; i++) {
+        float curr_dist = AT_vec3_distance_sq(ray->origin, ray->hits.items[i].position);
+        if (curr_dist < smallest_dist) {
+            smallest_dist = curr_dist;
+            closest_hit = ray->hits.items[i];
+        }
+    }
+    //*dist = smallest_dist;
+    return closest_hit;
 
-//     /*
-//     AT_RayHit closest_hit = {0};
-//     float min_dist = FLT_MAX;
-//     for (uint32_t i = 0; i < ray->hits.count; i++) {
-//         if (ray->hits.items[i].t < min_dist) {
-//             closest_hit = ray->hits.items[i];
-//         }
-//     }
-//     return closest_hit;
-//     */
-// }
+}
 
 int main()
 {
@@ -77,17 +73,37 @@ int main()
 
     //iterate rays
     for (uint32_t i = 0; i < MAX_RAYS; i++) {
-        AT_RayHit hit = {0};
+        AT_RayHit hit = {{0}, {0}, FLT_MAX};
+        AT_RayHitList hits;
+        AT_da_init(&hits);
         for (uint32_t j = 0; j < t_count; j++) {
             printf("Checking Ray %i\n", i);
             if (AT_ray_triangle_intersect(&rays[i], &ts[j], &hit)) {
-                AT_ray_add_hit(&rays[i], hit);
+                //AT_ray_add_hit(&rays[i], hit);
+                AT_da_append(&hits, hit);
                 printf("HIT! Ray %i {%.2f, %.2f, %.2f}\n",
                     i,
                     hit.position.x,
                     hit.position.y,
                     hit.position.z);
             }
+        }
+        bool min_found = false;
+        AT_RayHit closest_hit;
+        for (uint32_t k = 0; k < hits.count; k++) {
+            float min_dist = FLT_MAX;
+
+            float curr_dist = AT_vec3_distance_sq(closest_hit.position, hits.items[k].position);
+            if (curr_dist < min_dist) {
+                min_dist = curr_dist;
+                closest_hit = hits.items[k];
+                min_found = true;
+            }
+        }
+        if (min_found) {
+            printf("ADDING HIT FOR RAY %i {%.2f, %.2f, %.2f}\n", i,
+                closest_hit.position.x, closest_hit.position.y, closest_hit.position.z);
+            AT_ray_add_hit(&rays[i], closest_hit);
         }
     }
 
@@ -132,7 +148,6 @@ int main()
                                 rays[i].hits.items[j].position.z},
                                 0.1, RED);
                     }
-
                 }
 
                 for (uint32_t i = 0; i < t_count; i++) {
