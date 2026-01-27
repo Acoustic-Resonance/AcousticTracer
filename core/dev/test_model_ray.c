@@ -13,10 +13,10 @@
 #define MAX_RAYS 50
 #define MAX_COLORS_COUNT    21
 
-const char *colorNames[MAX_COLORS_COUNT] = {
-     "DARKGRAY", "MAROON", "ORANGE", "DARKGREEN", "DARKBLUE", "DARKPURPLE",
-     "DARKBROWN", "GRAY", "RED", "GOLD", "LIME", "BLUE", "VIOLET", "BROWN",
-     "LIGHTGRAY", "PINK", "YELLOW", "GREEN", "SKYBLUE", "PURPLE", "BEIGE" };
+Color colors[MAX_COLORS_COUNT] = {
+    DARKGRAY, MAROON, ORANGE, DARKGREEN, DARKBLUE, DARKPURPLE, DARKBROWN,
+    GRAY, RED, GOLD, LIME, BLUE, VIOLET, BROWN, LIGHTGRAY, PINK, YELLOW,
+    GREEN, SKYBLUE, PURPLE, BEIGE };
 
 AT_Triangle *AT_model_get_triangles(const AT_Model *model)
 {
@@ -30,22 +30,6 @@ AT_Triangle *AT_model_get_triangles(const AT_Model *model)
         };
     }
     return ts;
-}
-
-AT_RayHit AT_ray_get_closest_hit(const AT_Ray *ray)
-{
-    AT_RayHit closest_hit = {{0}, {0}, FLT_MAX};
-    float smallest_dist = FLT_MAX;
-    for (uint32_t i = 0; i < ray->hits.count; i++) {
-        float curr_dist = AT_vec3_distance_sq(ray->origin, ray->hits.items[i].position);
-        if (curr_dist < smallest_dist) {
-            smallest_dist = curr_dist;
-            closest_hit = ray->hits.items[i];
-        }
-    }
-    //*dist = smallest_dist;
-    return closest_hit;
-
 }
 
 int main()
@@ -152,10 +136,10 @@ int main()
 
                 for (uint32_t i = 0; i < t_count; i++) {
                     DrawTriangle3D(
-                        (Vector3){ts[i].v1.x, ts[i].v1.y, ts[i].v1.z},
                         (Vector3){ts[i].v2.x, ts[i].v2.y, ts[i].v2.z},
+                        (Vector3){ts[i].v1.x, ts[i].v1.y, ts[i].v1.z},
                         (Vector3){ts[i].v3.x, ts[i].v3.y, ts[i].v3.z},
-                        GREEN);
+                        (Color)colors[i%MAX_COLORS_COUNT]);
                 }
 
                 DrawGrid(10, 1.0f);
