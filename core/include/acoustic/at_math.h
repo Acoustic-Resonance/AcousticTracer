@@ -114,11 +114,9 @@ static inline AT_Vec3 AT_vec3_normalize(AT_Vec3 v) {
     \retval float The distance between two AT_Vec3's.
  */
 static inline float AT_vec3_distance(AT_Vec3 a, AT_Vec3 b) {
-    return sqrt(
-        (b.x - a.x) * (b.x - a.x) +
-        (b.y - a.y) * (b.y - a.y) +
-        (b.z - a.z) * (b.z - a.z)
-    );
+    return sqrt((b.x - a.x) * (b.x - a.x) +
+                (b.y - a.y) * (b.y - a.y) +
+                (b.z - a.z) * (b.z - a.z));
 }
 
 /** \brief Calculates the squared distance between two AT_Vec3's.
