@@ -1,10 +1,12 @@
 #include "acoustic/at_model.h"
 #include "../src/at_internal.h"
 #include "acoustic/at.h"
+#include "acoustic/at_math.h"
 #include "cgltf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <float.h>
 
 AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
 {
@@ -131,9 +133,31 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
 }
 
 
-void AT_model_to_AABB(AT_AABB *aabb, const AT_Model *model)
+void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model)
 {
-    printf("model to aabb test\n"); //TODO: implement
+    AT_Vec3 max_vec = AT_vec3(FLT_MIN, FLT_MIN, FLT_MIN);
+    AT_Vec3 min_vec = AT_vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+    for (unsigned long i = 0; i < model->vertex_count; i++) {
+        AT_Vec3 vec = model->vertices[i];
+        if (vec.x < min_vec.x) {
+            min_vec.x = vec.x;
+        } else if (vec.x > max_vec.x) {
+            max_vec.x = vec.x;
+        }
+        if (vec.y < min_vec.y) {
+            min_vec.y = vec.y;
+        } else if (vec.y > max_vec.y) {
+            max_vec.y = vec.y;
+        }
+        if (vec.z < min_vec.z) {
+            min_vec.z = vec.z;
+        } else if (vec.z > max_vec.z) {
+            max_vec.z = vec.z;
+        }
+    }
+
+    out_aabb->min = min_vec;
+    out_aabb->max = max_vec;
 }
 
 
