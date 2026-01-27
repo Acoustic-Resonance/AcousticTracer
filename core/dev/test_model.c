@@ -2,25 +2,35 @@
 #include "acoustic/at_model.h"
 #include "../external/raylib.h"
 
+#include <math.h>
 #include <stdio.h>
 
-void print_model_head(const AT_Model *model)
+void move_camera(Camera3D *camera)
 {
-    printf("Vertex count: %lu\n", model->vertex_count);
-    printf("X: %f\n", model->vertices[0].x);
-    printf("Y: %f\n", model->vertices[0].y);
-    printf("Z: %f\n", model->vertices[0].z);
+    const float rotationSpeed = 0.03f;
+    const float zoomSpeed = 0.5f;
 
-    printf("Index count: %lu\n", model->index_count);
-    printf("%d, %d, %d\n", model->indices[0], model->indices[1], model->indices[2]);
+    float dx = camera->position.x - camera->target.x;
+    float dz = camera->position.z - camera->target.z;
 
-    printf("Normal 1:\n");
-    printf("X: %f\n", model->normals[0].x);
-    printf("Y: %f\n", model->normals[0].y);
-    printf("Z: %f\n", model->normals[0].z);
+    float radius = sqrtf(dx*dx + dz*dz);
+    float angle = atan2f(dz, dx);
+
+    if (IsKeyDown(KEY_A)) {
+        angle -= rotationSpeed;
+    } else if (IsKeyDown(KEY_D)) {
+        angle += rotationSpeed;
+    } else if (IsKeyDown(KEY_S)) {
+        radius += zoomSpeed;
+    } else if (IsKeyDown(KEY_W)) {
+        radius -= zoomSpeed;
+    }
+
+    camera->position.x = camera->target.x + cosf(angle) * radius;
+    camera->position.z = camera->target.z + sinf(angle) * radius;
 }
 
-Mesh model_to_rl_mesh(const AT_Model *model)
+Mesh at_model_to_raylib_mesh(const AT_Model *model)
 {
     Mesh mesh = {0};
 
@@ -33,23 +43,20 @@ Mesh model_to_rl_mesh(const AT_Model *model)
     mesh.indices  = MemAlloc(sizeof(unsigned int) * model->index_count);
 
     // Vertices
-    for (int i = 0; i < model->vertex_count; i++)
-    {
+    for (int i = 0; i < model->vertex_count; i++) {
         mesh.vertices[i*3 + 0] = model->vertices[i].x;
         mesh.vertices[i*3 + 1] = model->vertices[i].y;
         mesh.vertices[i*3 + 2] = model->vertices[i].z;
     }
 
     // Normals
-    for (int i = 0; i < model->vertex_count; i++)
-    {
+    for (int i = 0; i < model->vertex_count; i++) {
         mesh.normals[i*3 + 0] = model->normals[i].x;
         mesh.normals[i*3 + 1] = model->normals[i].y;
         mesh.normals[i*3 + 2] = model->normals[i].z;
     }
 
-    for (int i = 0; i < model->index_count; i++)
-    {
+    for (int i = 0; i < model->index_count; i++) {
         mesh.indices[i] = model->indices[i];
     }
 
@@ -69,9 +76,10 @@ void draw_model(const AT_Model *model)
     };
     SetTargetFPS(60);
 
-    Model rl_model = LoadModelFromMesh(model_to_rl_mesh(model));
+    Model rl_model = LoadModelFromMesh(at_model_to_raylib_mesh(model));
 
     while(!WindowShouldClose()) {
+        move_camera(&camera);
         BeginDrawing();
             ClearBackground(RAYWHITE);
             BeginMode3D(camera);
@@ -85,7 +93,7 @@ void draw_model(const AT_Model *model)
 }
 int main()
 {
-    const char *filepath = "../assets/glb/box_room.gltf";
+    const char *filepath = "../assets/glb/L_room.gltf";
     AT_Model *model = NULL;
     if(AT_model_create(&model, filepath) != AT_OK) {
         perror("Failed to create model");
