@@ -35,7 +35,7 @@ AT_Triangle *AT_model_get_triangles(const AT_Model *model)
 
 int main()
 {
-    const char *filepath = "../assets/glb/L_room.gltf";
+    const char *filepath = "../assets/glb/polygon_room.gltf";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -121,16 +121,19 @@ int main()
                                 curr->origin.z,
                             }, 0.01, BLUE
                         );
-                        DrawRay((Ray){
-                        (Vector3){curr->origin.x, curr->origin.y, curr->origin.z},
-                        (Vector3){curr->direction.x, curr->direction.y, curr->direction.z}
-                        }, PURPLE);
+                        if (curr->child) {
+                            DrawLine3D((Vector3){curr->origin.x, curr->origin.y, curr->origin.z}, (Vector3){curr->child->origin.x, curr->child->origin.y, curr->child->origin.z} , PURPLE);
                         }
+                    }
 
-                    DrawRay((Ray){
-                    (Vector3){rays[i].origin.x, rays[i].origin.y, rays[i].origin.z},
-                    (Vector3){rays[i].direction.x, rays[i].direction.y, rays[i].direction.z}
-                    }, RED);
+                    if (rays[i].child) {
+                        DrawLine3D((Vector3){rays[i].origin.x, rays[i].origin.y, rays[i].origin.z}, (Vector3){rays[i].child->origin.x, rays[i].child->origin.y, rays[i].child->origin.z} , RED);
+                    } else {
+                        DrawRay((Ray){
+                        (Vector3){rays[i].origin.x, rays[i].origin.y, rays[i].origin.z},
+                        (Vector3){rays[i].direction.x, rays[i].direction.y, rays[i].direction.z}
+                        }, RED);
+                    }
                 }
 
                 for (uint32_t i = 0; i < t_count; i++) {
