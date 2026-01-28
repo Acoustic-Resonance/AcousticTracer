@@ -1,0 +1,37 @@
+.upload-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.upload-form-title {
+  margin: 0;
+}
+
+.upload-form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 5px;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: #111827;
+}
+
+.logout-button-small {
+  background-color: #dc2626;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+}
