@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <float.h>
 
-#define MAX_RAYS 1
+#define MAX_RAYS 20
 #define MAX_COLORS_COUNT    21
 
 Color colors[MAX_COLORS_COUNT] = {
@@ -35,7 +35,7 @@ AT_Triangle *AT_model_get_triangles(const AT_Model *model)
 
 int main()
 {
-    const char *filepath = "../assets/glb/polygon_room.gltf";
+    const char *filepath = "../assets/glb/L_room.gltf";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -47,9 +47,11 @@ int main()
 
     //init rays
     for (uint32_t i = 0; i < MAX_RAYS; i++) {
+        float t = (float)i / (MAX_RAYS - 1);
+        float angle = -PI/2 + t * PI;
         rays[i] = AT_ray_init(
             (AT_Vec3){0},
-            (AT_Vec3){i*-0.03, 0.1f, -1.0f},
+            (AT_Vec3){cosf(angle), 0.1f, sinf(angle)},
             i);
     }
 
@@ -68,7 +70,6 @@ int main()
             if (!intersects) break;
             AT_Ray *child = malloc(sizeof(AT_Ray));
             *child = closest;
-            child->child = NULL;
             ray->child = child;
             ray = ray->child;
         }
@@ -77,7 +78,7 @@ int main()
     printf("Initializing Window\n");
     InitWindow(1280, 720, "Model Ray Test");
 
-    SetTargetFPS(60);
+    SetTargetFPS(90);
 
     Camera3D camera = {
         .position = { 10.0f, 10.0f, 10.0f },
@@ -122,7 +123,7 @@ int main()
                             }, 0.01, BLUE
                         );
                         if (curr->child) {
-                            DrawLine3D((Vector3){curr->origin.x, curr->origin.y, curr->origin.z}, (Vector3){curr->child->origin.x, curr->child->origin.y, curr->child->origin.z} , PURPLE);
+                            DrawLine3D((Vector3){curr->origin.x, curr->origin.y, curr->origin.z}, (Vector3){curr->child->origin.x, curr->child->origin.y, curr->child->origin.z} , (Color)colors[i%MAX_COLORS_COUNT]);
                         }
                     }
 
