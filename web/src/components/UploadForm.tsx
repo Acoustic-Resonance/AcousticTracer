@@ -5,8 +5,13 @@
 // - POST /api/simulations (multipart)
 import { useState } from "react";
 import { createSimulation } from "../api/simulations";
+import "./UploadForm.css";
 
-export default function UploadForm() {
+interface UploadFormProps {
+  onClose?: () => void;
+}
+
+export default function UploadForm({ onClose }: UploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     voxel_size: 0.1,
@@ -49,7 +54,18 @@ export default function UploadForm() {
   return (
     <div className="modal-overlay">
       <div className="card modal-content">
-        <h3 className="h1 form-title">New Simulation</h3>
+        <div className="upload-form-header">
+          <h3 className="h1 upload-form-title">New Simulation</h3>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="close-button"
+              aria-label="Close"
+            >
+              &times;
+            </button>
+          )}
+        </div>
 
         <form onSubmit={handleSubmit} className="form-stack">
           {/* File Upload */}
