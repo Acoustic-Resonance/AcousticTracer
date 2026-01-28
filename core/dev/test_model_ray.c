@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <float.h>
 
-#define MAX_RAYS 50
+#define MAX_RAYS 1
 #define MAX_COLORS_COUNT    21
 
 Color colors[MAX_COLORS_COUNT] = {
@@ -88,9 +88,16 @@ int main()
     };
     rlDisableBackfaceCulling();
 
+    uint32_t ssn = 0;
+
     while (!WindowShouldClose())
     {
         UpdateCamera(&camera, CAMERA_FREE);
+        if (IsKeyPressed(KEY_T)) {
+           char filename[64];
+           sprintf(filename, "../assets/images/screenshot_%03d.png", ssn++);
+           TakeScreenshot(filename);
+        }
         BeginDrawing();
         {
             ClearBackground(RAYWHITE);
@@ -112,7 +119,7 @@ int main()
                                 curr->origin.x,
                                 curr->origin.y,
                                 curr->origin.z,
-                            }, 0.1, BLUE
+                            }, 0.01, BLUE
                         );
                         DrawRay((Ray){
                         (Vector3){curr->origin.x, curr->origin.y, curr->origin.z},
