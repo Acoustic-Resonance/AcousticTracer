@@ -29,53 +29,78 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         cgltf_free(data);
         return AT_ERR_INVALID_ARGUMENT;
     }
+
+    uint32_t total_vertices = 0;
+    uint32_t total_indices = 0;
+    uint32_t total_normals = 0;
+
+    uint32_t vertex_index = 0;
+    uint32_t index_index = 0;
+    uint32_t normal_index = 0;
+
     cgltf_mesh *mesh = &data->meshes[0];
 
     if (mesh->primitives_count == 0) {
         cgltf_free(data);
         return AT_ERR_INVALID_ARGUMENT;
     }
-    cgltf_primitive *primitive = &mesh->primitives[0];
+    for (unsigned long i = 0; i < mesh->primitives_count; i++) {
 
-    cgltf_accessor *pos_accessor = NULL;
-    for (size_t i = 0; i < primitive->attributes_count; i++) {
-        if (primitive->attributes[i].type == cgltf_attribute_type_position) {
-            pos_accessor = primitive->attributes[i].data;
-            break;
+        cgltf_primitive *primitive = &mesh->primitives[i];
+
+        cgltf_accessor *pos_accessor = NULL;
+        for (size_t i = 0; i < primitive->attributes_count; i++) {
+            if (primitive->attributes[i].type == cgltf_attribute_type_position) {
+                pos_accessor = primitive->attributes[i].data;
+                break;
+            }
         }
+
+        if (!pos_accessor) {
+            cgltf_free(data);
+            return AT_ERR_INVALID_ARGUMENT;
+        }
+
+        size_t vertex_count = pos_accessor->count;
+
+        cgltf_accessor *idx_accessor = primitive->indices;
+
+        if (!idx_accessor) {
+            cgltf_free(data);
+            return AT_ERR_INVALID_ARGUMENT;
+        }
+
+        size_t index_count = idx_accessor->count;
+
+        // Normals
+        cgltf_accessor *norm_accessor = NULL;
+        for (size_t i = 0; i < primitive->attributes_count; i++) {
+            if (primitive->attributes[i].type == cgltf_attribute_type_normal) {
+                norm_accessor = primitive->attributes[i].data;
+                break;
+            }
+        }
+        if (!norm_accessor) {
+            cgltf_free(data);
+            return AT_ERR_INVALID_ARGUMENT;
+        }
+
+        size_t normal_count = norm_accessor->count;
+
+        total_vertices += vertex_count;
+        total_indices += index_count;
+        total_normals += normal_count;
+
     }
 
-    if (!pos_accessor) {
-        cgltf_free(data);
-        return AT_ERR_INVALID_ARGUMENT;
-    }
-
-    // Vertices
-    size_t vertex_count = pos_accessor->count;
-    AT_Vec3 *vertices = malloc(sizeof(AT_Vec3) * vertex_count);
+    AT_Vec3 *vertices = malloc(sizeof(AT_Vec3) * total_vertices);
 
     if (!vertices) {
         cgltf_free(data);
         return AT_ERR_ALLOC_ERROR;
     }
 
-    for (size_t i = 0; i < vertex_count; i++) {
-        float v[3];
-        cgltf_accessor_read_float(pos_accessor, i, v, 3);
-        vertices[i] = (AT_Vec3){ v[0], v[1], v[2] };
-    }
-
-    // Indices
-    cgltf_accessor *idx_accessor = primitive->indices;
-
-    if (!idx_accessor) {
-        cgltf_free(data);
-        free(vertices);
-        return AT_ERR_INVALID_ARGUMENT;
-    }
-
-    size_t index_count = idx_accessor->count;
-    uint32_t *indices = malloc(sizeof(uint32_t) * index_count);
+    uint32_t *indices = malloc(sizeof(uint32_t) * total_indices);
 
     if (!indices) {
         cgltf_free(data);
@@ -83,32 +108,63 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         return AT_ERR_ALLOC_ERROR;
     }
 
-    for (size_t i = 0; i < index_count; i++) {
-        uint32_t idx = 0;
-        cgltf_accessor_read_uint(idx_accessor, i, &idx, 1);
-        indices[i] = idx;
-    }
+    AT_Vec3 *normals = malloc(sizeof(AT_Vec3) * total_normals);
 
-    // Normals
-    cgltf_accessor *norm_accessor = NULL;
-    for (size_t i = 0; i < primitive->attributes_count; i++) {
-        if (primitive->attributes[i].type == cgltf_attribute_type_normal) {
-            norm_accessor = primitive->attributes[i].data;
-            break;
-        }
-    }
-    if (!norm_accessor) {
+    if (!normals) {
         cgltf_free(data);
         free(vertices);
         free(indices);
-        return AT_ERR_INVALID_ARGUMENT;
+        return AT_ERR_ALLOC_ERROR;
     }
 
-    AT_Vec3 *normals = malloc(sizeof(AT_Vec3) * norm_accessor->count);
-    for (size_t i = 0; i < norm_accessor->count; i++) {
-        float n[3];
-        cgltf_accessor_read_float(norm_accessor, i, n, 3);
-        normals[i] = (AT_Vec3){ n[0], n[1], n[2]};
+    for (unsigned long i = 0; i < mesh->primitives_count; i++) {
+
+        size_t base_vertex = vertex_index;
+
+        cgltf_primitive *primitive = &mesh->primitives[i];
+
+        cgltf_accessor *pos_accessor = NULL;
+        for (size_t i = 0; i < primitive->attributes_count; i++) {
+            if (primitive->attributes[i].type == cgltf_attribute_type_position) {
+                pos_accessor = primitive->attributes[i].data;
+                break;
+            }
+        }
+
+        // Vertices
+        size_t vertex_count = pos_accessor->count;
+        for (size_t i = 0; i < vertex_count; i++) {
+            float v[3];
+            cgltf_accessor_read_float(pos_accessor, i, v, 3);
+            vertices[vertex_index + i] = (AT_Vec3){ v[0], v[1], v[2] };
+        }
+        vertex_index += vertex_count;
+
+
+        // Indices
+        cgltf_accessor *idx_accessor = primitive->indices;
+        size_t index_count = idx_accessor->count;
+        for (size_t i = 0; i < index_count; i++) {
+            uint32_t idx = 0;
+            cgltf_accessor_read_uint(idx_accessor, i, &idx, 1);
+            indices[index_index + i] = idx + base_vertex;
+        }
+        index_index += index_count;
+
+        // Normals
+        cgltf_accessor *norm_accessor = NULL;
+        for (size_t i = 0; i < primitive->attributes_count; i++) {
+            if (primitive->attributes[i].type == cgltf_attribute_type_normal) {
+                norm_accessor = primitive->attributes[i].data;
+                break;
+            }
+        }
+        for (size_t i = 0; i < norm_accessor->count; i++) {
+            float n[3];
+            cgltf_accessor_read_float(norm_accessor, i, n, 3);
+            normals[normal_index + i] = (AT_Vec3){ n[0], n[1], n[2]};
+        }
+        normal_index += norm_accessor->count;
     }
 
     AT_Model *model = calloc(1, sizeof(AT_Model));
@@ -120,8 +176,8 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         return AT_ERR_ALLOC_ERROR;
     }
 
-    model->index_count = index_count;
-    model->vertex_count = vertex_count;
+    model->index_count = total_indices;
+    model->vertex_count = total_vertices;
     model->indices = indices;
     model->vertices = vertices;
     model->normals = normals;
