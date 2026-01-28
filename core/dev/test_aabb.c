@@ -1,7 +1,6 @@
 #include "../src/at_internal.h"
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
-#include "acoustic/at_model.h"
 #include "raylib.h"
 #include <float.h>
 #include <stdio.h>

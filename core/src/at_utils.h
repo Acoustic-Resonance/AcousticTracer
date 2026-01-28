@@ -108,4 +108,16 @@
         AT_da_init(da); \
     } while(0)
 
+
+/* MIN / MAX */
+#define AT_min(_a, _b) \
+    ({ \
+        (_a) < (_b) ? (_a) : (_b); \
+    })
+
+#define AT_max(_a, _b) \
+    ({ \
+        (_a) > (_b) ? (_a) : (_b); \
+    })
+
 #endif //AT_UTILS_H

@@ -1,5 +1,6 @@
 #include "acoustic/at_model.h"
 #include "../src/at_internal.h"
+#include "../src/at_utils.h"
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
 #include "cgltf.h"
@@ -62,7 +63,7 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
     for (size_t i = 0; i < vertex_count; i++) {
         float v[3];
         cgltf_accessor_read_float(pos_accessor, i, v, 3);
-        vertices[i] = (AT_Vec3){ v[0], v[1], v[2] };
+        vertices[i] = (AT_Vec3){v[0], v[1], v[2]};
     }
 
     // Indices
@@ -108,7 +109,7 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
     for (size_t i = 0; i < norm_accessor->count; i++) {
         float n[3];
         cgltf_accessor_read_float(norm_accessor, i, n, 3);
-        normals[i] = (AT_Vec3){ n[0], n[1], n[2]};
+        normals[i] = (AT_Vec3){n[0], n[1], n[2]};
     }
 
     AT_Model *model = calloc(1, sizeof(AT_Model));
@@ -132,41 +133,30 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
     return AT_OK;
 }
 
+void AT_model_destroy(AT_Model *model)
+{
+    if (!model) return;
+
+    free(model->vertices);
+    free(model->indices);
+    free(model->normals);
+    free(model);
+}
 
 void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model)
 {
-    AT_Vec3 max_vec = AT_vec3(FLT_MIN, FLT_MIN, FLT_MIN);
     AT_Vec3 min_vec = AT_vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+    AT_Vec3 max_vec = AT_vec3(FLT_MIN, FLT_MIN, FLT_MIN);
     for (unsigned long i = 0; i < model->vertex_count; i++) {
         AT_Vec3 vec = model->vertices[i];
-        if (vec.x < min_vec.x) {
-            min_vec.x = vec.x;
-        } else if (vec.x > max_vec.x) {
-            max_vec.x = vec.x;
-        }
-        if (vec.y < min_vec.y) {
-            min_vec.y = vec.y;
-        } else if (vec.y > max_vec.y) {
-            max_vec.y = vec.y;
-        }
-        if (vec.z < min_vec.z) {
-            min_vec.z = vec.z;
-        } else if (vec.z > max_vec.z) {
-            max_vec.z = vec.z;
-        }
+        min_vec.x = AT_min(min_vec.x, vec.x);
+        min_vec.y = AT_min(min_vec.y, vec.y);
+        min_vec.z = AT_min(min_vec.z, vec.z);
+        max_vec.x = AT_max(max_vec.x, vec.x);
+        max_vec.y = AT_max(max_vec.y, vec.y);
+        max_vec.z = AT_max(max_vec.z, vec.z);
     }
 
     out_aabb->min = min_vec;
     out_aabb->max = max_vec;
-}
-
-
-void AT_model_destroy(AT_Model *model)
-{
-   if (!model) return;
-
-   free(model->vertices);
-   free(model->indices);
-   free(model->normals);
-   free(model);
 }
