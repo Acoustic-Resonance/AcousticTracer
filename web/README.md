@@ -1,73 +1,55 @@
-# React + TypeScript + Vite
+# AcousticTracer Web (Vite + React, JavaScript)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a skeleton frontend for the pipeline described in `docs/projectsummary.md`.
 
-Currently, two official plugins are available:
+Most implementation code has been intentionally replaced with `TODO` stubs so you can write it yourself.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Requirements
 
-## React Compiler
+- Node.js 18+ recommended
+- npm 9+ recommended
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Install + run
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd web
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open the URL Vite prints (usually `http://localhost:5173`).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Dev API proxy
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+During development, requests to `/api/*` are proxied to a backend target:
+
+- Default: `http://localhost:8080`
+- Override: set `VITE_API_PROXY_TARGET`
+
+Example:
+
+```bash
+VITE_API_PROXY_TARGET=http://localhost:3000 npm run dev
 ```
+
+## Expected backend endpoints (MVP)
+
+- `POST /api/simulations` (multipart)
+  - form field `model`: `.glb/.gltf` file
+  - form field `params`: JSON string
+  - response: `{ "id": "..." }`
+
+- `GET /api/simulations/:id/status`
+  - response: `{ "status": "queued"|"running"|"done"|"error", "progress"?: 0..1, "error"?: string }`
+
+- `GET /api/simulations/:id/meta` (later)
+
+- `GET /api/simulations/:id/chunks/:index` (later)
+
+## Where to extend next
+
+- Implement the UI flow in [web/src/App.jsx](web/src/App.jsx) and components in [web/src/components](web/src/components)
+- Implement HTTP + backend API calls in [web/src/api](web/src/api)
+- Implement R3F renderer placeholders in [web/src/r3f](web/src/r3f)
+- Implement playback/chunk decoding placeholders in [web/src/playback](web/src/playback)
+
