@@ -34,7 +34,6 @@
 			}
 		},
 		{
-			"alphaMode":"BLEND",
 			"doubleSided":true,
 			"name":"Material.001",
 			"pbrMetallicRoughness":{
@@ -42,7 +41,11 @@
 					0.800000011920929,
 					0.800000011920929,
 					0.800000011920929,
+<<<<<<< HEAD
 					0.24463516473770142
+=======
+					1
+>>>>>>> 899a972 (Removed transparent roof)
 				],
 				"metallicFactor":0,
 				"roughnessFactor":0.5
