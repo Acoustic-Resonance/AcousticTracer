@@ -5,14 +5,22 @@ int main()
 {
     printf("Hey\n");
 
+    const char *filepath = "../assets/glb/L_room.gltf";
+
     AT_Source src = {
         .direction = {1, 0, 0},
         .intensity = 50.0,
         .position = {0, 0, 0}
     };
 
+    AT_Model *model = NULL;
+    if (AT_model_create(&model, filepath) != AT_OK) {
+        fprintf(stderr, "Error creating model\n");
+        return 1;
+    }
+
     AT_SceneConfig conf = {
-        .environment = NULL,
+        .environment = model,
         .material = AT_MATERIAL_CONCRETE,
         .num_sources = 1, //can prob just derive this from src?
         .source = &src

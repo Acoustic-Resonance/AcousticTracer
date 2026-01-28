@@ -108,4 +108,25 @@ static inline AT_Vec3 AT_vec3_normalize(AT_Vec3 v) {
     return (len > 0.0f) ? AT_vec3_scale(v, 1.0f / len) : AT_vec3_zero();
 }
 
+/** \brief Calculates the distance between two AT_Vec3's.
+    \relates AT_Vec3
+
+    \retval float The distance between two AT_Vec3's.
+ */
+static inline float AT_vec3_distance(AT_Vec3 a, AT_Vec3 b) {
+    return sqrt((b.x - a.x) * (b.x - a.x) +
+                (b.y - a.y) * (b.y - a.y) +
+                (b.z - a.z) * (b.z - a.z));
+}
+
+/** \brief Calculates the squared distance between two AT_Vec3's.
+    \relates AT_Vec3
+
+    \retval float The squared distance between two AT_Vec3's.
+ */
+static inline float AT_vec3_distance_sq(AT_Vec3 a, AT_Vec3 b) {
+    return (b.x - a.x) * (b.x - a.x) +
+           (b.y - a.y) * (b.y - a.y) +
+           (b.z - a.z) * (b.z - a.z);
+}
 #endif // AT_MATH_H
