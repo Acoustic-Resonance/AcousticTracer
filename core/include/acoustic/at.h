@@ -47,7 +47,7 @@ typedef struct {
 /** \brief Groups the scene config settings together.
  */
 typedef struct {
-  const AT_Source *source; /**< Dynamic array of AT_Source types. */
+  const AT_Source *sources; /**< Dynamic array of AT_Source types. */
   uint32_t num_sources;
   AT_Material material; /**< Material of the room. */
 

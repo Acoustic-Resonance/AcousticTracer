@@ -51,6 +51,7 @@ struct AT_Model {
 
 struct AT_Simulation {
     AT_Voxel *voxel_grid;
+    AT_Source *sources;
     AT_Ray *rays;
     AT_Vec3 origin;
     AT_Vec3 dimensions;

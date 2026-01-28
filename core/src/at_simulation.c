@@ -22,6 +22,13 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
         return AT_ERR_ALLOC_ERROR;
     }
 
+    simulation->sources = (AT_Source*)malloc(sizeof(AT_Source) * scene->num_sources);
+    if (!simulation->sources) {
+        free(simulation->rays);
+        free(simulation);
+        return AT_ERR_ALLOC_ERROR;
+    }
+
     // World dimensions
     AT_Vec3 dimensions = AT_vec3_sub(scene->world_AABB.max, scene->world_AABB.min);
 
@@ -34,6 +41,7 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
     simulation->voxel_grid = calloc(num_voxels, sizeof(AT_Voxel));
     if (!simulation->voxel_grid) {
         free(simulation->rays);
+        free(simulation->sources);
         free(simulation);
         return AT_ERR_ALLOC_ERROR;
     }
