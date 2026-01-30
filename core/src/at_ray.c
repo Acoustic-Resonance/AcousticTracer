@@ -41,3 +41,11 @@ bool AT_ray_triangle_intersect(AT_Ray *ray, const AT_Triangle *triangle, AT_Ray 
 
     return true;
 }
+
+void AT_ray_destroy_children(AT_Ray *ray) {
+    if (!ray) return;
+    if (ray->child) {
+        AT_ray_destroy_children(ray->child);
+    }
+    free(ray);
+}

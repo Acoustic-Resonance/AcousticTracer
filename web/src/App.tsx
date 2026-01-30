@@ -1,12 +1,7 @@
-// TODO: Build the app UI state machine:
-// upload -> status -> playback
-//
-// Suggested imports (when you implement):
-// - components/UploadForm
-// - components/SimulationStatus
-// - components/PlaybackView
+import UploadForm from "./components/UploadForm";
+import "./index.css"; // Ensure styles are imported
 
-export default function App() {
+function App() {
   return (
     <div className="container">
       <div className="header">
@@ -19,6 +14,11 @@ export default function App() {
           TODO: Implement upload, polling, and playback.
         </div>
       </div>
+      <div className="upload">
+        <UploadForm />
+      </div>
     </div>
   );
 }
+
+export default App;

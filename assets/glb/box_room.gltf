@@ -42,7 +42,7 @@
 					0.800000011920929,
 					0.800000011920929,
 					0.800000011920929,
-					0.2290748804807663
+					0.24463516473770142
 				],
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -197,7 +197,7 @@
 	"buffers":[
 		{
 			"byteLength":840,
-			"uri":"box_room.bin"
+			"uri":"box_room_no_roof.bin"
 		}
 	]
 }

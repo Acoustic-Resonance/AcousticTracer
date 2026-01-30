@@ -47,7 +47,7 @@ typedef struct {
 /** \brief Groups the scene config settings together.
  */
 typedef struct {
-  const AT_Source *source; /**< Dynamic array of AT_Source types. */
+  const AT_Source *sources; /**< Dynamic array of AT_Source types. */
   uint32_t num_sources;
   AT_Material material; /**< Material of the room. */
 
@@ -72,14 +72,6 @@ void AT_model_destroy(
     AT_Model *model
 );
 
-/** \brief Calculates the min and max of a model for AABB collision.
-    \relates AT_AABB
-
-    \param out_aabb Pointer to an empty initialised AT_AABB.
-    \param model Pointer to the model.
-
-    \retval void
-*/
 void AT_model_to_AABB(
     AT_AABB *out_aabb,
     const AT_Model *model

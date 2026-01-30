@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <float.h>
 
-#define MAX_RAYS 1
+#define MAX_RAYS 10
 #define MAX_COLORS_COUNT    21
 
 Color colors[MAX_COLORS_COUNT] = {
@@ -19,28 +19,20 @@ Color colors[MAX_COLORS_COUNT] = {
     GRAY, RED, GOLD, LIME, BLUE, VIOLET, BROWN, LIGHTGRAY, PINK, YELLOW,
     GREEN, SKYBLUE, PURPLE, BEIGE };
 
-AT_Triangle *AT_model_get_triangles(const AT_Model *model)
-{
-    uint32_t triangle_count = model->index_count / 3;
-    AT_Triangle *ts = (AT_Triangle*)malloc(sizeof(AT_Triangle) * triangle_count);
-    for (uint32_t i = 0; i < triangle_count; i++) {
-        ts[i] = (AT_Triangle){
-            .v1 = model->vertices[model->indices[i*3 + 0]],
-            .v2 = model->vertices[model->indices[i*3 + 1]],
-            .v3 = model->vertices[model->indices[i*3 + 2]]
-        };
-    }
-    return ts;
-}
+Color cols[3] = {BLACK, LIGHTGRAY, DARKGRAY};
 
 int main()
 {
-    const char *filepath = "../assets/glb/polygon_room.gltf";
+    const char *filepath = "../assets/glb/Sponza.glb";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
         fprintf(stderr, "Failed to create model\n");
         return 1;
+    }
+
+    for (uint32_t i = 0; i < model->vertex_count; i++) {
+        model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.01);
     }
 
     AT_Ray rays[MAX_RAYS] = {0};
@@ -49,17 +41,22 @@ int main()
     for (uint32_t i = 0; i < MAX_RAYS; i++) {
         rays[i] = AT_ray_init(
             (AT_Vec3){0},
-            (AT_Vec3){i*-0.03, 0.1f, -1.0f},
+            (AT_Vec3){i*(1.0f/MAX_RAYS), 0.1f, -1.0f},
             i);
     }
 
     uint32_t t_count = model->index_count / 3;
-    AT_Triangle *ts = AT_model_get_triangles(model);
+    AT_Triangle *ts = NULL;
+    if (AT_model_get_triangles(&ts, model) != AT_OK) {
+        fprintf(stderr, "Failed to load triangles from model\n");
+        return 1;
+    }
 
     //iterate rays
     for (uint32_t i = 0; i < MAX_RAYS; i++) {
+        uint32_t count = 0;
         AT_Ray *ray = &rays[i];
-        while (true) {
+        while (count++ < 5) {
             AT_Ray closest = AT_ray_init((AT_Vec3){ FLT_MAX, FLT_MAX, FLT_MAX }, (AT_Vec3){0}, 0);
             bool intersects = false;
             for (uint32_t j = 0; j < t_count; j++) {
@@ -86,6 +83,7 @@ int main()
         .fovy = 60.0f,
         .projection = CAMERA_PERSPECTIVE
     };
+
     rlDisableBackfaceCulling();
 
     uint32_t ssn = 0;
@@ -141,7 +139,7 @@ int main()
                         (Vector3){ts[i].v2.x, ts[i].v2.y, ts[i].v2.z},
                         (Vector3){ts[i].v1.x, ts[i].v1.y, ts[i].v1.z},
                         (Vector3){ts[i].v3.x, ts[i].v3.y, ts[i].v3.z},
-                        (Color)colors[i%MAX_COLORS_COUNT]);
+                        (Color)cols[i%3]);
                 }
 
                 DrawGrid(10, 1.0f);
