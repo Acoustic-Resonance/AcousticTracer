@@ -1,6 +1,7 @@
 #include "acoustic/at_model.h"
 #include "../src/at_internal.h"
 #include "../src/at_utils.h"
+#include "../src/at_aabb.h"
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
 #include "cgltf.h"
@@ -215,6 +216,7 @@ void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model)
 
     out_aabb->min = min_vec;
     out_aabb->max = max_vec;
+    out_aabb->midpoint = AT_AABB_calc_midpoint(out_aabb);
 }
 
 
@@ -229,6 +231,7 @@ AT_Result AT_model_get_triangles(AT_Triangle **out_triangles, const AT_Model *mo
             .v2 = model->vertices[model->indices[i*3 + 1]],
             .v3 = model->vertices[model->indices[i*3 + 2]]
         };
+        ts[i].aabb = AT_AABB_from_triangle(&ts[i]);
     }
     *out_triangles = ts;
     return AT_OK;
