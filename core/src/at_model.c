@@ -233,14 +233,3 @@ AT_Result AT_model_get_triangles(AT_Triangle **out_triangles, const AT_Model *mo
     *out_triangles = ts;
     return AT_OK;
 }
-
-
-void AT_model_destroy(AT_Model *model)
-{
-   if (!model) return;
-
-   free(model->vertices);
-   free(model->indices);
-   free(model->normals);
-   free(model);
-}
