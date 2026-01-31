@@ -4,7 +4,7 @@
 #ifndef AT_H
 #define AT_H
 
-#include "at_math.h"
+#include "acoustic/at_math.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -28,13 +28,6 @@ typedef enum {
     AT_MATERIAL_PLASTIC,
     AT_MATERIAL_WOOD
 } AT_Material;
-
-/** \brief Groups the min and max of a voxel for AABB collision detection.
- */
-typedef struct {
-    AT_Vec3 min;
-    AT_Vec3 max;
-} AT_AABB;
 
 /** \brief Groups the information required for the sound source.
  */
