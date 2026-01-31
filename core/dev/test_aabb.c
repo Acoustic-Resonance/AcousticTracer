@@ -2,6 +2,7 @@
 #include "../src/at_internal.h"
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
+#include "acoustic/at_model.h"
 #include "raylib.h"
 #include <float.h>
 #include <stdio.h>
@@ -65,8 +66,13 @@ int main()
                         (Vector3){max_vec.x, max_vec.y, max_vec.z},
                     },
                     RED);
+                AT_Triangle *triangles;
+                if (AT_model_get_triangles(&triangles, model) != AT_OK) {
+                    perror("Error getting triangles from the given model");
+                    return 1;
+                }
                 for (uint32_t i = 0; i < model->index_count / 3; i++) {
-                    AT_Triangle triangle = get_triangle_n_from_model(model, i);
+                    AT_Triangle triangle = triangles[i];
                     DrawTriangle3D(
                         (Vector3){triangle.v1.x, triangle.v1.y, triangle.v1.z},
                         (Vector3){triangle.v2.x, triangle.v2.y, triangle.v2.z},
