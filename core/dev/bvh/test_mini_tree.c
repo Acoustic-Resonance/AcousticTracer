@@ -35,7 +35,9 @@ int main()
     AT_Vec3 mini_tree_midpoint = mini_tree->aabb.midpoint;
     AT_MiniTree *left = NULL;
     AT_MiniTree *right = NULL;
-    AT_BVH_split_tree(mini_tree, &left, &right);
+    if (AT_BVH_split_tree(mini_tree, &left, &right) != AT_OK) {
+        perror("Failed to split the mini tree");
+    }
     printf("Left triangle: {%f, %f, %f}, {%f, %f, %f}, {%f, %f, %f} {%f, %f, %f}\n", left->triangles[left->n - 1].v1.x, left->triangles[left->n - 1].v1.y, left->triangles[left->n - 1].v1.z, left->triangles[left->n - 1].v2.x, left->triangles[left->n - 1].v2.y, left->triangles[left->n - 1].v2.z, left->triangles[left->n - 1].v3.x, left->triangles[left->n - 1].v3.y, left->triangles[left->n - 1].v3.z, left->triangles[left->n - 1].aabb.midpoint.x, left->triangles[left->n - 1].aabb.midpoint.y, left->triangles[left->n - 1].aabb.midpoint.z);
     printf("Midpoint: {%f, %f, %f}\n", mini_tree_midpoint.x, mini_tree_midpoint.y, mini_tree_midpoint.z);
     printf("Right triangle: {%f, %f, %f}, {%f, %f, %f}, {%f, %f, %f} {%f, %f, %f}\n", right->triangles[0].v1.x, right->triangles[0].v1.y, right->triangles[0].v1.z, right->triangles[0].v2.x, right->triangles[0].v2.y, right->triangles[0].v2.z, right->triangles[0].v3.x, right->triangles[0].v3.y, right->triangles[0].v3.z, right->triangles[0].aabb.midpoint.x, right->triangles[0].aabb.midpoint.y, right->triangles[0].aabb.midpoint.z);
