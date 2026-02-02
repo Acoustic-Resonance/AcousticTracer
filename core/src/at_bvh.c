@@ -34,3 +34,36 @@ void AT_minitree_destroy(AT_MiniTree *minitree)
     free(minitree->triangles);
     free(minitree);
 }
+
+/** \brief Gets the longest side of a given mini tree
+    \relates AT_MiniTree
+
+    \param tree A pointer to a given mini tree.
+
+    \retval char The longest axis as a single char.
+ */
+char get_longest_axis(const AT_MiniTree *tree)
+{
+    float delta_x = tree->aabb.max.x - tree->aabb.min.x;
+    float delta_y = tree->aabb.max.y - tree->aabb.min.y;
+    float delta_z = tree->aabb.max.z - tree->aabb.min.z;
+
+    // TODO: See about optimising return value so don't have to subtract again later
+    if (delta_x >= delta_y && delta_x >= delta_z) {
+        return 'x';
+    } else if (delta_y >= delta_x && delta_y >= delta_z) {
+        return 'y';
+    } else {
+        return 'z';
+    }
+}
+
+void AT_BVH_split_tree(const AT_MiniTree *org_tree, AT_MiniTree *left_tree, AT_MiniTree *right_tree)
+{
+    // 1. Get longest axis
+    char longest_axis = get_longest_axis(org_tree);
+    // 2. Get centre of longest axis
+    // 3. Get triangles to left of axis
+    // 4. Get triangles to right of axis
+    // 5. Repeat for sub trees
+}

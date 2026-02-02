@@ -37,3 +37,14 @@ AT_Result AT_minitree_create(AT_MiniTree **out_tree, AT_Triangle *triangles, uin
 void AT_minitree_destroy(AT_MiniTree *minitree);
 
 void AT_BVH_sort_triangles(AT_Triangle *triangles, char axis);
+
+/** \brief Splits min trees into smaller mini trees based on the longest axis.
+    \relates AT_MiniTree
+
+    \param org_tree Pointer to the original mini tree.
+    \param left_tree Pointer to the first empty child tree.
+    \param right_tree Pointer to the second empty child tree.
+
+    \retval void
+ */
+void AT_BVH_split_tree(const AT_MiniTree *org_tree, AT_MiniTree *left_tree, AT_MiniTree *right_tree);
