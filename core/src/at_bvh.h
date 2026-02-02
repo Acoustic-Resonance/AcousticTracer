@@ -47,4 +47,4 @@ void AT_BVH_sort_triangles(AT_Triangle *triangles, char axis);
 
     \retval void
  */
-void AT_BVH_split_tree(const AT_MiniTree *org_tree, AT_MiniTree *left_tree, AT_MiniTree *right_tree);
+void AT_BVH_split_tree(AT_MiniTree *org_tree, AT_MiniTree **left_tree, AT_MiniTree **right_tree);
