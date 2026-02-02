@@ -17,6 +17,7 @@ typedef struct {
 } AT_MiniTree;
 
 /** \brief AT_MiniTree constructor for a given list of triangles.
+    \relates AT_MiniTree
 
     \param out_tree Pointer to an empty initialised AT_MiniTree.
     \param triangles Array of triangles.
@@ -25,5 +26,14 @@ typedef struct {
     \retval AT_Result Saves the created mini tree at the location of the pointer, returning a result enum value.
  */
 AT_Result AT_minitree_create(AT_MiniTree **out_tree, AT_Triangle *triangles, uint32_t n);
+
+/** \brief Destroys an allocated AT_MiniTree.
+    \relates AT_MiniTree
+
+    \param minitree Pointer to an initialised mini tree.
+
+    \retval void
+ */
+void AT_minitree_destroy(AT_MiniTree *minitree);
 
 void AT_BVH_sort_triangles(AT_Triangle *triangles, char axis);

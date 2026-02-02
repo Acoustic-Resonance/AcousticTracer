@@ -26,3 +26,11 @@ AT_Result AT_minitree_create(AT_MiniTree **out_tree, AT_Triangle *triangles, uin
     *out_tree = mini_tree;
     return AT_OK;
 }
+
+void AT_minitree_destroy(AT_MiniTree *minitree)
+{
+    if (!minitree) return;
+
+    free(minitree->triangles);
+    free(minitree);
+}
