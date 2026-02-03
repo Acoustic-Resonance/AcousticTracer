@@ -30,6 +30,34 @@ void AT_trigroup_destroy(AT_TriGroup *tri_group)
     free(tri_group);
 }
 
+AT_Result AT_triangle_groups_create(AT_TriangleGroups **out_group, int num_ts)
+{
+    if (!out_group || *out_group || num_ts <= 0) {
+        return AT_ERR_INVALID_ARGUMENT;
+    }
+    AT_TriGroup **groups_arr = malloc(sizeof(AT_TriGroup *) * num_ts);
+    if (!groups_arr) return AT_ERR_ALLOC_ERROR;
+    AT_TriangleGroups *groups = malloc(sizeof(*groups));
+    if (!groups) {
+        // TODO: Deal with allocation problems
+        return AT_ERR_ALLOC_ERROR;
+    }
+    groups->groups = groups_arr;
+    groups->n = 0;
+
+    *out_group = groups;
+    return AT_OK;
+}
+
+void AT_triangle_groups_destroy(AT_TriangleGroups *tri_groups)
+{
+    for (uint32_t i = 0; i < tri_groups->n; i++) {
+        if (!tri_groups->groups[i]) break;
+        AT_trigroup_destroy(tri_groups->groups[i]);
+    }
+    free(tri_groups->groups);
+}
+
 /** \brief Gets the longest side of a given triangle group's AABB.
     \relates AT_TriGroup
 
@@ -105,7 +133,7 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
     return AT_OK;
 }
 
-AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_MiniTree *groups, uint32_t N)
+AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriangleGroups *groups, uint32_t N)
 {
     if (!org_group || !groups) return AT_ERR_INVALID_ARGUMENT;
 

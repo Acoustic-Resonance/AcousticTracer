@@ -28,25 +28,24 @@ int main()
     }
 
     // TODO: Implement groups as a DA
-    AT_MiniTree groups = {
-        .groups = malloc(sizeof(AT_TriGroup *) * tri_group->n),
-        .n = 0,
-    };
-    if (AT_trigroup_split(tri_group, &groups, bvh_config.mini_tree_size) != AT_OK) {
+    AT_TriangleGroups *groups = NULL;
+    if (AT_triangle_groups_create(&groups, tri_group->n) != AT_OK) {
+        perror("Failed to create the triangle groups holder");
+        free(ts);
+        return 1;
+    }
+    if (AT_trigroup_split(tri_group, groups, bvh_config.mini_tree_size) != AT_OK) {
         perror("Failed to split the triangle group");
+        free(ts);
         return 1;
     }
 
     printf("\n");
-    for (uint32_t i = 0; i < groups.n; i++) {
-        printf("Group %d of size %d\n", i, groups.groups[i]->n);
+    for (uint32_t i = 0; i < groups->n; i++) {
+        printf("Group %d of size %d\n", i, groups->groups[i]->n);
     }
 
-    for (uint32_t i = 0; i < groups.n; i++) {
-        if (!groups.groups[i]) break;
-        AT_trigroup_destroy(groups.groups[i]);
-    }
-    free(groups.groups);
+    AT_triangle_groups_destroy(groups);
     free(ts);
 
     return 0;
