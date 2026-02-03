@@ -35,42 +35,39 @@ void AT_trigroup_destroy(AT_TriGroup *tri_group)
 
     \param tree A pointer to a given triangle group.
 
-    \retval char The longest axis as a single char.
+    \retval AT_Vec3 A minimum vector with the longest axis value set to the midpoint.
  */
-char get_longest_axis(const AT_TriGroup *group)
+AT_Vec3 get_longest_axis_mid(const AT_TriGroup *group)
 {
     float delta_x = group->aabb.max.x - group->aabb.min.x;
     float delta_y = group->aabb.max.y - group->aabb.min.y;
     float delta_z = group->aabb.max.z - group->aabb.min.z;
 
+    AT_Vec3 midpoint = (AT_Vec3){
+        .x = FLT_MIN,
+        .y = FLT_MIN,
+        .z = FLT_MIN,
+    };
     if (delta_x >= delta_y && delta_x >= delta_z) {
-        return 'x';
+        midpoint.x = (group->aabb.max.x + group->aabb.min.x) / 2;
     } else if (delta_y >= delta_x && delta_y >= delta_z) {
-        return 'y';
+        midpoint.y = (group->aabb.max.y + group->aabb.min.y) / 2;
     } else {
-        return 'z';
+        midpoint.z = (group->aabb.max.z + group->aabb.min.z) / 2;
     }
+
+    return midpoint;
 }
 
 AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriGroup **left_group, AT_TriGroup **right_group)
 {
-    // TODO: See about optimising so you don't need all the ifs
 
     if (!org_group || !left_group || *left_group || !right_group || *right_group) {
         return AT_ERR_INVALID_ARGUMENT;
     }
     // 1. Get longest axis
-    char longest_axis = get_longest_axis(org_group);
-
     // 2. Get centre of longest axis
-    float centre;
-    if (longest_axis == 'x') {
-        centre = org_group->aabb.midpoint.x;
-    } else if (longest_axis == 'y') {
-        centre = org_group->aabb.midpoint.y;
-    } else {
-        centre = org_group->aabb.midpoint.z;
-    }
+    AT_Vec3 midpoint = get_longest_axis_mid(org_group);
 
     // 3. Get triangles to left of axis
     // 4. Get triangles to right of axis
@@ -79,33 +76,16 @@ AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriGroup **left_group, AT
     AT_Triangle temp;
     for (uint32_t i = 0; i < org_group->n; i++) {
         AT_Vec3 triangle_mid = org_group->triangles[i].aabb.midpoint;
-        if (longest_axis == 'x') {
-            if (triangle_mid.x <= centre) {
-                if (left < i) {
-                    temp = triangles[left];
-                    triangles[left] = triangles[i];
-                    triangles[i] = temp;
-                }
-                left++;
+        bool is_left = triangle_mid.x <= midpoint.x ||
+                       triangle_mid.y <= midpoint.y ||
+                       triangle_mid.z <= midpoint.z;
+        if (is_left) {
+            if (left < i) {
+                temp = triangles[left];
+                triangles[left] = triangles[i];
+                triangles[i] = temp;
             }
-        } else if (longest_axis == 'y') {
-            if (triangle_mid.y <= centre) {
-                if (left < i) {
-                    temp = triangles[left];
-                    triangles[left] = triangles[i];
-                    triangles[i] = temp;
-                }
-                left++;
-            }
-        } else {
-            if (triangle_mid.z <= centre) {
-                if (left < i) {
-                    temp = triangles[left];
-                    triangles[left] = triangles[i];
-                    triangles[i] = temp;
-                }
-                left++;
-            }
+            left++;
         }
     }
     int left_n = left;
