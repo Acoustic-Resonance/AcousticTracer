@@ -20,6 +20,7 @@ int main()
     AT_MiniTree *mini_tree = NULL;
     if (AT_minitree_create(&mini_tree, ts, triangle_count) != AT_OK) {
         perror("Failed to create mini tree");
+        free(ts);
         return 1;
     }
 

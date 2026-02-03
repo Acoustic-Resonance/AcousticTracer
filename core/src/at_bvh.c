@@ -9,7 +9,6 @@ AT_Result AT_minitree_create(AT_MiniTree **out_tree, AT_Triangle *triangles, uin
     if (!mini_tree) {
         // TODO: Deal with Allocation problems
         // for now will just free triangles but later should try allocate again
-        free(triangles);
         return AT_ERR_ALLOC_ERROR;
     }
 
