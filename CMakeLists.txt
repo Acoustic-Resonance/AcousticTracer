@@ -4,6 +4,12 @@ project(AcousticTracer C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(SAN "Sanitize addresses when ON" OFF)
+if (SAN)
+    message(STATUS "Sanitize address flag enabled")
+    set(CMAKE_C_FLAGS "-fsanitize=address")
+endif()
+
 # ---------------------------------------------------------
 # CLI argument: choose which file in core/dev/ to compile
 # ---------------------------------------------------------
