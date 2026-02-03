@@ -27,6 +27,10 @@ AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, ui
  */
 void AT_trigroup_destroy(AT_TriGroup *trigroup);
 
+AT_Result AT_triangle_groups_create(AT_TriangleGroups **out_tree, int num_ts);
+
+void AT_triangle_groups_destroy(AT_TriangleGroups *mini_tree);
+
 /** \brief Splits triangle group into smaller groups based on the longest axis.
     \relates AT_TriGroup
 
@@ -36,5 +40,5 @@ void AT_trigroup_destroy(AT_TriGroup *trigroup);
 
     \retval void
  */
-AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_MiniTree *groups, uint32_t N);
+AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriangleGroups *groups, uint32_t N);
 #endif // AT_TRIGROUP

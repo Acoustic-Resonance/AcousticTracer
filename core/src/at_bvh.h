@@ -14,7 +14,7 @@ typedef struct {
 typedef struct {
     AT_TriGroup **groups;
     uint32_t n;
-} AT_MiniTree;
+} AT_TriangleGroups;
 
 typedef struct {
     uint32_t mini_tree_size;
