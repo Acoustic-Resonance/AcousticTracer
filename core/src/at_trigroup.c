@@ -59,23 +59,23 @@ AT_Vec3 get_longest_axis_mid(const AT_TriGroup *group)
     return midpoint;
 }
 
-AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriGroup **left_group, AT_TriGroup **right_group)
+AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group, AT_TriGroup **right_group)
 {
-
-    if (!org_group || !left_group || *left_group || !right_group || *right_group) {
+    if (!parent_group || !left_group || *left_group || !right_group || *right_group) {
         return AT_ERR_INVALID_ARGUMENT;
     }
+
     // 1. Get longest axis
     // 2. Get centre of longest axis
-    AT_Vec3 midpoint = get_longest_axis_mid(org_group);
+    AT_Vec3 midpoint = get_longest_axis_mid(parent_group);
 
     // 3. Get triangles to left of axis
     // 4. Get triangles to right of axis
-    AT_Triangle *triangles = org_group->triangles;
+    AT_Triangle *triangles = parent_group->triangles;
     uint32_t left = 0;
     AT_Triangle temp;
-    for (uint32_t i = 0; i < org_group->n; i++) {
-        AT_Vec3 triangle_mid = org_group->triangles[i].aabb.midpoint;
+    for (uint32_t i = 0; i < parent_group->n; i++) {
+        AT_Vec3 triangle_mid = parent_group->triangles[i].aabb.midpoint;
         bool is_left = triangle_mid.x <= midpoint.x ||
                        triangle_mid.y <= midpoint.y ||
                        triangle_mid.z <= midpoint.z;
@@ -89,17 +89,61 @@ AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriGroup **left_group, AT
         }
     }
     int left_n = left;
-    int right_n = (org_group->n - 1) - left;
-    if (AT_trigroup_create(left_group, &triangles[0], left_n) != AT_OK) {
-        perror("Failed to create left sub tree");
+    int right_n = parent_group->n - left;
+    AT_Result res;
+    res = AT_trigroup_create(left_group, &triangles[0], left_n);
+    if (res != AT_OK) {
+        perror("Failed to create left sub group");
+        return res;
     }
-    if (AT_trigroup_create(right_group, &triangles[left_n], right_n != AT_OK)) {
-        perror("Failed to create right sub tree");
+    res = AT_trigroup_create(right_group, &triangles[left_n], right_n);
+    if (res != AT_OK) {
+        perror("Failed to create right sub group");
+        return res;
     }
+
+    return AT_OK;
+}
+
+AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_MiniTree *groups, uint32_t N)
+{
+    if (!org_group || !groups) return AT_ERR_INVALID_ARGUMENT;
 
     // 5. Repeat for sub trees
+    AT_TriGroup *stack[(int)ceil(log(org_group->n))];
+    int stack_top = 0;
+    stack[stack_top] = org_group;
+    stack_top++;
+    AT_TriGroup *left;
+    AT_TriGroup *right;
+    AT_TriGroup *parent_group;
+    while (stack_top > 0) {
+        left = NULL;
+        right = NULL;
+        stack_top--;
+        parent_group = stack[stack_top];
+        AT_Result res = split_group(parent_group, &left, &right);
+        if (res != AT_OK) {
+            perror("Failed to split the tri group");
+            return res;
+        }
+        if (left->n <= N) {
+            groups->groups[groups->n] = left;
+            groups->n++;
+        } else {
+            stack[stack_top] = left;
+            stack_top++;
+        }
+        if (right->n <= N) {
+            groups->groups[groups->n] = right;
+            groups->n++;
+        } else {
+            stack[stack_top] = right;
+            stack_top++;
+        }
 
-    AT_trigroup_destroy(org_group);
+        AT_trigroup_destroy(parent_group);
+    }
 
     return AT_OK;
 }
