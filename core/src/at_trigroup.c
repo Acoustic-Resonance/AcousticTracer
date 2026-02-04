@@ -188,11 +188,8 @@ AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriangleGroups *groups, u
             (right->n == 0 && left->n == parent_group->n)) {
             groups->groups[groups->n] = parent_group;
             groups->n++;
-            if (left->n == 0) {
-                free(left);
-            } else {
-                free(right);
-            }
+            free(left);
+            free(right);
             continue; // Don't destroy parent_group
         }
         if (left->n <= N) {
