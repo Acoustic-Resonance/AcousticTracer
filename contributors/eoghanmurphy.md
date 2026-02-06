@@ -16,3 +16,12 @@
 - Started building the BVH (Bounding Volume Hierarchy) implementation.
   - This is a binary tree used for optimising collision detection from `O(n)`, where `n` is the number of triangles to `O(n log n)`.
   - This involved researching potential BVH algorithms, and weighing pros and cons of each to decide on a suitable implementation.
+
+## Week 4
+
+- Continued my implementation of a BVH binary tree.
+  - I spent last week research potential implementations before deciding on the BONSAI variant.
+  - I then spent this week implementing the second step of the five step algorithm.
+  - This involved subdividing the AABB surrounding the entire scene into smaller and smaller AABB containing groups of triangles, until the group was of a predetermined size N.
+- I refactored the ray-triangle intersection code to first check if it intersects with a group and then relevant triangles, increasing our performance from 20±5 rays/s to 1000±200 rays/s.
+- I further refactored our definition of a vector to allow for easier threading when I later implement that.
