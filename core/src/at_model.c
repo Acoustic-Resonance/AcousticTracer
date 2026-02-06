@@ -142,10 +142,9 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         for (size_t i = 0; i < vertex_count; i++) {
             float v[3];
             cgltf_accessor_read_float(pos_accessor, i, v, 3);
-            vertices[vertex_index + i] = (AT_Vec3){ v[0], v[1], v[2] };
+            vertices[vertex_index + i] = (AT_Vec3){{v[0], v[1], v[2]}};
         }
         vertex_index += vertex_count;
-
 
         // Indices
         cgltf_accessor *idx_accessor = primitive->indices;
@@ -173,7 +172,7 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         for (size_t i = 0; i < norm_accessor->count; i++) {
             float n[3];
             cgltf_accessor_read_float(norm_accessor, i, n, 3);
-            normals[normal_index + i] = (AT_Vec3){ n[0], n[1], n[2]};
+            normals[normal_index + i] = (AT_Vec3){{n[0], n[1], n[2]}};
         }
         normal_index += norm_accessor->count;
     }
