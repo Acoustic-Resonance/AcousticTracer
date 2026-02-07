@@ -1,5 +1,5 @@
-#ifndef AT_BVH
-#define AT_BVH
+#ifndef AT_BVH_H
+#define AT_BVH_H
 
 #include "acoustic/at.h"
 
@@ -22,4 +22,4 @@ typedef struct {
 
 void AT_BVH_sort_triangles(AT_Triangle *triangles, char axis);
 
-#endif // AT_BVH
+#endif // AT_BVH_H

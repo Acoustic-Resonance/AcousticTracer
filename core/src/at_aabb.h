@@ -1,3 +1,6 @@
+#ifndef AT_AABB_H
+#define AT_AABB_H
+
 #include "../src/at_utils.h"
 #include "acoustic/at_math.h"
 #include <float.h>
@@ -34,3 +37,5 @@ static inline AT_AABB AT_AABB_join(AT_AABB a, AT_AABB b)
 
     return out_aabb;
 }
+
+#endif // AT_AABB_H
