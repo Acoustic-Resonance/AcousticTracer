@@ -1,11 +1,10 @@
-#ifndef AT_TRIGROUP
-#define AT_TRIGROUP
+#ifndef AT_TRIGROUP_H
+#define AT_TRIGROUP_H
 
 #include "../src/at_bvh.h"
 #include "acoustic/at.h"
 
 #include <stdint.h>
-
 
 /** \brief AT_TriGroup constructor for a given list of triangles.
     \relates AT_TriGroup
@@ -41,4 +40,5 @@ void AT_triangle_groups_destroy(AT_TriangleGroups *mini_tree);
     \retval void
  */
 AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriangleGroups *groups, uint32_t N);
-#endif // AT_TRIGROUP
+
+#endif // AT_TRIGROUP_H
