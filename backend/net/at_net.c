@@ -6,7 +6,7 @@ AT_Result AT_simulation_to_json(cJSON **out_json, AT_Simulation *simulation)
 {
     if (!out_json || *out_json || !simulation) return AT_ERR_INVALID_ARGUMENT;
 
-    size_t FRAME_NUM_BUFFER_LENGTH = simulation->fps*60*1 + 6;
+    size_t FRAME_NUM_BUFFER_LENGTH = sizeof(uint8_t);
     cJSON *json = cJSON_CreateObject(); 
 
     AT_Voxel* voxels = simulation->voxel_grid;
