@@ -27,7 +27,7 @@ typedef struct {
 void AT_BVH_create(AT_BVH **out_tree);
 void AT_BVH_destroy(AT_BVH *tree);
 
-void AT_BVH_sort_triangles(AT_Triangle *triangles);
+void AT_BVH_sort_triangles(AT_Triangle *triangles, uint32_t num_tri, AT_Triangle **dim_arrs);
 void AT_BVH_partition_lists();
 
 void AT_BVH_get_median_range();
