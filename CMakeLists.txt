@@ -31,12 +31,17 @@ file(GLOB_RECURSE CORE_SOURCES CONFIGURE_DEPENDS
     core/src/*.c
 )
 
+file(GLOB_RECURSE BACKEND_SOURCES CONFIGURE_DEPENDS
+    backend/net/*.c
+)
+
 # ---------------------------------------------------------
 # Build the executable
 # ---------------------------------------------------------
 add_executable(at
     ${CORE_SOURCES}
     ${DEV_SOURCE}
+    ${BACKEND_SOURCES}
 )
 
 # ---------------------------------------------------------
@@ -51,6 +56,10 @@ target_include_directories(at PRIVATE
 # Math library
 # ---------------------------------------------------------
 target_link_libraries(at PRIVATE m)
+
+add_library(cjson STATIC core/external/cJSON.c)
+
+target_link_libraries(at PRIVATE cjson)
 
 # ---------------------------------------------------------
 # Optional raylib inclusion
