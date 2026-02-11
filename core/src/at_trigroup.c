@@ -1,3 +1,4 @@
+#include "../src/at_bvh.h"
 #include "../src/at_trigroup.h"
 #include "../src/at_aabb.h"
 
@@ -114,8 +115,8 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
 
     uint32_t left_n = 0;
     uint32_t right_n = 0;
-    AT_Triangle *triangles;
-    uint32_t left;
+    AT_Triangle *triangles = parent_group->triangles;
+    uint32_t num_tri = parent_group->n;
     int num_axis = 1;
     do {
         // 1. Get longest axis
@@ -124,25 +125,8 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
 
         // 3. Get triangles to left of axis
         // 4. Get triangles to right of axis
-        triangles = parent_group->triangles;
-        left = 0;
-        AT_Triangle temp;
-        for (uint32_t i = 0; i < parent_group->n; i++) {
-            AT_Vec3 triangle_mid = parent_group->triangles[i].aabb.midpoint;
-            bool is_left = (midpoint.x == FLT_MIN || triangle_mid.x <= midpoint.x) &&
-                           (midpoint.y == FLT_MIN || triangle_mid.y <= midpoint.y) &&
-                           (midpoint.z == FLT_MIN || triangle_mid.z <= midpoint.z);
-            if (is_left) {
-                if (left < i) {
-                    temp = triangles[left];
-                    triangles[left] = triangles[i];
-                    triangles[i] = temp;
-                }
-                left++;
-            }
-        }
-        left_n = left;
-        right_n = parent_group->n - left;
+        left_n = AT_BVH_partition_list(triangles, num_tri, midpoint);
+        right_n = num_tri - left_n;
     } while (
         (left_n == parent_group->n || right_n == parent_group->n) &&
         num_axis++ < 3

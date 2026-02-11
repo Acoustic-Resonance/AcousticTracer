@@ -82,3 +82,24 @@ void AT_BVH_sort_triangles(AT_Triangle *triangles, uint32_t num_tri, AT_Triangle
     free(tmp_buf);
     free(res_buf);
 }
+
+uint32_t AT_BVH_partition_list(AT_Triangle *triangles, uint32_t num_tri, AT_Vec3 midpoint)
+{
+    uint32_t left = 0;
+    AT_Triangle temp;
+    for (uint32_t i = 0; i < num_tri; i++) {
+        AT_Vec3 triangle_mid = triangles[i].aabb.midpoint;
+        bool is_left = (midpoint.x == FLT_MIN || triangle_mid.x <= midpoint.x) &&
+                       (midpoint.y == FLT_MIN || triangle_mid.y <= midpoint.y) &&
+                       (midpoint.z == FLT_MIN || triangle_mid.z <= midpoint.z);
+        if (is_left) {
+            if (left < i) {
+                temp = triangles[left];
+                triangles[left] = triangles[i];
+                triangles[i] = temp;
+            }
+            left++;
+        }
+    }
+    return left;
+}
