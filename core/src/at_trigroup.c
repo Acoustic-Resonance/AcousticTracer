@@ -1,6 +1,6 @@
-#include "../src/at_bvh.h"
 #include "../src/at_trigroup.h"
 #include "../src/at_aabb.h"
+#include "../src/at_bvh.h"
 
 AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, uint32_t n)
 {
@@ -67,17 +67,12 @@ void AT_triangle_groups_destroy(AT_TriangleGroups *tri_groups)
 
     \retval AT_Vec3 A minimum vector with the longest axis value set to the midpoint.
  */
-AT_Vec3 get_longest_axis_mid(const AT_TriGroup *group, int num_axis)
+AT_CompareContext get_longest_axis_mid(const AT_TriGroup *group, int nth_longest)
 {
     float delta_x = group->aabb.max.x - group->aabb.min.x;
     float delta_y = group->aabb.max.y - group->aabb.min.y;
     float delta_z = group->aabb.max.z - group->aabb.min.z;
 
-    AT_Vec3 midpoint = (AT_Vec3){
-        .x = FLT_MIN,
-        .y = FLT_MIN,
-        .z = FLT_MIN,
-    };
     int axis_order[3];
     if (delta_x >= delta_y && delta_x >= delta_z) {
         axis_order[0] = 0;
@@ -93,18 +88,19 @@ AT_Vec3 get_longest_axis_mid(const AT_TriGroup *group, int num_axis)
         axis_order[2] = (delta_x > delta_y) ? 0 : 1;
     }
 
-    for (int i = 0; i < num_axis; i++) {
-        int axis = axis_order[i];
-        if (axis == 0) {
-            midpoint.x = (group->aabb.max.x + group->aabb.min.x) / 2;
-        } else if (axis == 1) {
-            midpoint.y = (group->aabb.max.y + group->aabb.min.y) / 2;
-        } else {
-            midpoint.z = (group->aabb.max.z + group->aabb.min.z) / 2;
-        }
-    }
+    int axis = axis_order[nth_longest - 1];
+    float midpoint = (group->aabb.max.arr[axis] + group->aabb.min.arr[axis]) / 2;
 
-    return midpoint;
+    AT_CompareContext ctx = {
+        .threshold = midpoint,
+        .axis = axis
+    };
+    return ctx;
+}
+
+bool compare(AT_Vec3 tri_mid, AT_CompareContext *ctx)
+{
+    return tri_mid.arr[ctx->axis] < ctx->threshold;
 }
 
 AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group, AT_TriGroup **right_group)
@@ -117,19 +113,19 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
     uint32_t right_n = 0;
     AT_Triangle *triangles = parent_group->triangles;
     uint32_t num_tri = parent_group->n;
-    int num_axis = 1;
+    int nth_longest = 1; // The xth longest axis
     do {
         // 1. Get longest axis
         // 2. Get centre of longest axis
-        AT_Vec3 midpoint = get_longest_axis_mid(parent_group, num_axis);
+        AT_CompareContext ctx = get_longest_axis_mid(parent_group, nth_longest);
 
         // 3. Get triangles to left of axis
         // 4. Get triangles to right of axis
-        left_n = AT_BVH_partition_list(triangles, num_tri, midpoint);
+        left_n = AT_BVH_partition_list(triangles, num_tri, compare, &ctx);
         right_n = num_tri - left_n;
     } while (
         (left_n == parent_group->n || right_n == parent_group->n) &&
-        num_axis++ < 3
+        nth_longest++ < 3
     );
     AT_Result res;
     res = AT_trigroup_create(left_group, &triangles[0], left_n);
@@ -191,6 +187,7 @@ AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriangleGroups *groups, u
             stack_top++;
         }
 
+        // TODO: Fix incorrect memory freeing for org_group
         AT_trigroup_destroy(parent_group);
     }
 
