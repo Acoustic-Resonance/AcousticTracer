@@ -94,7 +94,7 @@ AT_SplitContext get_longest_axis_mid(const AT_TriGroup *group, int nth_longest)
     }
 
     int axis = axis_order[nth_longest - 1];
-    float midpoint = (group->aabb.max.arr[axis] + group->aabb.min.arr[axis]) / 2;
+    float midpoint = group->aabb.midpoint.arr[axis];
 
     AT_SplitContext ctx = {
         .threshold = midpoint,
@@ -147,12 +147,12 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
         AT_BVH_partition_list(dim_arrs[i], num_tri, compare, &ctx);
     }
     AT_Result res;
-    res = AT_trigroup_create(left_group, triangles, parent_group->dim_arrs, 0, left_n);
+    res = AT_trigroup_create(left_group, triangles, dim_arrs, 0, left_n);
     if (res != AT_OK) {
         perror("Failed to create left sub group");
         return res;
     }
-    res = AT_trigroup_create(right_group, triangles, parent_group->dim_arrs, left_n, right_n);
+    res = AT_trigroup_create(right_group, triangles, dim_arrs, left_n, right_n);
     if (res != AT_OK) {
         perror("Failed to create right sub group");
         return res;
@@ -183,8 +183,8 @@ AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriangleGroups *groups, u
             perror("Failed to split the tri group");
             return res;
         }
-        if ((left->n == 0 && right->n == parent_group->n) ||
-            (right->n == 0 && left->n == parent_group->n)) {
+        if ((right->n == parent_group->n) ||
+            (left->n == parent_group->n)) {
             groups->groups[groups->n] = parent_group;
             groups->n++;
             free(left);
