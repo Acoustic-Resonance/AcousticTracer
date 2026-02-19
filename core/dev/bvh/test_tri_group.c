@@ -51,8 +51,7 @@ int main(int argc, char *_[])
         }
     } else {
         uint32_t triangle_count = 7000000;
-        int num_groups = triangle_count / 100;
-        bvh_config.mini_tree_size = triangle_count / num_groups;
+        bvh_config.mini_tree_size = 100;
         ts = (AT_Triangle *)malloc(sizeof(AT_Triangle) * triangle_count);
         for (uint32_t i = 0; i < triangle_count; i++) {
             AT_Triangle *triangle = &ts[i];
