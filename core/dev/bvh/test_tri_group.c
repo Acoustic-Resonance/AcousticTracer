@@ -28,7 +28,7 @@ int main(int argc, char *_[])
         }
 
         for (uint32_t i = 0; i < model->vertex_count; i++) {
-            model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.5);
+            model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.01);
         }
 
         if (AT_model_get_triangles(&ts, model) != AT_OK) {
@@ -37,7 +37,14 @@ int main(int argc, char *_[])
         }
         bvh_config.mini_tree_size = (model->index_count / 3) / 16;
 
-        if (AT_trigroup_create(&tri_group, ts, model->index_count / 3) != AT_OK) {
+        int t_count = model->index_count / 3;
+        AT_Triangle **dim_arrs = malloc(sizeof(*dim_arrs) * 3);
+        dim_arrs[0] = malloc(sizeof(AT_Triangle) * t_count);
+        dim_arrs[1] = malloc(sizeof(AT_Triangle) * t_count);
+        dim_arrs[2] = malloc(sizeof(AT_Triangle) * t_count);
+        AT_BVH_sort_triangles(ts, t_count, dim_arrs);
+
+        if (AT_trigroup_create(&tri_group, ts, dim_arrs, 0, model->index_count / 3) != AT_OK) {
             perror("Failed to create the triangle group");
             free(ts);
             return 1;
@@ -54,7 +61,14 @@ int main(int argc, char *_[])
             triangle->v3 = AT_vec3(0.2f, 0.6f, 0.09f * i);
             triangle->aabb = AT_AABB_from_triangle(triangle);
         }
-        if (AT_trigroup_create(&tri_group, ts, triangle_count) != AT_OK) {
+        int t_count = triangle_count;
+        AT_Triangle **dim_arrs = malloc(sizeof(*dim_arrs) * 3);
+        dim_arrs[0] = malloc(sizeof(AT_Triangle) * t_count);
+        dim_arrs[1] = malloc(sizeof(AT_Triangle) * t_count);
+        dim_arrs[2] = malloc(sizeof(AT_Triangle) * t_count);
+        AT_BVH_sort_triangles(ts, t_count, dim_arrs);
+
+        if (AT_trigroup_create(&tri_group, ts, dim_arrs, 0, triangle_count) != AT_OK) {
             perror("Failed to create the triangle group");
             free(ts);
             return 1;
