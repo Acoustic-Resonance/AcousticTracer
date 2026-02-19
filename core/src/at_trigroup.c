@@ -19,9 +19,16 @@ AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, AT
         tri_group->dim_arrs[i] = &dim_arrs[i][start];
     }
     tri_group->n = n;
+    // TODO: properly fix this shit bro
+    if (n == 0) {
+        *out_group = tri_group;
+        return AT_OK;
+    }
+    
     tri_group->aabb = AT_AABB_init();
-    for (uint32_t i = 0; i < n; i++) {
-        AT_AABB_grow(&tri_group->aabb, tri_group->triangles[i].aabb.midpoint);
+    for (int i = 0; i < 3; i++) {
+        AT_AABB_grow(&tri_group->aabb, tri_group->dim_arrs[i][0].aabb.midpoint);
+        AT_AABB_grow(&tri_group->aabb, tri_group->dim_arrs[i][n - 1].aabb.midpoint);
     }
 
     *out_group = tri_group;
