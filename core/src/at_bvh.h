@@ -29,15 +29,16 @@ typedef struct {
 typedef struct {
     float threshold;
     int axis;
-} AT_CompareContext;
+    uint32_t left_n;
+} AT_SplitContext;
 
-typedef bool (*AT_CompareFunc)(AT_Vec3, AT_CompareContext *);
+typedef bool (*AT_CompareFunc)(AT_Vec3, AT_SplitContext *);
 
 void AT_BVH_create(AT_BVH **out_tree);
 void AT_BVH_destroy(AT_BVH *tree);
 
 void AT_BVH_sort_triangles(AT_Triangle *triangles, uint32_t num_tri, AT_Triangle **dim_arrs);
-uint32_t AT_BVH_partition_list(AT_Triangle *triangles, uint32_t num_tri, AT_CompareFunc compare, AT_CompareContext *ctx);
+void AT_BVH_partition_list(AT_Triangle *triangles, uint32_t num_tri, AT_CompareFunc compare, AT_SplitContext *ctx);
 
 void AT_BVH_get_median_range();
 float AT_BVH_get_SAH(AT_BVH *tree);

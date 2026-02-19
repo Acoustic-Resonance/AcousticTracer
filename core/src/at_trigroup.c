@@ -72,7 +72,7 @@ void AT_triangle_groups_destroy(AT_TriangleGroups *tri_groups)
 
     \retval AT_Vec3 A minimum vector with the longest axis value set to the midpoint.
  */
-AT_CompareContext get_longest_axis_mid(const AT_TriGroup *group, int nth_longest)
+AT_SplitContext get_longest_axis_mid(const AT_TriGroup *group, int nth_longest)
 {
     float delta_x = group->aabb.max.x - group->aabb.min.x;
     float delta_y = group->aabb.max.y - group->aabb.min.y;
@@ -96,14 +96,14 @@ AT_CompareContext get_longest_axis_mid(const AT_TriGroup *group, int nth_longest
     int axis = axis_order[nth_longest - 1];
     float midpoint = (group->aabb.max.arr[axis] + group->aabb.min.arr[axis]) / 2;
 
-    AT_CompareContext ctx = {
+    AT_SplitContext ctx = {
         .threshold = midpoint,
         .axis = axis
     };
     return ctx;
 }
 
-bool compare(AT_Vec3 tri_mid, AT_CompareContext *ctx)
+bool compare(AT_Vec3 tri_mid, AT_SplitContext *ctx)
 {
     return tri_mid.arr[ctx->axis] < ctx->threshold;
 }
@@ -120,22 +120,32 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
     AT_Triangle **dim_arrs = parent_group->dim_arrs;
     uint32_t num_tri = parent_group->n;
     int nth_longest = 1; // The xth longest axis
+    AT_SplitContext ctx;
     do {
         // 1. Get longest axis
         // 2. Get centre of longest axis
-        AT_CompareContext ctx = get_longest_axis_mid(parent_group, nth_longest);
-
+        ctx = get_longest_axis_mid(parent_group, nth_longest);
+        
         // 3. Get triangles to left of axis
         // 4. Get triangles to right of axis
-        left_n = AT_BVH_partition_list(triangles, num_tri, compare, &ctx);
-        AT_BVH_partition_list(dim_arrs[0], num_tri, compare, &ctx);
-        AT_BVH_partition_list(dim_arrs[1], num_tri, compare, &ctx);
-        AT_BVH_partition_list(dim_arrs[2], num_tri, compare, &ctx);
+        left_n = 0;
+        for (uint32_t i = 0; i < num_tri; i++) {
+            if (compare(triangles[i].aabb.midpoint, &ctx)) {
+                left_n++;
+            }
+        }
+
+        right_n = num_tri - left_n;
         right_n = num_tri - left_n;
     } while (
         (left_n == parent_group->n || right_n == parent_group->n) &&
         nth_longest++ < 3
     );
+    ctx.left_n = left_n;
+    AT_BVH_partition_list(triangles, num_tri, compare, &ctx);
+    for (int i = 0; i < 3; i++) {
+        AT_BVH_partition_list(dim_arrs[i], num_tri, compare, &ctx);
+    }
     AT_Result res;
     res = AT_trigroup_create(left_group, triangles, parent_group->dim_arrs, 0, left_n);
     if (res != AT_OK) {

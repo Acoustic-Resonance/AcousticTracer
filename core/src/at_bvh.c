@@ -81,16 +81,9 @@ void AT_BVH_sort_triangles(AT_Triangle *triangles, uint32_t num_tri, AT_Triangle
     free(tmp_buf);
 }
 
-uint32_t AT_BVH_partition_list(AT_Triangle *triangles, uint32_t num_tri, AT_CompareFunc compare, AT_CompareContext *ctx)
+void AT_BVH_partition_list(AT_Triangle *triangles, uint32_t num_tri, AT_CompareFunc compare, AT_SplitContext *ctx)
 {
-    uint32_t left_n = 0;
-    for (uint32_t i = 0; i < num_tri; i++) {
-        if (compare(triangles[i].aabb.midpoint, ctx)) {
-            left_n++;
-        }
-    }
-
-    uint32_t left = 0, right = left_n;
+    uint32_t left = 0, right = ctx->left_n;
     AT_Triangle *tmp_buf = malloc(sizeof(*tmp_buf) * num_tri);
     for (uint32_t i = 0; i < num_tri; i++) {
         AT_Vec3 triangle_mid = triangles[i].aabb.midpoint;
