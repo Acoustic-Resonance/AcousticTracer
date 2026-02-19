@@ -2,7 +2,7 @@
 #include "../src/at_aabb.h"
 #include "../src/at_bvh.h"
 
-AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, uint32_t n)
+AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, AT_Triangle **dim_arrs, uint32_t start, uint32_t n)
 {
     if (!out_group || *out_group || !triangles) return AT_ERR_INVALID_ARGUMENT;
 
@@ -13,7 +13,11 @@ AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, ui
         return AT_ERR_ALLOC_ERROR;
     }
 
-    tri_group->triangles = triangles;
+    tri_group->triangles = &triangles[start];
+    tri_group->dim_arrs = malloc(sizeof(*dim_arrs) * 3);
+    for (int i = 0; i < 3; i++) {
+        tri_group->dim_arrs[i] = &dim_arrs[i][start];
+    }
     tri_group->n = n;
     tri_group->aabb = AT_AABB_init();
     for (uint32_t i = 0; i < n; i++) {
@@ -28,6 +32,7 @@ void AT_trigroup_destroy(AT_TriGroup *tri_group)
 {
     if (!tri_group) return;
 
+    free(tri_group->dim_arrs);
     free(tri_group);
 }
 
@@ -112,6 +117,7 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
     uint32_t left_n = 0;
     uint32_t right_n = 0;
     AT_Triangle *triangles = parent_group->triangles;
+    AT_Triangle **dim_arrs = parent_group->dim_arrs;
     uint32_t num_tri = parent_group->n;
     int nth_longest = 1; // The xth longest axis
     do {
@@ -122,18 +128,21 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
         // 3. Get triangles to left of axis
         // 4. Get triangles to right of axis
         left_n = AT_BVH_partition_list(triangles, num_tri, compare, &ctx);
+        AT_BVH_partition_list(dim_arrs[0], num_tri, compare, &ctx);
+        AT_BVH_partition_list(dim_arrs[1], num_tri, compare, &ctx);
+        AT_BVH_partition_list(dim_arrs[2], num_tri, compare, &ctx);
         right_n = num_tri - left_n;
     } while (
         (left_n == parent_group->n || right_n == parent_group->n) &&
         nth_longest++ < 3
     );
     AT_Result res;
-    res = AT_trigroup_create(left_group, &triangles[0], left_n);
+    res = AT_trigroup_create(left_group, triangles, parent_group->dim_arrs, 0, left_n);
     if (res != AT_OK) {
         perror("Failed to create left sub group");
         return res;
     }
-    res = AT_trigroup_create(right_group, &triangles[left_n], right_n);
+    res = AT_trigroup_create(right_group, triangles, parent_group->dim_arrs, left_n, right_n);
     if (res != AT_OK) {
         perror("Failed to create right sub group");
         return res;

@@ -15,7 +15,7 @@
 
     \retval AT_Result Saves the created triangle group at the location of the pointer, returning a result enum value.
  */
-AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, uint32_t n);
+AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, AT_Triangle **dim_arrs, uint32_t start, uint32_t n);
 
 /** \brief Destroys an allocated AT_TriGroup.
     \relates AT_TriGroup

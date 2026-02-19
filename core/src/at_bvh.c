@@ -63,12 +63,11 @@ void count_sort(AT_Triangle *in_buf, int cur_byte, uint32_t num_tri, AT_Triangle
 
 void AT_BVH_sort_triangles(AT_Triangle *triangles, uint32_t num_tri, AT_Triangle **dim_arrs)
 {
-    AT_Triangle *tmp_buf = malloc(sizeof(*tmp_buf) * num_tri);
+    AT_Triangle *tmp_buf = triangles;
     AT_Triangle *res_buf = malloc(sizeof(*res_buf) * num_tri);
     AT_Triangle *tmp;
     for (int dim = 0; dim < 3; dim++) {
-        count_sort(triangles, 0, num_tri, tmp_buf, dim);
-        for (int i = 1; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
             count_sort(tmp_buf, i, num_tri, res_buf, dim);
             if (i < 3) {
                 tmp = tmp_buf;
@@ -80,24 +79,31 @@ void AT_BVH_sort_triangles(AT_Triangle *triangles, uint32_t num_tri, AT_Triangle
     }
 
     free(tmp_buf);
-    free(res_buf);
 }
 
 uint32_t AT_BVH_partition_list(AT_Triangle *triangles, uint32_t num_tri, AT_CompareFunc compare, AT_CompareContext *ctx)
 {
-    uint32_t left = 0;
-    AT_Triangle temp;
+    uint32_t left_n = 0;
+    for (uint32_t i = 0; i < num_tri; i++) {
+        if (compare(triangles[i].aabb.midpoint, ctx)) {
+            left_n++;
+        }
+    }
+
+    uint32_t left = 0, right = left_n;
+    AT_Triangle *tmp_buf = malloc(sizeof(*tmp_buf) * num_tri);
     for (uint32_t i = 0; i < num_tri; i++) {
         AT_Vec3 triangle_mid = triangles[i].aabb.midpoint;
         bool is_left = compare(triangle_mid, ctx);
         if (is_left) {
-            if (left < i) {
-                temp = triangles[left];
-                triangles[left] = triangles[i];
-                triangles[i] = temp;
-            }
-            left++;
+            tmp_buf[left++] = triangles[i];
+        } else {
+            tmp_buf[right++] = triangles[i];
         }
     }
-    return left;
+
+    memcpy(triangles, tmp_buf, sizeof(*tmp_buf) * num_tri);
+    free(tmp_buf);
+
+    return left_n;
 }
