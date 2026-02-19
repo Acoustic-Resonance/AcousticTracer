@@ -21,7 +21,7 @@ AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, AT
     tri_group->n = n;
     tri_group->aabb = AT_AABB_init();
     for (uint32_t i = 0; i < n; i++) {
-        AT_AABB_grow(&tri_group->aabb, triangles[i].aabb.midpoint);
+        AT_AABB_grow(&tri_group->aabb, tri_group->triangles[i].aabb.midpoint);
     }
 
     *out_group = tri_group;
