@@ -1,4 +1,5 @@
 #include "../src/at_bvh.h"
+#include "../src/at_utils.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -97,6 +98,43 @@ void AT_BVH_partition_list(AT_Triangle *triangles, uint32_t num_tri, AT_CompareF
 
     memcpy(triangles, tmp_buf, sizeof(*tmp_buf) * num_tri);
     free(tmp_buf);
+}
 
-    return left_n;
+AT_Medians AT_BVH_get_median_range(AT_Triangle *triangles, uint32_t num_tri, AT_SplitContext *ctx)
+{
+    // Object split
+    AT_Medians median = {
+        .object = AT_max(0, (num_tri / 2) - 1),
+        .spatial = UINT32_MAX,
+    };
+
+    // Spatial split
+    int axis = ctx->axis;
+    float threshold = ctx->threshold;
+    int start, end;
+    float prev = fabsf(threshold - triangles[median.object].aabb.midpoint.arr[axis]);
+    // Start in middle
+    // if threshold is larger then go right, else go left
+    if (threshold >= triangles[median.object].aabb.midpoint.arr[axis]) {
+        start = median.object + 1;
+        end = num_tri;
+        median.spatial = num_tri - 1;
+    } else {
+        start = -(median.object - 1);
+        end = -(-1);
+        median.spatial = 0;
+    }
+    float dist;
+    for (int i = start; i < end; i++) {
+        dist = fabsf(threshold - triangles[abs(i)].aabb.midpoint.arr[axis]);
+        // keep going until distance is larger
+        if (dist < prev) {
+            prev = dist;
+        } else {
+            median.spatial = abs(i - 1);
+            break;
+        }
+    }
+
+    return median;
 }
