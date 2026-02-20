@@ -12,6 +12,8 @@
 #define SCREEN_WIDTH 1700
 #define SCREEN_HEIGHT 1000
 
+#define SAMPLE_SIZE 300
+
 int main(int argc, char *_[])
 {
     AT_TriGroup *tri_group = NULL;
@@ -28,14 +30,15 @@ int main(int argc, char *_[])
         }
 
         for (uint32_t i = 0; i < model->vertex_count; i++) {
-            model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.01);
+            model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.05);
         }
 
         if (AT_model_get_triangles(&ts, model) != AT_OK) {
             perror("Error getting triangles from the given model");
             return 1;
         }
-        bvh_config.mini_tree_size = (model->index_count / 3) / 16;
+        // bvh_config.mini_tree_size = (model->index_count / 3) / 16;
+        bvh_config.mini_tree_size = 100;
 
         int t_count = model->index_count / 3;
         AT_Triangle **dim_arrs = malloc(sizeof(*dim_arrs) * 3);
@@ -88,6 +91,11 @@ int main(int argc, char *_[])
 
     if (argc > 2) {
         Color colors[16] = {RED, BLUE, GREEN, PURPLE, PINK, LIME, BROWN, MAROON, MAGENTA, ORANGE, GOLD, YELLOW, DARKGREEN, SKYBLUE, DARKBLUE, VIOLET};
+        Color cols[4] = {BLACK, LIGHTGRAY, DARKGRAY, WHITE};
+        int idx[SAMPLE_SIZE];
+        for (int i = 0; i < SAMPLE_SIZE; i++) {
+            idx[i] = rand() % (groups->n + 1);
+        }
 
         AT_AABB aabb = {};
         AT_model_to_AABB(&aabb, model);
@@ -100,59 +108,110 @@ int main(int argc, char *_[])
         rlDisableBackfaceCulling();
         rlSetLineWidth(1.0f);
 
+        uint32_t k = 0, index = idx[k];
         while (!WindowShouldClose()) {
             UpdateCamera(&cam, CAMERA_FREE);
+            if (IsKeyPressed(KEY_T)) {
+                k = (k + 1) % SAMPLE_SIZE;
+                index = idx[k];
+            }
+            if (IsKeyPressed(KEY_R)) {
+                // printf("Decrease: %d\n", -1 % 3);
+                if (k == 0) {
+                    k = SAMPLE_SIZE;
+                }
+                k = (k - 1) % SAMPLE_SIZE;
+                index = idx[k];
+            }
+            if (IsKeyPressed(KEY_Y)) {
+                index = (index + 1) % groups->n;
+            }
+            if (IsKeyPressed(KEY_U)) {
+                if (index == 0) {
+                    index = groups->n;
+                }
+                index = (index - 1) % groups->n;
+            }
+            if (IsKeyPressed(KEY_E)) {
+                AT_Vec3 midpoint = groups->groups[index]->triangles[0].aabb.midpoint;
+                cam.target = (Vector3){
+                    .x = midpoint.x,
+                    .y = midpoint.y,
+                    .z = midpoint.z,
+                };
+            }
+            if (IsKeyPressed(KEY_F)) {
+                AT_Vec3 midpoint = groups->groups[index]->triangles[0].aabb.midpoint;
+                cam.target = (Vector3){
+                    .x = midpoint.x,
+                    .y = midpoint.y,
+                    .z = midpoint.z,
+                };
+                cam.position = (Vector3){
+                    .x = midpoint.x - 1,
+                    .y = midpoint.y - 1,
+                    .z = midpoint.z - 1,
+                };
+            }
 
             BeginDrawing();
             {
-                ClearBackground(WHITE);
+                ClearBackground(RED);
                 BeginMode3D(cam);
                 {
-                    for (uint32_t i = 0; i < groups->n; i++) {
-                        // if (groups->groups[i]->n < 40000) {
-                        //     continue;
+                    // for (uint32_t i = 0; i < groups->n; i++) {
+                    // // if (groups->groups[i]->n < 40000) {
+                    // //     continue;
+                    // // }
+                    // Color color = colors[i % 16];
+                    // AT_TriGroup *group = groups->groups[i];
+                    // if (groups->groups[i]->n > 100) {
+                    // i = (i + 1) % groups->n;
+                    // continue;
+                    // }
+                    // // AT_AABB aabb = group->aabb;
+                    // // AT_Vec3 midpoint = aabb.midpoint;
+                    // // DrawBoundingBox(
+                    // //     (BoundingBox){
+                    // //         (Vector3){aabb.min.x, aabb.min.y, aabb.min.z},
+                    // //         (Vector3){aabb.max.x, aabb.max.y, aabb.max.z}
+                    // //     },
+                    // //     color
+                    // // );
+                    // // DrawSphere(
+                    // //     (Vector3){
+                    // //         midpoint.x, midpoint.y, midpoint.z
+                    // //     },
+                    // //     0.3f,
+                    // //     color
+                    // // );
+                    for (uint32_t j = 0; j < groups->groups[index]->n; j++) {
+                        AT_Triangle triangle = groups->groups[index]->triangles[j];
+                        // AT_Vec3 triangle_mid = triangle.aabb.midpoint;
+                        // bool is_left = triangle_mid.x <= midpoint.x ||
+                        //                triangle_mid.y <= midpoint.y ||
+                        //                triangle_mid.z <= midpoint.z;
+                        // if (!is_left) {
+                        //     color = RED;
+                        // } else {
+                        //     color = BLUE;
                         // }
-                        Color color = colors[i % 16];
-                        AT_TriGroup *group = groups->groups[i];
-                        // AT_AABB aabb = group->aabb;
-                        // AT_Vec3 midpoint = aabb.midpoint;
-                        // DrawBoundingBox(
-                        //     (BoundingBox){
-                        //         (Vector3){aabb.min.x, aabb.min.y, aabb.min.z},
-                        //         (Vector3){aabb.max.x, aabb.max.y, aabb.max.z}
-                        //     },
-                        //     color
-                        // );
-                        // DrawSphere(
-                        //     (Vector3){
-                        //         midpoint.x, midpoint.y, midpoint.z
-                        //     },
-                        //     0.3f,
-                        //     color
-                        // );
-                        for (uint32_t j = 0; j < groups->groups[i]->n; j++) {
-                            AT_Triangle triangle = group->triangles[j];
-                            // AT_Vec3 triangle_mid = triangle.aabb.midpoint;
-                            // bool is_left = triangle_mid.x <= midpoint.x ||
-                            //                triangle_mid.y <= midpoint.y ||
-                            //                triangle_mid.z <= midpoint.z;
-                            // if (!is_left) {
-                            //     color = RED;
-                            // } else {
-                            //     color = BLUE;
-                            // }
-                            color.a = 100;
-                            DrawTriangle3D(
-                                (Vector3){triangle.v1.x, triangle.v1.y, triangle.v1.z},
-                                (Vector3){triangle.v2.x, triangle.v2.y, triangle.v2.z},
-                                (Vector3){triangle.v3.x, triangle.v3.y, triangle.v3.z},
-                                color
-                            );
-                        }
+                        Color color = cols[j % 4];
+                        // color.a = 100;
+                        DrawTriangle3D(
+                            (Vector3){triangle.v1.x, triangle.v1.y, triangle.v1.z},
+                            (Vector3){triangle.v2.x, triangle.v2.y, triangle.v2.z},
+                            (Vector3){triangle.v3.x, triangle.v3.y, triangle.v3.z},
+                            color
+                        );
                     }
+                    // }
                 }
                 EndMode3D();
                 DrawFPS(10, 10);
+                char txt[50];
+                sprintf(txt, "Group %d has %d triangles", index, groups->groups[index]->n);
+                DrawText(txt, 10, 50, 18, GREEN);
             }
             EndDrawing();
         }
