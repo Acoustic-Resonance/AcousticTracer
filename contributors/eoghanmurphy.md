@@ -31,3 +31,11 @@
 - Fixed issue with models causing rays to clip out of bounds.
 - Implemented a variant of Radix sort for sorting negative and positive floats by treating them as positive integers.
 - Wrote function declarations for BVH construction helpers.
+
+## Week 6
+
+- Continued with the BVH implementation.
+- Implemented surface area for AABBs which will be later used to optimise the scene's BVH.
+- Implemented a variation of Radix sort for sorting an array of mixed negative and positive floats.
+- Implemented a stable partition algorithm to reduce the need for continuously re-sorting the array after splits.
+- Implemented an algorithm for finding the optimal place to split a node so that it's children are balanced.
