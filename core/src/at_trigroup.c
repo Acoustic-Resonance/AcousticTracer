@@ -24,7 +24,7 @@ AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, AT
         *out_group = tri_group;
         return AT_OK;
     }
-    
+
     tri_group->aabb = AT_AABB_init();
     for (int i = 0; i < 3; i++) {
         AT_AABB_grow(&tri_group->aabb, tri_group->dim_arrs[i][0].aabb.midpoint);
@@ -101,7 +101,8 @@ AT_SplitContext get_longest_axis_mid(const AT_TriGroup *group, int nth_longest)
     }
 
     int axis = axis_order[nth_longest - 1];
-    float midpoint = group->aabb.midpoint.arr[axis];
+    // float midpoint = group->aabb.midpoint.arr[axis];
+    float midpoint = group->triangles[group->n / 2].aabb.midpoint.arr[axis];
 
     AT_SplitContext ctx = {
         .threshold = midpoint,
