@@ -9,13 +9,13 @@
 typedef struct {
     AT_Triangle *triangles;
     AT_Triangle **dim_arrs;
-    uint32_t n;
+    uint32_t num_tri;
     AT_AABB aabb;
 } AT_TriGroup;
 
 typedef struct {
     AT_TriGroup **groups;
-    uint32_t n;
+    uint32_t num_groups;
 } AT_TriangleGroups;
 
 typedef struct {

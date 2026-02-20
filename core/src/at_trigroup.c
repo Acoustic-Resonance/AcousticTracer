@@ -18,7 +18,7 @@ AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, AT
     for (int i = 0; i < 3; i++) {
         tri_group->dim_arrs[i] = &dim_arrs[i][start];
     }
-    tri_group->n = n;
+    tri_group->num_tri = n;
     // TODO: properly fix this shit bro
     if (n == 0) {
         *out_group = tri_group;
@@ -57,7 +57,7 @@ AT_Result AT_triangle_groups_create(AT_TriangleGroups **out_group, int num_ts)
         return AT_ERR_ALLOC_ERROR;
     }
     groups->groups = groups_arr;
-    groups->n = 0;
+    groups->num_groups = 0;
 
     *out_group = groups;
     return AT_OK;
@@ -65,7 +65,7 @@ AT_Result AT_triangle_groups_create(AT_TriangleGroups **out_group, int num_ts)
 
 void AT_triangle_groups_destroy(AT_TriangleGroups *tri_groups)
 {
-    for (uint32_t i = 0; i < tri_groups->n; i++) {
+    for (uint32_t i = 0; i < tri_groups->num_groups; i++) {
         if (!tri_groups->groups[i]) break;
         AT_trigroup_destroy(tri_groups->groups[i]);
     }
@@ -102,7 +102,7 @@ AT_SplitContext get_longest_axis_mid(const AT_TriGroup *group, int nth_longest)
 
     int axis = axis_order[nth_longest - 1];
     // float midpoint = group->aabb.midpoint.arr[axis];
-    float midpoint = group->triangles[group->n / 2].aabb.midpoint.arr[axis];
+    float midpoint = group->triangles[group->num_tri / 2].aabb.midpoint.arr[axis];
 
     AT_SplitContext ctx = {
         .threshold = midpoint,
@@ -121,7 +121,7 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
     uint32_t right_n = 0;
     AT_Triangle *triangles = parent_group->triangles;
     AT_Triangle **dim_arrs = parent_group->dim_arrs;
-    uint32_t num_tri = parent_group->n;
+    uint32_t num_tri = parent_group->num_tri;
     int nth_longest = 1; // The xth longest axis
     AT_SplitContext ctx;
     do {
@@ -141,7 +141,7 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
         right_n = num_tri - left_n;
         right_n = num_tri - left_n;
     } while (
-        (left_n == parent_group->n || right_n == parent_group->n) &&
+        (left_n == parent_group->num_tri || right_n == parent_group->num_tri) &&
         nth_longest++ < 3
     );
     ctx.left_n = left_n;
@@ -169,7 +169,7 @@ AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriangleGroups *groups, u
     if (!org_group || !groups) return AT_ERR_INVALID_ARGUMENT;
 
     // 5. Repeat for sub trees
-    AT_TriGroup *stack[(int)ceil(log2(org_group->n))];
+    AT_TriGroup *stack[(int)ceil(log2(org_group->num_tri))];
     int stack_top = 0;
     stack[stack_top] = org_group;
     stack_top++;
@@ -186,24 +186,24 @@ AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriangleGroups *groups, u
             perror("Failed to split the tri group");
             return res;
         }
-        if ((right->n == parent_group->n) ||
-            (left->n == parent_group->n)) {
-            groups->groups[groups->n] = parent_group;
-            groups->n++;
+        if ((right->num_tri == parent_group->num_tri) ||
+            (left->num_tri == parent_group->num_tri)) {
+            groups->groups[groups->num_groups] = parent_group;
+            groups->num_groups++;
             free(left);
             free(right);
             continue; // Don't destroy parent_group
         }
-        if (left->n <= N) {
-            groups->groups[groups->n] = left;
-            groups->n++;
+        if (left->num_tri <= N) {
+            groups->groups[groups->num_groups] = left;
+            groups->num_groups++;
         } else {
             stack[stack_top] = left;
             stack_top++;
         }
-        if (right->n <= N) {
-            groups->groups[groups->n] = right;
-            groups->n++;
+        if (right->num_tri <= N) {
+            groups->groups[groups->num_groups] = right;
+            groups->num_groups++;
         } else {
             stack[stack_top] = right;
             stack_top++;

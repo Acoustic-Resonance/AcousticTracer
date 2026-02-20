@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     }
 
     AT_TriangleGroups *groups = NULL;
-    if (AT_triangle_groups_create(&groups, tri_group->n) != AT_OK) {
+    if (AT_triangle_groups_create(&groups, tri_group->num_tri) != AT_OK) {
         perror("Failed to create the triangle groups holder");
         free(ts);
         return 1;
@@ -82,13 +82,13 @@ int main(int argc, char *argv[])
     AT_TriGroup *groupX = groups->groups[strtol(argv[1], NULL, 10)];
     AT_TriGroup *groupY = groups->groups[strtol(argv[2], NULL, 10)];
     AT_TriGroup *groupZ = groups->groups[strtol(argv[3], NULL, 10)];
-    for (uint32_t i = 0; i < groupX->n; i++) {
+    for (uint32_t i = 0; i < groupX->num_tri; i++) {
         fprintf(x_file, "%f\n", groupX->dim_arrs[0][i].aabb.midpoint.x);
     }
-    for (uint32_t i = 0; i < groupY->n; i++) {
+    for (uint32_t i = 0; i < groupY->num_tri; i++) {
         fprintf(y_file, "%f\n", groupY->dim_arrs[1][i].aabb.midpoint.y);
     }
-    for (uint32_t i = 0; i < groupZ->n; i++) {
+    for (uint32_t i = 0; i < groupZ->num_tri; i++) {
         fprintf(z_file, "%f\n", groupZ->dim_arrs[2][i].aabb.midpoint.z);
     }
     fclose(x_file);

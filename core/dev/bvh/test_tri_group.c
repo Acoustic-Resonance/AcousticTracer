@@ -78,7 +78,7 @@ int main(int argc, char *_[])
     }
 
     AT_TriangleGroups *groups = NULL;
-    if (AT_triangle_groups_create(&groups, tri_group->n) != AT_OK) {
+    if (AT_triangle_groups_create(&groups, tri_group->num_tri) != AT_OK) {
         perror("Failed to create the triangle groups holder");
         free(ts);
         return 1;
@@ -94,7 +94,7 @@ int main(int argc, char *_[])
         Color cols[4] = {BLACK, LIGHTGRAY, DARKGRAY, WHITE};
         int idx[SAMPLE_SIZE];
         for (int i = 0; i < SAMPLE_SIZE; i++) {
-            idx[i] = rand() % (groups->n + 1);
+            idx[i] = rand() % (groups->num_groups + 1);
         }
 
         // AT_AABB aabb = {};
@@ -124,13 +124,13 @@ int main(int argc, char *_[])
                 index = idx[k];
             }
             if (IsKeyPressed(KEY_Y)) {
-                index = (index + 1) % groups->n;
+                index = (index + 1) % groups->num_groups;
             }
             if (IsKeyPressed(KEY_U)) {
                 if (index == 0) {
-                    index = groups->n;
+                    index = groups->num_groups;
                 }
-                index = (index - 1) % groups->n;
+                index = (index - 1) % groups->num_groups;
             }
             if (IsKeyPressed(KEY_E)) {
                 AT_Vec3 midpoint = groups->groups[index]->aabb.midpoint;
@@ -154,7 +154,7 @@ int main(int argc, char *_[])
                 };
             }
             if (IsKeyPressed(KEY_Q)) {
-                AT_Vec3 tri_mid = groups->groups[index]->triangles[++i % groups->groups[index]->n].aabb.midpoint;
+                AT_Vec3 tri_mid = groups->groups[index]->triangles[++i % groups->groups[index]->num_tri].aabb.midpoint;
                 cam.position = (Vector3){
                     .x = tri_mid.x,
                     .y = tri_mid.y,
@@ -193,7 +193,7 @@ int main(int argc, char *_[])
                     // //     0.3f,
                     // //     color
                     // // );
-                    for (uint32_t j = 0; j < groups->groups[index]->n; j++) {
+                    for (uint32_t j = 0; j < groups->groups[index]->num_tri; j++) {
                         AT_Triangle triangle = groups->groups[index]->triangles[j];
                         // AT_Vec3 triangle_mid = triangle.aabb.midpoint;
                         // bool is_left = triangle_mid.x <= midpoint.x ||
@@ -220,7 +220,7 @@ int main(int argc, char *_[])
                 EndMode3D();
                 DrawFPS(10, 10);
                 char txt[50];
-                sprintf(txt, "Group %d has %d triangles", index, groups->groups[index]->n);
+                sprintf(txt, "Group %d has %d triangles", index, groups->groups[index]->num_tri);
                 DrawText(txt, 10, 50, 18, GREEN);
             }
             EndDrawing();
@@ -230,8 +230,8 @@ int main(int argc, char *_[])
 
         AT_model_destroy(model);
     } else {
-        for (uint32_t i = 0; i < groups->n; i++) {
-            printf("Group %d of size %d\n", i, groups->groups[i]->n);
+        for (uint32_t i = 0; i < groups->num_groups; i++) {
+            printf("Group %d of size %d\n", i, groups->groups[i]->num_tri);
         }
     }
 
