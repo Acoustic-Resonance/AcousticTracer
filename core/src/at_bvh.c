@@ -44,10 +44,20 @@ void count_sort(AT_Triangle *in_buf, int cur_byte, uint32_t num_tri, AT_Triangle
     int counts[256] = {0};
     int offsets[256] = {0};
 
+    bool sorted = true;
     for (uint32_t i = 0; i < num_tri; i++) {
-        // TODO: check if array is sorted
+        if (
+            (i > 0) &&
+            in_buf[i].aabb.midpoint.arr[dim] < in_buf[i - 1].aabb.midpoint.arr[dim]
+        ) {
+            sorted = false;
+        }
         AT_Vec3 midpoint = in_buf[i].aabb.midpoint;
         counts[get_nth_byte(midpoint.arr[dim], cur_byte)]++;
+    }
+    if (sorted) {
+        memcpy(out_buf, in_buf, sizeof(*in_buf) * num_tri);
+        return;
     }
 
     for (int i = 1; i < 256; i++) {
