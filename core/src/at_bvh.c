@@ -109,7 +109,7 @@ void AT_BVH_partition_list(AT_Triangle *triangles, uint32_t num_tri, AT_SplitCon
     free(tmp_buf);
 }
 
-AT_Medians AT_BVH_get_median_range(AT_Triangle *triangles, uint32_t num_tri, AT_SplitContext *ctx)
+AT_Medians AT_BVH_get_median_range(AT_Triangle *triangles, uint32_t num_tri, int axis)
 {
     // Object split
     AT_Medians median = {
@@ -118,8 +118,7 @@ AT_Medians AT_BVH_get_median_range(AT_Triangle *triangles, uint32_t num_tri, AT_
     };
 
     // Spatial split
-    int axis = ctx->axis;
-    float threshold = ctx->threshold;
+    float threshold = (triangles[num_tri - 1].aabb.midpoint.arr[axis] - triangles[0].aabb.midpoint.arr[axis]) * 0.5f;
     int start, end;
     float prev = fabsf(threshold - triangles[median.object].aabb.midpoint.arr[axis]);
     // Start in middle

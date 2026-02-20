@@ -30,20 +30,12 @@ int main()
     } else {
         axis = 2;
     }
-
-    float midpoint = aabb.midpoint.arr[axis];
-
-    AT_SplitContext ctx = {
-        .threshold = midpoint,
-        .axis = axis,
-    };
-
-    // TODO: test if left_n is equal to the spatial median
-    AT_Medians medians = AT_BVH_get_median_range(ts, num_tri, &ctx);
+    
+    AT_Medians medians = AT_BVH_get_median_range(ts, num_tri, axis);
     printf("Object: %d; Spatial: %d\n", medians.object, medians.spatial);
-    float start_tri_mid = ts[0].aabb.midpoint.arr[ctx.axis];
-    float mid_tri_mid = ts[medians.spatial].aabb.midpoint.arr[ctx.axis];
-    float finish_tri_mid = ts[num_tri - 1].aabb.midpoint.arr[ctx.axis];
+    float start_tri_mid = ts[0].aabb.midpoint.arr[axis];
+    float mid_tri_mid = ts[medians.spatial].aabb.midpoint.arr[axis];
+    float finish_tri_mid = ts[num_tri - 1].aabb.midpoint.arr[axis];
     printf("Starting point: %f\n", start_tri_mid);
     printf("Middle point: %f\n", mid_tri_mid);
     printf("Finishing point: %f\n", finish_tri_mid);
