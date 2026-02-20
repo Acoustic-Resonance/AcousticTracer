@@ -10,7 +10,7 @@ static inline AT_AABB AT_AABB_init()
 {
     return (AT_AABB){
         .min = {FLT_MAX, FLT_MAX, FLT_MAX},
-        .max = {FLT_MIN, FLT_MIN, FLT_MIN},
+        .max = {{-FLT_MAX, -FLT_MAX, -FLT_MAX}},
     };
 }
 

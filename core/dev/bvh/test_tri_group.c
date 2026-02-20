@@ -30,7 +30,7 @@ int main(int argc, char *_[])
         }
 
         for (uint32_t i = 0; i < model->vertex_count; i++) {
-            model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.05);
+            model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.5);
         }
 
         if (AT_model_get_triangles(&ts, model) != AT_OK) {
@@ -97,8 +97,8 @@ int main(int argc, char *_[])
             idx[i] = rand() % (groups->n + 1);
         }
 
-        AT_AABB aabb = {};
-        AT_model_to_AABB(&aabb, model);
+        // AT_AABB aabb = {};
+        // AT_model_to_AABB(&aabb, model);
 
         InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Triangle group testing");
         SetTargetFPS(60);
@@ -108,7 +108,7 @@ int main(int argc, char *_[])
         rlDisableBackfaceCulling();
         rlSetLineWidth(1.0f);
 
-        uint32_t k = 0, index = idx[k];
+        uint32_t k = 0, index = idx[k], i = 0;
         while (!WindowShouldClose()) {
             UpdateCamera(&cam, CAMERA_FREE);
             if (IsKeyPressed(KEY_T)) {
@@ -133,7 +133,7 @@ int main(int argc, char *_[])
                 index = (index - 1) % groups->n;
             }
             if (IsKeyPressed(KEY_E)) {
-                AT_Vec3 midpoint = groups->groups[index]->triangles[0].aabb.midpoint;
+                AT_Vec3 midpoint = groups->groups[index]->aabb.midpoint;
                 cam.target = (Vector3){
                     .x = midpoint.x,
                     .y = midpoint.y,
@@ -153,10 +153,18 @@ int main(int argc, char *_[])
                     .z = midpoint.z - 1,
                 };
             }
+            if (IsKeyPressed(KEY_Q)) {
+                AT_Vec3 tri_mid = groups->groups[index]->triangles[++i % groups->groups[index]->n].aabb.midpoint;
+                cam.position = (Vector3){
+                    .x = tri_mid.x,
+                    .y = tri_mid.y,
+                    .z = tri_mid.z,
+                };
+            }
 
             BeginDrawing();
             {
-                ClearBackground(RED);
+                ClearBackground(BLACK);
                 BeginMode3D(cam);
                 {
                     // for (uint32_t i = 0; i < groups->n; i++) {
@@ -169,15 +177,15 @@ int main(int argc, char *_[])
                     // i = (i + 1) % groups->n;
                     // continue;
                     // }
-                    // // AT_AABB aabb = group->aabb;
-                    // // AT_Vec3 midpoint = aabb.midpoint;
-                    // // DrawBoundingBox(
-                    // //     (BoundingBox){
-                    // //         (Vector3){aabb.min.x, aabb.min.y, aabb.min.z},
-                    // //         (Vector3){aabb.max.x, aabb.max.y, aabb.max.z}
-                    // //     },
-                    // //     color
-                    // // );
+                    AT_AABB aabb = groups->groups[index]->aabb;
+                    // AT_Vec3 midpoint = aabb.midpoint;
+                    DrawBoundingBox(
+                        (BoundingBox){
+                            (Vector3){aabb.min.x, aabb.min.y, aabb.min.z},
+                            (Vector3){aabb.max.x, aabb.max.y, aabb.max.z}
+                        },
+                        BLUE
+                    );
                     // // DrawSphere(
                     // //     (Vector3){
                     // //         midpoint.x, midpoint.y, midpoint.z
@@ -196,7 +204,9 @@ int main(int argc, char *_[])
                         // } else {
                         //     color = BLUE;
                         // }
-                        Color color = cols[j % 4];
+                        // Color color = cols[j % 4];
+                        Color color = colors[j % sizeof(colors)];
+                        // Color color = GREEN;
                         // color.a = 100;
                         DrawTriangle3D(
                             (Vector3){triangle.v1.x, triangle.v1.y, triangle.v1.z},
@@ -204,8 +214,8 @@ int main(int argc, char *_[])
                             (Vector3){triangle.v3.x, triangle.v3.y, triangle.v3.z},
                             color
                         );
+                        // }
                     }
-                    // }
                 }
                 EndMode3D();
                 DrawFPS(10, 10);

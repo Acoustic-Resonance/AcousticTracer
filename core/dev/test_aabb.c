@@ -29,7 +29,7 @@ AT_Triangle get_triangle_n_from_model(const AT_Model *model, uint32_t i)
 
 int main()
 {
-    const char *filepath = "../assets/glb/L_room.glb";
+    const char *filepath = "../assets/glb/Cathedral.glb";
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
         fprintf(stderr, "Failed to create model.\n");
@@ -77,13 +77,16 @@ int main()
                         (Vector3){triangle.v1.x, triangle.v1.y, triangle.v1.z},
                         (Vector3){triangle.v2.x, triangle.v2.y, triangle.v2.z},
                         (Vector3){triangle.v3.x, triangle.v3.y, triangle.v3.z},
-                        (Color){.a = 1});
-                    DrawSphere((Vector3){triangle.aabb.midpoint.x, triangle.aabb.midpoint.y, triangle.aabb.midpoint.z}, 0.05f, RED);
-                    DrawBoundingBox(
-                        (BoundingBox){
-                            (Vector3){triangle.aabb.min.x, triangle.aabb.min.y, triangle.aabb.min.z},
-                            (Vector3){triangle.aabb.max.x, triangle.aabb.max.y, triangle.aabb.max.z}},
-                        BLUE);
+                        BLUE
+                    );
+                    // DrawSphere((Vector3){triangle.aabb.midpoint.x, triangle.aabb.midpoint.y, triangle.aabb.midpoint.z}, 0.05f, RED);
+                    // DrawBoundingBox(
+                    //     (BoundingBox){
+                    //         (Vector3){aabb.min.x, aabb.min.y, aabb.min.z},
+                    //         (Vector3){aabb.max.x, aabb.max.y, aabb.max.z}
+                    //     },
+                    //     (COLOR){.a = 1}
+                    // );
                 }
                 DrawGrid(10, 1.0f);
             }

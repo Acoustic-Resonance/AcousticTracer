@@ -52,7 +52,7 @@ void draw_model(const AT_Model *model)
 
 int main()
 {
-    const char *filepath = "../assets/glb/L_room.gltf";
+    const char *filepath = "../assets/glb/Cathedral.glb";
     AT_Model *model = NULL;
     if(AT_model_create(&model, filepath) != AT_OK) {
         perror("Failed to create model");
