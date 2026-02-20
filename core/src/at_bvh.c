@@ -7,14 +7,29 @@
 #include <stdlib.h>
 #include <string.h>
 
-AT_Result AT_BVH_create(AT_BVH **out_tree, uint32_t num_tri)
+AT_BVHNode create_node(AT_Triangle *triangles, uint32_t num_tri, AT_AABB aabb, int index)
+{
+    AT_BVHNode node = {
+        .aabb = aabb,
+        .idx = index,
+        .left_child = (2 * num_tri) + 1,
+        .right_child = 2 * (num_tri + 1),
+        .num_tri = num_tri,
+        .triangles = triangles,
+    };
+
+    return node;
+}
+
+AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group)
 {
     if (!out_tree || *out_tree) return AT_ERR_INVALID_ARGUMENT;
 
     AT_BVH *bvh = malloc(sizeof(*bvh));
     if (!bvh) return AT_ERR_ALLOC_ERROR;
-    bvh->nodes = malloc(sizeof(*bvh->nodes) * ((2 * num_tri) - 1));
+    bvh->nodes = malloc(sizeof(*bvh->nodes) * ((2 * tri_group->num_tri) - 1));
     if (!bvh->nodes) return AT_ERR_ALLOC_ERROR;
+    bvh->nodes[0] = create_node(tri_group->triangles, tri_group->num_tri, tri_group->aabb, 0);
 
     *out_tree = bvh;
     return AT_OK;
@@ -189,10 +204,11 @@ AT_SA get_node_SA(AT_BVHNode *node, AT_Triangle *triangles, uint32_t split_idx, 
 float AT_BVH_get_SAH(const AT_BVH *tree, const AT_BVHConfig *conf, uint32_t split_idx)
 {
     // SAH(tree) = c_t + c_i((SA(left) / SA(tree)) * N(left) + (SA(right) / SA(tree) * N(right)))
-    AT_SA areas = get_node_SA(tree->root, tree->root->triangles, split_idx, tree->root->num_tri);
-    float tree_SA = 1 / tree->root->aabb.SA;
+    AT_BVHNode root = tree->nodes[0];
+    AT_SA areas = get_node_SA(&root, root.triangles, split_idx, root.num_tri);
+    float tree_SA = 1 / root.aabb.SA;
     uint32_t left_n = split_idx;
-    uint32_t right_n = tree->root->num_tri - left_n;
+    uint32_t right_n = root.num_tri - left_n;
     int c_t = conf->traversal_cost;
     int c_i = conf->intersection_cost;
 
@@ -204,12 +220,12 @@ float AT_BVH_get_SAH(const AT_BVH *tree, const AT_BVHConfig *conf, uint32_t spli
 
 uint32_t AT_BVH_get_optimal_split(const AT_BVH *tree, const AT_BVHConfig *conf)
 {
-    AT_BVHNode *root = tree->root;
-    float no_split_cost = root->aabb.SA * root->num_tri;
+    AT_BVHNode root = tree->nodes[0];
+    float no_split_cost = root.aabb.SA * root.num_tri;
     float split_cost = FLT_MAX;
     uint32_t split_idx;
     int axis = 0;
-    AT_Medians medians = AT_BVH_get_median_range(root->triangles, root->num_tri, axis);
+    AT_Medians medians = AT_BVH_get_median_range(root.triangles, root.num_tri, axis);
     uint32_t start = AT_min(medians.object, medians.spatial);
     uint32_t end = AT_max(medians.object, medians.spatial);
     for (uint32_t i = start; i < end; i++) {
@@ -221,7 +237,7 @@ uint32_t AT_BVH_get_optimal_split(const AT_BVH *tree, const AT_BVHConfig *conf)
     }
 
     if (no_split_cost < split_cost) {
-        return root->num_tri;
+        return root.num_tri;
     }
 
     return split_idx;
