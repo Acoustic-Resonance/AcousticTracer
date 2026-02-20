@@ -23,7 +23,15 @@ typedef struct {
 } AT_BVHConfig;
 
 typedef struct {
+    AT_AABB aabb;
+    int left_child, right_child;
+    AT_Triangle *triangles;
+    uint32_t num_tri;
+} AT_BVHNode;
 
+typedef struct {
+    AT_BVHNode *root;
+    AT_BVHNode *nodes;
 } AT_BVH;
 
 typedef struct {
@@ -39,7 +47,7 @@ typedef struct {
 
 typedef bool (*AT_CompareFunc)(AT_Vec3, AT_SplitContext *);
 
-void AT_BVH_create(AT_BVH **out_tree);
+AT_Result AT_BVH_create(AT_BVH **out_tree, uint32_t num_tri);
 void AT_BVH_destroy(AT_BVH *tree);
 
 void AT_BVH_sort_triangles(AT_Triangle *triangles, uint32_t num_tri, AT_Triangle **dim_arrs);

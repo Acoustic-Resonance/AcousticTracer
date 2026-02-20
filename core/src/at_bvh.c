@@ -6,7 +6,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef unsigned char uchar;
+AT_Result AT_BVH_create(AT_BVH **out_tree, uint32_t num_tri)
+{
+    if (!out_tree || *out_tree) return AT_ERR_INVALID_ARGUMENT;
+
+    AT_BVH *bvh = malloc(sizeof(*bvh));
+    if (!bvh) return AT_ERR_ALLOC_ERROR;
+    bvh->nodes = malloc(sizeof(*bvh->nodes) * ((2 * num_tri) - 1));
+    if (!bvh->nodes) return AT_ERR_ALLOC_ERROR;
+
+    *out_tree = bvh;
+    return AT_OK;
+}
+
+void AT_BVH_destroy(AT_BVH *tree)
+{
+    free(tree->nodes);
+    free(tree);
+}
 
 uint32_t flt_to_int(float num)
 {
@@ -33,7 +50,7 @@ float int_to_flt(uint32_t num)
     return *(float *)&num;
 }
 
-uchar get_nth_byte(float num, int n)
+unsigned char get_nth_byte(float num, int n)
 {
     int offset = 8 * n;
     return (flt_to_int(num) & (0xFF << offset)) >> offset;
@@ -67,7 +84,7 @@ void count_sort(AT_Triangle *in_buf, int cur_byte, uint32_t num_tri, AT_Triangle
     for (uint32_t i = 0; i < num_tri; i++) {
         AT_Triangle triangle = in_buf[i];
         AT_Vec3 midpoint = triangle.aabb.midpoint;
-        uchar byte = get_nth_byte(midpoint.arr[dim], cur_byte);
+        unsigned char byte = get_nth_byte(midpoint.arr[dim], cur_byte);
         out_buf[offsets[byte]++] = triangle;
     }
 }
