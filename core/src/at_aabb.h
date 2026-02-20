@@ -11,6 +11,7 @@ static inline AT_AABB AT_AABB_init()
     return (AT_AABB){
         .min = {FLT_MAX, FLT_MAX, FLT_MAX},
         .max = {{-FLT_MAX, -FLT_MAX, -FLT_MAX}},
+        .SA = 0,
     };
 }
 
@@ -36,6 +37,16 @@ static inline AT_AABB AT_AABB_join(AT_AABB a, AT_AABB b)
     out_aabb.midpoint = AT_AABB_calc_midpoint(&out_aabb);
 
     return out_aabb;
+}
+
+static inline float AT_AABB_get_SA(AT_AABB aabb)
+{
+    float sa = 1;
+    for (int i = 0; i < 3; i++) {
+        sa *= aabb.max.arr[i] - aabb.min.arr[i];
+    }
+
+    return sa * 6;
 }
 
 #endif // AT_AABB_H

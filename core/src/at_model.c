@@ -219,6 +219,7 @@ void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model)
     }
     
     out_aabb->midpoint = AT_AABB_calc_midpoint(out_aabb);
+    out_aabb->SA = AT_AABB_get_SA(*out_aabb);
 }
 
 AT_Result AT_model_get_triangles(AT_Triangle **out_triangles, const AT_Model *model)

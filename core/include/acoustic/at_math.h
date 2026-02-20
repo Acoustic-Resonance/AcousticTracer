@@ -24,6 +24,7 @@ typedef struct {
 typedef struct {
     AT_Vec3 min, max;
     AT_Vec3 midpoint;
+    float SA;
 } AT_AABB;
 
 /** \brief Groups three AT_Vec3 to represent a triangle.
