@@ -1,4 +1,5 @@
 #include "../src/at_bvh.h"
+#include "../src/at_aabb.h"
 #include "../src/at_utils.h"
 
 #include <stdbool.h>
@@ -162,4 +163,66 @@ AT_Medians AT_BVH_get_median_range(AT_Triangle *triangles, uint32_t num_tri, int
     }
 
     return median;
+}
+
+AT_SA get_node_SA(AT_BVHNode *node, AT_Triangle *triangles, uint32_t split_idx, uint32_t num_tri)
+{
+    AT_SA area;
+
+    AT_AABB left_aabb = AT_AABB_init();
+    AT_AABB_grow(&left_aabb, node->aabb.min);
+    AT_AABB right_aabb = AT_AABB_init();
+    right_aabb.max = node->aabb.max;
+    // TODO: check if split index is num_tri
+    for (uint32_t i = 0; i < split_idx + 1; i++) {
+        AT_AABB_grow(&left_aabb, triangles[i].aabb.max);
+    }
+    for (uint32_t i = split_idx + 1; i < num_tri; i++) {
+        AT_AABB_grow(&right_aabb, triangles[i].aabb.max);
+    }
+    area.left_area = AT_AABB_get_SA(left_aabb);
+    area.right_area = AT_AABB_get_SA(right_aabb);
+
+    return area;
+}
+
+float AT_BVH_get_SAH(const AT_BVH *tree, const AT_BVHConfig *conf, uint32_t split_idx)
+{
+    // SAH(tree) = c_t + c_i((SA(left) / SA(tree)) * N(left) + (SA(right) / SA(tree) * N(right)))
+    AT_SA areas = get_node_SA(tree->root, tree->root->triangles, split_idx, tree->root->num_tri);
+    float tree_SA = 1 / tree->root->aabb.SA;
+    uint32_t left_n = split_idx;
+    uint32_t right_n = tree->root->num_tri - left_n;
+    int c_t = conf->traversal_cost;
+    int c_i = conf->intersection_cost;
+
+    float left_cost = (areas.left_area * tree_SA) * left_n;
+    float right_cost = (areas.right_area * tree_SA) * right_n;
+
+    return c_t + c_i * (left_cost + right_cost);
+}
+
+uint32_t AT_BVH_get_optimal_split(const AT_BVH *tree, const AT_BVHConfig *conf)
+{
+    AT_BVHNode *root = tree->root;
+    float no_split_cost = root->aabb.SA * root->num_tri;
+    float split_cost = FLT_MAX;
+    uint32_t split_idx;
+    int axis = 0;
+    AT_Medians medians = AT_BVH_get_median_range(root->triangles, root->num_tri, axis);
+    uint32_t start = AT_min(medians.object, medians.spatial);
+    uint32_t end = AT_max(medians.object, medians.spatial);
+    for (uint32_t i = start; i < end; i++) {
+        float new_cost = AT_BVH_get_SAH(tree, conf, i);
+        if (new_cost < split_cost) {
+            split_cost = new_cost;
+            split_idx = i;
+        }
+    }
+
+    if (no_split_cost < split_cost) {
+        return root->num_tri;
+    }
+
+    return split_idx;
 }

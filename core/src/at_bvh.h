@@ -20,6 +20,7 @@ typedef struct {
 
 typedef struct {
     uint32_t mini_tree_size;
+    int traversal_cost, intersection_cost;
 } AT_BVHConfig;
 
 typedef struct {
@@ -45,6 +46,10 @@ typedef struct {
     uint32_t object;
 } AT_Medians;
 
+typedef struct {
+    float left_area, right_area;
+} AT_SA;
+
 typedef bool (*AT_CompareFunc)(AT_Vec3, AT_SplitContext *);
 
 AT_Result AT_BVH_create(AT_BVH **out_tree, uint32_t num_tri);
@@ -54,5 +59,7 @@ void AT_BVH_sort_triangles(AT_Triangle *triangles, uint32_t num_tri, AT_Triangle
 void AT_BVH_partition_list(AT_Triangle *triangles, uint32_t num_tri, AT_SplitContext *ctx);
 
 AT_Medians AT_BVH_get_median_range(AT_Triangle *triangles, uint32_t num_tri, int axis);
+float AT_BVH_get_SAH(const AT_BVH *tree, const AT_BVHConfig *conf, uint32_t split_idx);
+uint32_t AT_BVH_get_optimal_split(const AT_BVH *tree, const AT_BVHConfig *conf);
 
 #endif // AT_BVH_H
