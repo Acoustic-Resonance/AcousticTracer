@@ -164,14 +164,20 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
     return AT_OK;
 }
 
-AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriangleGroups *groups, uint32_t N)
+AT_Result AT_trigroup_split(AT_Triangle *triangles, AT_Triangle **dim_arrs, uint32_t num_tri, AT_TriangleGroups *groups, uint32_t N)
 {
-    if (!org_group || !groups) return AT_ERR_INVALID_ARGUMENT;
+    if (!groups) return AT_ERR_INVALID_ARGUMENT;
+
+    AT_TriGroup *tri_group = NULL;
+    if (AT_trigroup_create(&tri_group, triangles, dim_arrs, 0, num_tri) != AT_OK) {
+        perror("Failed to create the triangle group");
+        return 1;
+    }
 
     // 5. Repeat for sub trees
-    AT_TriGroup *stack[(int)ceil(log2(org_group->num_tri))];
+    AT_TriGroup *stack[(int)ceil(log2(num_tri))];
     int stack_top = 0;
-    stack[stack_top] = org_group;
+    stack[stack_top] = tri_group;
     stack_top++;
     AT_TriGroup *left;
     AT_TriGroup *right;
@@ -209,7 +215,6 @@ AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriangleGroups *groups, u
             stack_top++;
         }
 
-        // TODO: Fix incorrect memory freeing for org_group
         AT_trigroup_destroy(parent_group);
     }
 

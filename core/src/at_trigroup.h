@@ -39,6 +39,6 @@ void AT_triangle_groups_destroy(AT_TriangleGroups *mini_tree);
 
     \retval void
  */
-AT_Result AT_trigroup_split(AT_TriGroup *org_group, AT_TriangleGroups *groups, uint32_t N);
+AT_Result AT_trigroup_split(AT_Triangle *triangles, AT_Triangle **dim_arrs, uint32_t num_tri, AT_TriangleGroups *groups, uint32_t N);
 
 #endif // AT_TRIGROUP_H
