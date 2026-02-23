@@ -2,6 +2,7 @@
 #include "at_voxel.h"
 #include "at_internal.h"
 #include "../src/at_utils.h"
+#include <math.h>
 #include <stdint.h>
 
 #define VOXEL_MAX_STEPS 100
@@ -28,15 +29,25 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
         1.0f / simulation->voxel_size
     );
 
-    //step direction (+1 or -1 per axis)
-    const AT_Vec3 step = AT_get_sign_vec3(ray->direction);
-
-    //distance along "t" to move one voxel
-    const AT_Vec3 delta = AT_vec3_delta(ray->direction);
-
     const int grid_x = simulation->grid_dimensions.x;
     const int grid_y = simulation->grid_dimensions.y;
     const int grid_z = simulation->grid_dimensions.z;
+
+    if (p0.x < 0.0f || p0.y < 0.0f || p0.z < 0.0f ||
+        p0.x >= grid_x || p0.y >= grid_y || p0.z >= grid_z) {
+            return;
+        }
+
+    //step direction (+1 or -1 per axis)
+    //const AT_Vec3 step = AT_get_sign_vec3(ray->direction);
+    const AT_Vec3 step = (AT_Vec3) {{
+        signbit(ray->direction.x) ? -1 : 1,
+        signbit(ray->direction.y) ? -1 : 1,
+        signbit(ray->direction.z) ? -1 : 1
+    }};
+
+    //distance along "t" to move one voxel
+    const AT_Vec3 delta = AT_vec3_delta(ray->direction);
 
     AT_Vec3i pos = (AT_Vec3i){
         AT_clamp((int)floorf(p0.x), 0, grid_x - 1),
@@ -63,14 +74,12 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
         ((pos.z + 1.0f) - p0.z) * delta.z :
         (p0.z - pos.z) * delta.z;
 
-    /*
-    printf("Ray: %i: CHILD:%p ", ray->ray_id, ray->child);
-    printf("p0: {%f, %f, %f}, ", p0.x, p0.y, p0.z);
-    printf("p1: {%f, %f, %f}, ", p1.x, p1.y, p1.z);
-    printf("Step: {%.1f, %.1f, %.1f}, ", step.x, step.y, step.z);
-    printf("Delta: {%f, %f, %f}", delta.x, delta.y, delta.z);
-    printf("t_max: {%f, %f, %f}\n", t_max.x, t_max.y, t_max.z);
-    */
+    // printf("Ray: %i: CHILD:%p ", ray->ray_id, ray->child);
+    // printf("p0: {%f, %f, %f}, ", p0.x, p0.y, p0.z);
+    // printf("p1: {%f, %f, %f}, ", p1.x, p1.y, p1.z);
+    // printf("Step: {%.1f, %.1f, %.1f}, ", step.x, step.y, step.z);
+    // printf("Delta: {%f, %f, %f}", delta.x, delta.y, delta.z);
+    // printf("t_max: {%f, %f, %f}\n", t_max.x, t_max.y, t_max.z);
 
     //curr pos within ray segment
     float t = 0.0f;
@@ -89,39 +98,43 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
             (uint32_t)pos.y * grid_x +
             (uint32_t)pos.x;
 
-
+        //printf("VOXEL IDX: %i\n", voxel_idx);
         float t_current = fminf(t_max.x, fminf(t_max.y, t_max.z));
-        if (t_current > t_end) t_current = t_end; //if we reached the end of the ray segment
+        if (t_current > t_end) break; //if we reached the end of the ray segment
 
         float t_segment = t_current - t_prev; //how far we moved in voxel space
-        float world_segment = t_segment * simulation->voxel_size; //how far in world space
 
-        float t_midpoint = t_prev + t_segment * 0.5f; //center point of curr voxel
-        //total dist from source to this midpoint
-        float total_world_dist = ray->total_distance + (t_midpoint * simulation->voxel_size);
+        if (t_segment > EPSILON) {
+            float world_segment = t_segment * simulation->voxel_size; //how far in world space
 
-        //inverse square law - attenuation
-        float dist_from_source = fmaxf(total_world_dist, 0.1f);
-        float intensity_factor = 1.0f / (1.0f + dist_from_source * 0.01f);
+            float t_midpoint = t_prev + t_segment * 0.5f; //center point of curr voxel
+            //total dist from source to this midpoint
+            float total_world_dist = ray->total_distance + (t_midpoint * simulation->voxel_size);
 
-        float energy_deposit = (ray->energy * world_segment / world_ray_length) * intensity_factor;
+            //inverse square law - attenuation
+            float dist_from_source = fmaxf(total_world_dist, 0.1f);
+            float intensity_factor = 1.0f / (1.0f + dist_from_source * 0.01f);
 
-        float curr_time = total_world_dist / SPEED_OF_SOUND;
-        //float curr_time = total_world_dist / SLOWER_SPEED;
+            float energy_deposit = (ray->energy * world_segment / world_ray_length) * intensity_factor;
 
-        size_t bin_index = (size_t)(curr_time / simulation->bin_width);
-        //printf("BIN INDEX: %zu\n", bin_index);
+            float curr_time = total_world_dist / SPEED_OF_SOUND;
+            //float curr_time = total_world_dist / SLOWER_SPEED;
 
-        AT_Voxel *voxel = &simulation->voxel_grid[voxel_idx];
+            size_t bin_index = (size_t)(curr_time / simulation->bin_width);
+            //printf("BIN INDEX: %zu\n", bin_index);
 
-        //grow bin count
-        while (voxel->count <= bin_index) {
-            AT_voxel_bin_append(voxel, 0.0f);
+            AT_Voxel *voxel = &simulation->voxel_grid[voxel_idx];
+
+            //grow bin count
+            while (voxel->count <= bin_index) {
+                AT_voxel_bin_append(voxel, 0.0f);
+            }
+
+            if (AT_voxel_add_energy(voxel, energy_deposit, bin_index) != AT_OK) {
+                break;
+            }
         }
-
-        if (AT_voxel_add_energy(voxel, energy_deposit, bin_index) != AT_OK) {
-            break;
-        }
+        //printf("ENERGY: %f\n", energy_deposit);
 
         t_prev = t_current;
         t = t_current;

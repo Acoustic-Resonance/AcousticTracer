@@ -5,6 +5,8 @@
 #ifndef AT_MATH_H
 #define AT_MATH_H
 
+#define EPSILON 1e-6f
+
 #include <math.h>
 #include <float.h>
 
@@ -91,9 +93,9 @@ static inline AT_Vec3 AT_vec3_mul(AT_Vec3 a, AT_Vec3 b)
 static inline AT_Vec3 AT_vec3_inv(AT_Vec3 v)
 {
     return (AT_Vec3){
-        {v.x != 0.0f ? 1.0f / v.x : FLT_MAX,
-         v.y != 0.0f ? 1.0f / v.y : FLT_MAX,
-         v.z != 0.0f ? 1.0f / v.z : FLT_MAX}
+        {(fabsf(v.x) < EPSILON ? FLT_MAX : (1.0f / fabsf(v.x))),
+        (fabsf(v.y) < EPSILON ? FLT_MAX : (1.0f / fabsf(v.y))),
+        (fabsf(v.z) < EPSILON ? FLT_MAX : (1.0f / fabsf(v.z)))}
     };
 }
 

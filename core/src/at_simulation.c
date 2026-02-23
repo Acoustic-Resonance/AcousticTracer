@@ -67,12 +67,14 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
 }
 
 
-#define MIN_RAY_ENERGY_THRESHOLD 0.001f
 #define SOURCE_ENERGY 1.0f //this can be the power of the sound source defined by the user
 
 AT_Result AT_simulation_run(AT_Simulation *simulation)
 {
     if (!simulation) return AT_ERR_INVALID_ARGUMENT;
+
+    const float MIN_ENERGY_THRESHOLD = 0.8f / simulation->num_rays;
+    const float SURFACE_EPSILON = simulation->voxel_size * 1e-4f;
 
     uint32_t triangle_count = simulation->scene->environment->index_count / 3;
     AT_Triangle *triangles = NULL;
@@ -109,11 +111,11 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
     uint32_t total_rays = simulation->scene->num_sources * simulation->num_rays;
     for (uint32_t i = 0; i < total_rays; i++) {
         AT_Ray *ray = &simulation->rays[i];
-        while (ray->energy > MIN_RAY_ENERGY_THRESHOLD) {
+        while (ray->energy > MIN_ENERGY_THRESHOLD) {
             AT_Ray closest = AT_ray_init((AT_Vec3){{FLT_MAX, FLT_MAX, FLT_MAX}},
-                (AT_Vec3){0},
-                ray->total_distance,
-                ray->energy,
+                (AT_Vec3){{0, 0, 0}},
+                0.0f,
+                0.0f,
                 i);
             bool intersects = false;
             uint32_t tri_idx = 0;
@@ -124,20 +126,26 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 }
             }
             if (!intersects) break;
-
             AT_Ray *child = (AT_Ray*)malloc(sizeof(AT_Ray));
             if (!child) return AT_ERR_ALLOC_ERROR;
             *child = closest;
             child->child = NULL;
             child->ray_id = ray->ray_id + simulation->num_rays;
-            AT_Vec3 hit_point = closest.origin;
-            child->total_distance = ray->total_distance +
-                AT_vec3_distance(ray->origin, hit_point);
+            //AT_Vec3 hit_point = closest.origin;
+            ray->hit_point = closest.origin;
+
+            //slightly offset child origin to avoid percision issues (when hitting corners and such)
+            const float SURFACE_EPSILON = 0.001f;
+            AT_Vec3 offset = AT_vec3_scale(closest.direction, SURFACE_EPSILON);
+            child->origin = AT_vec3_add(ray->hit_point, offset);
+
+            child->total_distance = ray->total_distance + AT_vec3_distance(ray->origin, ray->hit_point);
             child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[tri_idx]].absorption);
             ray->child = child;
             ray = ray->child;
             num_children++;
         }
+        if (ray->energy < MIN_ENERGY_THRESHOLD) ray->has_died = true;
     }
 
     printf("Number of child rays: %i\n", num_children);
@@ -148,20 +156,26 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
         AT_Ray *ray = &simulation->rays[i];
 
         while (ray) {
-            //if the ray has a child, use its origin as the end
-            //otherwise set the end as the direction scaled by the maximum distance in the scene
-            AT_Vec3 ray_end = ray->child ?
-                ray->child->origin :
-                    AT_vec3_add(
-                      ray->origin,
-                      AT_vec3_scale(
-                          ray->direction,
-                          AT_vec3_distance(
-                              simulation->scene->world_AABB.min,
-                              simulation->scene->world_AABB.max
-                          )
-                      )
-                  );
+            AT_Vec3 ray_end;
+            //if the ray has an endpoint, set it
+            if (ray->child) {
+                ray_end = ray->hit_point;
+            //if the ray doesnt have an end point but hasnt died, continue it for max_AABB distance
+            } else if (!ray->has_died) {
+               ray_end = AT_vec3_add(
+                         ray->origin,
+                         AT_vec3_scale(
+                             ray->direction,
+                             AT_vec3_distance(
+                                 simulation->scene->world_AABB.min,
+                                 simulation->scene->world_AABB.max
+                             )
+                         )
+                     );
+               //otherwise if it has died just break
+            } else {
+                break;
+            }
 
             AT_voxel_ray_step(simulation, ray, ray_end);
             ray = ray->child;
