@@ -36,8 +36,8 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
     float grid_x = ceilf(dimensions.x / settings->voxel_size);
     float grid_y = ceilf(dimensions.y / settings->voxel_size);
     float grid_z = ceilf(dimensions.z / settings->voxel_size);
-    printf("grid_x : %f,grid_y: %f,grid_z: %f\n", grid_x, grid_y, grid_z);
-    printf("dim_x : %f,dim_y: %f,dim_z: %f\n", dimensions.x, dimensions.y, dimensions.z);
+    // printf("grid_x : %f,grid_y: %f,grid_z: %f\n", grid_x, grid_y, grid_z);
+    // printf("dim_x : %f,dim_y: %f,dim_z: %f\n", dimensions.x, dimensions.y, dimensions.z);
     uint32_t num_voxels = (uint32_t)(grid_x * grid_y * grid_z);
 
     simulation->voxel_grid = calloc(num_voxels, sizeof(AT_Voxel));

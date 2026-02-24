@@ -9,7 +9,6 @@ docs/*
 !docs/*.pdf
 !docs/core/
 
-node_modules
 # C files
 **/build/*
 build/
