@@ -101,7 +101,7 @@ export default function VoxelGrid() {
 
     const color = new THREE.Color();
 
-    // sets blue
+    // sets white
     for (let i = 0; i < count; i++) {
       meshRef.current.setColorAt(i, new THREE.Color("white"));
     }
