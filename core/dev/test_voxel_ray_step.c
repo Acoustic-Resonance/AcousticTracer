@@ -16,7 +16,7 @@ static float AT_voxel_get_energy_sum(AT_Voxel *voxel, uint32_t index)
     float sum = 0.0f;
     for (size_t i = 0; i <= index; i++) {
         if (i >= voxel->count) break;
-        sum += voxel->items[i];
+        sum += voxel->items[i].energy;
     }
     return sum;
 }
@@ -24,14 +24,14 @@ static float AT_voxel_get_energy_sum(AT_Voxel *voxel, uint32_t index)
 static float AT_voxel_get_energy_curr(AT_Voxel *voxel, uint32_t index)
 {
     if (index >= voxel->count) return 0.0f;
-    return voxel->items[index];
+    return voxel->items[index].energy;
 }
 
 int main()
 {
     printf("Voxel Ray Step\n");
 
-    const char *filepath = "../assets/glb/L_room_roof.gltf";
+    const char *filepath = "../assets/glb/Sponza.gltf";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -39,9 +39,9 @@ int main()
         return 1;
     }
 
-    for (uint32_t i = 0; i < model->vertex_count; i++) {
-         model->vertices[i] = AT_vec3_scale(model->vertices[i], 10.0f);
-    }
+    // for (uint32_t i = 0; i < model->vertex_count; i++) {
+    //      model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.0f);
+    // }
 
     int num_sources = 1;
     AT_Source s1 = {
@@ -68,8 +68,8 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 10000,
-        .voxel_size = 0.3f
+        .num_rays = 10,
+        .voxel_size = 2.0f
     };
 
     AT_Simulation *sim = NULL;

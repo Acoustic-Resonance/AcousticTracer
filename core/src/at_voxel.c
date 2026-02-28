@@ -127,7 +127,7 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
 
             //grow bin count
             while (voxel->count <= bin_index) {
-                AT_voxel_bin_append(voxel, 0.0f);
+                AT_voxel_bin_append(voxel, (AT_bin_item){ .frame = bin_index, .energy = 0});
             }
 
             if (AT_voxel_add_energy(voxel, energy_deposit, bin_index) != AT_OK) {

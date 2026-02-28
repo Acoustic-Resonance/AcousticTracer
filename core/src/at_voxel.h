@@ -15,10 +15,10 @@ static inline AT_Result AT_voxel_init(AT_Voxel *voxel)
     return AT_OK;
 }
 
-static inline AT_Result AT_voxel_bin_append(AT_Voxel *voxel, float bin)
+static inline AT_Result AT_voxel_bin_append(AT_Voxel *voxel, AT_bin_item bin_item)
 {
     if (!voxel) return AT_ERR_INVALID_ARGUMENT;
-    AT_da_append(voxel, bin);
+    AT_da_append(voxel, bin_item);
     return AT_OK;
 }
 
@@ -27,7 +27,7 @@ static inline AT_Result AT_voxel_add_energy(AT_Voxel *voxel, float energy, size_
     if (!voxel) return AT_ERR_INVALID_ARGUMENT;
     if (bin_index >= voxel->count) return AT_ERR_INVALID_ARGUMENT;
 
-    voxel->items[bin_index] += energy;
+    voxel->items[bin_index].energy += energy;
     return AT_OK;
 }
 

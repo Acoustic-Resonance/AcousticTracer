@@ -6,6 +6,7 @@ import {
   useDeleteSimulation,
   useSimulationsList,
 } from "../api/use-simulation-hooks";
+import { useSceneStore } from "../stores/scene-store";
 export default function Dashboard() {
   const { logout, current } = useUser();
   const navigate = useNavigate();
@@ -16,9 +17,11 @@ export default function Dashboard() {
   );
   const deleteMutation = useDeleteSimulation();
   const simulations = data?.simulations || [];
+  const setRayResponse = useSceneStore((state) => state.setRayResponse);
   const handleDelete = async (id: string, fileId: string) => {
     try {
       await deleteMutation.mutateAsync({ id, fileId });
+      setRayResponse(null);
     } catch (err) {
       console.error("Delete failed: ", err);
     }

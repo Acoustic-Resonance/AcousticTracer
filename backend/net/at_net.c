@@ -39,10 +39,16 @@ AT_Result AT_simulation_to_json(cJSON **out_json, AT_Simulation *simulation)
 
             AT_Voxel voxel = voxels[v];
 
-            float energy = (f < voxel.count) ? voxel.items[f] : 0;
-
-            // TODO: IF ENERGY OVER MIN THRESHOLD
-            if (energy <= 0) continue;
+            float energy = 0;
+            // check all bin entries to see does current frame exist
+            for (uint32_t i = 0; i < voxel.count; i++) {
+                AT_bin_item bin_item = voxel.items[i];
+                if (f == bin_item.frame) {
+                    energy = bin_item.energy;
+                    break;
+                }
+            }
+            if (energy == 0) continue;
 
             char voxel_num[num_voxels];
             sprintf(voxel_num, "%d", v);

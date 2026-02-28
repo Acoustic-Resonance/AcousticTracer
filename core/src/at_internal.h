@@ -31,7 +31,12 @@ struct AT_Ray {
 // to be universal, can use them with any types.
 // If we want, we can rewrite them to change items to bins to avoid confusion :|
 typedef struct {
-    float *items; //bins
+    uint32_t frame;
+    float energy;
+} AT_bin_item;
+
+typedef struct {
+    AT_bin_item *items; //bins
     size_t count;
     size_t capacity;
 } AT_Voxel;
