@@ -38,11 +38,19 @@ function Model({
 
   useEffect(() => {
     if (scene) {
-      scene.traverse((node) => {
+      scene.traverse((child) => {
         // node.position.set(0,0,0);
         // node.rotation.set(0,0,0);
-        node.scale.set(1, 1, 1);
-        node.updateMatrix();
+        child.scale.set(1, 1, 1);
+        child.updateMatrix();
+
+        if (child instanceof THREE.Mesh) {
+          child.material = new THREE.MeshStandardMaterial({
+            color: "#888888",
+            roughness: 0.8,
+            metalness: 0.1,
+          });
+        }
       });
 
       scene.updateMatrixWorld(true);

@@ -57,7 +57,7 @@ export default function useSceneActions(
     try {
       console.log(config);
       const raytracerResponse = await runRaytracer(config);
-      console.log(raytracerResponse);
+      // console.log(raytracerResponse);
       useSceneStore.getState().setRayResponse(raytracerResponse);
       navigate("/dashboard");
     } catch (err: unknown) {

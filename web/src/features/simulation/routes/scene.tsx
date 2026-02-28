@@ -15,6 +15,12 @@ export default function Scene() {
   const { data: simulation, isLoading, error } = useSimulationDetail(idOfFile);
   const simName = searchParams.get("name");
 
+  const rayTracerData = useSceneStore((state) => state.rayResponse);
+  const frameIndex = useSceneStore((state) => state.frameIndex);
+  const setFrameIndex = useSceneStore((state) => state.setFrameIndex);
+
+  const frameCount = rayTracerData ? Object.keys(rayTracerData).length : 0;
+
   const bounds = useSceneStore((state) => state.bounds);
   const pendingFile = useSceneStore((state) => state.pendingFile);
 
@@ -98,6 +104,25 @@ export default function Scene() {
                   >
                     Dismiss
                   </button>
+                </div>
+              )}
+              {rayTracerData && frameCount > 0 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 bg-bg-card border border-border-primary px-4 py-2 rounded-lg">
+                  <span className="text-text-secondary text-sm">Frame</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={frameCount - 1}
+                    value={frameIndex}
+                    onChange={(e) => {
+                      const i = Number(e.target.value);
+                      setFrameIndex(i);
+                    }}
+                    className="w-48"
+                  />
+                  <span className="text-text-primary text-sm font-mono">
+                    {frameIndex} / {frameCount - 1}
+                  </span>
                 </div>
               )}
               <SceneCanvas modelUrl={modelUrl} />

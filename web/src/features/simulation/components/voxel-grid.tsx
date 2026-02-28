@@ -14,6 +14,8 @@ export default function VoxelGrid() {
   const setGridDimensions = useSceneStore((state) => state.setGridDimensions);
   const setWorldDimensions = useSceneStore((state) => state.setWorldDimensions);
   const setSelectedSource = useSceneStore((state) => state.setSelectedSource);
+  const rayTracerData = useSceneStore((state) => state.rayResponse);
+  const frameIndex = useSceneStore((state) => state.frameIndex);
   const { camera } = useThree();
 
   const { count, gridDims } = useMemo(() => {
@@ -90,8 +92,39 @@ export default function VoxelGrid() {
     meshRef.current.instanceMatrix.needsUpdate = true;
   }, [bounds, voxelSize, gridDims, count]);
 
+  useLayoutEffect(() => {
+    if (!meshRef.current || !rayTracerData) return;
+
+    if (!meshRef.current.instanceColor) {
+      meshRef.current.setColorAt(0, new THREE.Color());
+    }
+
+    const color = new THREE.Color();
+
+    // sets blue
+    for (let i = 0; i < count; i++) {
+      meshRef.current.setColorAt(i, new THREE.Color("white"));
+    }
+
+    const frameKey = `frame_${frameIndex}`;
+    const frame = rayTracerData[frameKey];
+
+    if (frame) {
+      frame.forEach((bin) => {
+        const [voxelIndex, intensity] = Object.entries(bin)[0];
+        const hue = THREE.MathUtils.mapLinear(intensity, 0, 1, 0.66, 1);
+        color.setRGB(hue, 0, 0);
+        meshRef.current!.setColorAt(Number(voxelIndex), color);
+      });
+    }
+
+    meshRef.current.instanceColor!.needsUpdate = true;
+  }, [rayTracerData, frameIndex, count]);
+
   // Compute voxel center from instance index
   const handlePick = (e: any) => {
+    // don't allow the user to change the source position once they have run the simulation
+    if (rayTracerData) return;
     // Stop from selecting multiple voxels
     e.stopPropagation();
 
@@ -160,9 +193,9 @@ export default function VoxelGrid() {
       >
         <boxGeometry args={[voxelSize, voxelSize, voxelSize]} />
         <meshStandardMaterial
-          color="#00ff00"
+          color="#ffffff"
           transparent
-          opacity={0.15}
+          opacity={0.1}
           depthWrite={false}
         />
       </instancedMesh>
