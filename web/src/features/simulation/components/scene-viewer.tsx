@@ -6,7 +6,7 @@ import {
   Html,
   useProgress,
 } from "@react-three/drei";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
 import VoxelGrid from "./voxel-grid";
@@ -36,6 +36,10 @@ function Model({
   // useGLTF automatically caches by URL
   const { scene } = useGLTF(url);
 
+  const showTexture = useSceneStore((state) => state.showTexture);
+  // store the original texture, so the user can toggle
+  const originalTexture = useRef(new Map());
+
   useEffect(() => {
     if (scene) {
       scene.traverse((child) => {
@@ -45,11 +49,24 @@ function Model({
         child.updateMatrix();
 
         if (child instanceof THREE.Mesh) {
-          child.material = new THREE.MeshStandardMaterial({
-            color: "#888888",
-            roughness: 0.8,
-            metalness: 0.1,
-          });
+          if (!originalTexture.current.has(child.uuid)) {
+            originalTexture.current.set(child.uuid, child.material);
+          }
+
+          if (!showTexture) {
+            // If the user doesn't want to show the model texture
+            if (child instanceof THREE.Mesh) {
+              child.material = new THREE.MeshStandardMaterial({
+                color: "#888888",
+                roughness: 0.8,
+                metalness: 0.1,
+              });
+            }
+          } else {
+            if (originalTexture.current.has(child.uuid)) {
+              child.material = originalTexture.current.get(child.uuid);
+            }
+          }
         }
       });
 
@@ -70,7 +87,7 @@ function Model({
       const box = new THREE.Box3().setFromObject(scene);
       onLoad(box);
     }
-  }, [scene, onLoad]);
+  }, [scene, onLoad, showTexture]);
 
   return <primitive object={scene} />;
 }

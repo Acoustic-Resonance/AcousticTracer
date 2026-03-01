@@ -9,6 +9,8 @@ export default function ConfigPanel({
   const setVoxelSize = useSceneStore((state) => state.setVoxelSize);
   const showGrid = useSceneStore((state) => state.showGrid);
   const setShowGrid = useSceneStore((state) => state.setShowGrid);
+  const showTexture = useSceneStore((state) => state.showTexture);
+  const setShowTexture = useSceneStore((state) => state.setShowTexture);
 
   return (
     <div className="bg-bg-card p-4 rounded-lg border border-border-primary w-80">
@@ -45,6 +47,15 @@ export default function ConfigPanel({
           className="accent-button-primary scale-125"
         />
       </div>
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-sm">Show Model Textures</span>
+        <input
+          type="checkbox"
+          checked={showTexture}
+          onChange={(e) => setShowTexture(e.target.checked)}
+          className="accent-button-primary scale-125"
+        />
+      </div>
 
       {/* Grid Stats Info */}
       <GridStats />
@@ -55,10 +66,10 @@ export default function ConfigPanel({
 function GridStats() {
   const gridDimensions = useSceneStore((state) => state.gridDimensions);
   const worldDimensions = useSceneStore((state) => state.worldDimensions);
-  if (!gridDimensions || !worldDimensions ) return null;
+  if (!gridDimensions || !worldDimensions) return null;
 
   const { nx, ny, nz } = gridDimensions;
-  const { x, y, z } = worldDimensions
+  const { x, y, z } = worldDimensions;
   const total = nx * ny * nz;
 
   return (

@@ -25,6 +25,7 @@ interface SceneState {
   };
   bounds: THREE.Box3 | null;
   showGrid: boolean;
+  showTexture: boolean;
   pendingFile: File | null;
   gridDimensions: { nx: number; ny: number; nz: number } | null;
   worldDimensions: { x: number; y: number; z: number } | null;
@@ -35,6 +36,7 @@ interface SceneState {
   setRayResponse: (response: RayResponse) => void;
   setBounds: (box: THREE.Box3) => void;
   setShowGrid: (visible: boolean) => void;
+  setShowTexture: (visible: boolean) => void;
   setPendingFile: (file: File | null) => void;
   setMaterial: (value: string) => void;
   setGridDimensions: (
@@ -73,6 +75,7 @@ export const useSceneStore = create<SceneState>()((set, get) => ({
   bounds: null,
   rawBounds: null,
   showGrid: true,
+  showTexture: true,
   pendingFile: null,
   gridDimensions: null,
   worldDimensions: null,
@@ -90,6 +93,7 @@ export const useSceneStore = create<SceneState>()((set, get) => ({
     })),
   setBounds: (box) => set({ bounds: box }),
   setShowGrid: (visible) => set({ showGrid: visible }),
+  setShowTexture: (visible) => set({ showTexture: visible }),
   setPendingFile: (file) =>
     set((state) => ({
       pendingFile: file,
