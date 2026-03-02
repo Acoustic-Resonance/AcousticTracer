@@ -311,27 +311,42 @@ float AT_BVH_get_SAH(const AT_BVHNode *node, const AT_BVHConfig *conf, uint32_t 
     return c_t + c_i * (left_cost + right_cost);
 }
 
-uint32_t AT_BVH_get_optimal_split(const AT_BVH *tree, const AT_BVHConfig *conf)
+AT_SplitContext AT_BVH_get_optimal_split(const AT_BVHNode *node, const AT_BVHConfig *conf)
 {
-    AT_BVHNode root = tree->nodes[0];
-    float no_split_cost = root.aabb.SA * root.num_tri;
-    float split_cost = FLT_MAX;
-    uint32_t split_idx;
-    int axis = 0;
-    AT_Medians medians = AT_BVH_get_median_range(root.triangles, root.num_tri, axis);
-    uint32_t start = AT_min(medians.object, medians.spatial);
-    uint32_t end = AT_max(medians.object, medians.spatial);
-    for (uint32_t i = start; i < end; i++) {
-        float new_cost = AT_BVH_get_SAH(tree, conf, i);
-        if (new_cost < split_cost) {
-            split_cost = new_cost;
-            split_idx = i;
+    float no_split_cost = node->aabb.SA * node->num_tri;
+    float split_cost = no_split_cost;
+    float new_cost;
+    uint32_t left_n = node->num_tri;
+    int dim = 0;
+    for (int axis = 0; axis < 3; axis++) {
+        AT_Medians medians = AT_BVH_get_median_range(node, axis);
+        uint32_t start = AT_min(medians.object, medians.spatial);
+        uint32_t end = AT_max(medians.object, medians.spatial);
+        for (uint32_t i = start; i < end + 1; i++) {
+            new_cost = AT_BVH_get_SAH(node, conf, i, axis);
+            if (new_cost < split_cost) {
+                split_cost = new_cost;
+                left_n = i + 1;
+                dim = axis;
+            }
         }
     }
 
-    if (no_split_cost < split_cost) {
-        return root.num_tri;
+    if (left_n >= node->num_tri) {
+        return (AT_SplitContext){
+            .left_n = left_n
+        };
     }
 
-    return split_idx;
+    for (uint32_t i = 0; i < node->num_tri; i++) {
+        if (i < left_n) {
+            (&AT_get_triangle(node, dim, i))->left = 1;
+        } else {
+            (&AT_get_triangle(node, dim, i))->left = 0;
+        }
+    }
+    return (AT_SplitContext){
+        .axis = dim,
+        .left_n = left_n,
+    };
 }
