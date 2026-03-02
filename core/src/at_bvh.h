@@ -64,8 +64,7 @@ void AT_triangle_arrays_destroy(AT_TriangleArrays *triangle_arrs);
 
 void AT_BVH_destroy(AT_BVH *tree);
 
-void AT_BVH_sort_triangles(AT_Triangle *triangles, uint32_t num_tri, AT_Triangle **dim_arrs);
-void AT_BVH_partition_list(AT_Triangle *triangles, uint32_t num_tri, AT_SplitContext *ctx);
+void AT_BVH_sort_triangles(AT_TriangleArrays *triangle_arrs, uint32_t num_tri);
 
 AT_Medians AT_BVH_get_median_range(AT_Triangle *triangles, uint32_t num_tri, int axis);
 float AT_BVH_get_SAH(const AT_BVH *tree, const AT_BVHConfig *conf, uint32_t split_idx);

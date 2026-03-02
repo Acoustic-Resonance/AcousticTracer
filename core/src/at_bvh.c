@@ -110,20 +110,22 @@ unsigned char get_nth_byte(float num, int n)
     return (flt_to_int(num) & (0xFF << offset)) >> offset;
 }
 
-void count_sort(AT_Triangle *in_buf, int cur_byte, uint32_t num_tri, AT_Triangle *out_buf, int dim)
+void count_sort(AT_TriangleArrays *triangle_arrs, AT_TriArray in_buf, int cur_byte, uint32_t num_tri, AT_TriArray out_buf, int dim)
 {
     int counts[256] = {0};
     int offsets[256] = {0};
 
     bool sorted = true;
+    AT_Triangle *triangles_db = triangle_arrs->triangles_db;
     for (uint32_t i = 0; i < num_tri; i++) {
+        AT_Triangle cur_triangle = triangles_db[in_buf[i]];
         if (
             (i > 0) &&
-            in_buf[i].aabb.midpoint.arr[dim] < in_buf[i - 1].aabb.midpoint.arr[dim]
+            cur_triangle.aabb.midpoint.arr[dim] < triangles_db[in_buf[i - 1]].aabb.midpoint.arr[dim]
         ) {
             sorted = false;
         }
-        AT_Vec3 midpoint = in_buf[i].aabb.midpoint;
+        AT_Vec3 midpoint = cur_triangle.aabb.midpoint;
         counts[get_nth_byte(midpoint.arr[dim], cur_byte)]++;
     }
     if (sorted) {
@@ -136,31 +138,37 @@ void count_sort(AT_Triangle *in_buf, int cur_byte, uint32_t num_tri, AT_Triangle
     }
 
     for (uint32_t i = 0; i < num_tri; i++) {
-        AT_Triangle triangle = in_buf[i];
+        AT_Triangle triangle = triangles_db[in_buf[i]];
         AT_Vec3 midpoint = triangle.aabb.midpoint;
         unsigned char byte = get_nth_byte(midpoint.arr[dim], cur_byte);
-        out_buf[offsets[byte]++] = triangle;
+        out_buf[offsets[byte]++] = in_buf[i];
     }
 }
 
-void AT_BVH_sort_triangles(AT_Triangle *triangles, uint32_t num_tri, AT_Triangle **dim_arrs)
+void AT_BVH_sort_triangles(AT_TriangleArrays *triangles_arrs, uint32_t num_tri)
 {
-    AT_Triangle *tmp_buf = triangles;
-    AT_Triangle *res_buf = malloc(sizeof(*res_buf) * num_tri);
-    AT_Triangle *tmp;
+    AT_TriArray tmp_buf = malloc(sizeof(*tmp_buf) * num_tri);
+    AT_TriArray res_buf = malloc(sizeof(*tmp_buf) * num_tri);
+    for (uint32_t i = 0; i < num_tri; i++) {
+        tmp_buf[i] = i;
+        res_buf[i] = i;
+    }
+    AT_TriArray tmp;
+
     for (int dim = 0; dim < 3; dim++) {
-        for (int i = 0; i < 4; i++) {
-            count_sort(tmp_buf, i, num_tri, res_buf, dim);
+        for (int i = 0; i < 4; i++) { // byte loop
+            count_sort(triangles_arrs, tmp_buf, i, num_tri, res_buf, dim);
             if (i < 3) {
                 tmp = tmp_buf;
                 tmp_buf = res_buf;
                 res_buf = tmp;
             }
         }
-        memcpy(dim_arrs[dim], res_buf, sizeof(AT_Triangle) * num_tri);
+        memcpy(triangles_arrs->arrs[dim], res_buf, sizeof(*triangles_arrs->arrs[dim]) * num_tri);
     }
 
     free(tmp_buf);
+    free(res_buf);
 }
 
 void AT_BVH_partition_list(AT_Triangle *triangles, uint32_t num_tri, AT_SplitContext *ctx)
