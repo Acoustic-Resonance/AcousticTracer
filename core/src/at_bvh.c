@@ -208,8 +208,8 @@ float AT_BVH_get_SAH(const AT_BVHNode *node, const AT_BVHConfig *conf, uint32_t 
     float tree_SA = 1 / node->aabb.SA;
     uint32_t left_n = split_idx;
     uint32_t right_n = node->num_tri - left_n;
-    int c_t = conf->traversal_cost;
-    int c_i = conf->intersection_cost;
+    float c_t = conf->traversal_cost;
+    float c_i = conf->intersection_cost;
 
     float left_cost = (areas.left_area * tree_SA) * left_n;
     float right_cost = (areas.right_area * tree_SA) * right_n;

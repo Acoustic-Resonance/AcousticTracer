@@ -20,7 +20,7 @@ typedef struct {
 
 typedef struct {
     uint32_t mini_tree_size;
-    int traversal_cost, intersection_cost;
+    float traversal_cost, intersection_cost;
 } AT_BVHConfig;
 
 typedef struct {
