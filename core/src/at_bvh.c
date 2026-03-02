@@ -1,6 +1,8 @@
 #include "../src/at_bvh.h"
 #include "../src/at_aabb.h"
+#include "../src/at_internal.h"
 #include "../src/at_utils.h"
+#include "acoustic/at_model.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -47,6 +49,7 @@ AT_Result AT_triangle_arrays_create(AT_TriangleArrays **out_arrs, const AT_Model
 
     return AT_OK;
 }
+
 void AT_triangle_arrays_destroy(AT_TriangleArrays *triangle_arrs)
 {
     if (!triangle_arrs) return;
