@@ -7,6 +7,7 @@
 
 #include <math.h>
 #include <float.h>
+#include <stdbool.h>
 
 /** \brief Groups three floats to represent a vector of size 3.
  */
@@ -32,6 +33,8 @@ typedef struct {
 typedef struct {
     AT_Vec3 v1, v2, v3;
     AT_AABB aabb;
+    // TODO: change to be seperate array of booleans in triangle_arrs
+    bool left;
 } AT_Triangle;
 
 /** \brief AT_Vec3 constructor for a given point.

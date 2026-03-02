@@ -234,6 +234,7 @@ AT_Result AT_model_get_triangles(AT_Triangle **out_triangles, const AT_Model *mo
             .v3 = model->vertices[model->indices[i*3 + 2]]
         };
         ts[i].aabb = AT_AABB_from_triangle(&ts[i]);
+        ts[i].left = 0;
     }
     *out_triangles = ts;
     return AT_OK;
