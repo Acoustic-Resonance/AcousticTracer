@@ -103,11 +103,22 @@ AT_SplitContext get_longest_axis_mid(const AT_TriGroup *group, int nth_longest)
     }
 
     int axis = axis_order[nth_longest - 1];
-    // float midpoint = group->aabb.midpoint.arr[axis];
-    float midpoint = group->triangles[group->num_tri / 2].aabb.midpoint.arr[axis];
+    uint32_t left_n = 0;
+    uint32_t mid_idx = group->num_tri / 2;
+    // float midpoint = AT_get_triangle(group, axis, mid_idx).aabb.midpoint.arr[axis];
+
+    for (uint32_t i = 0; i < group->num_tri; i++) {
+        AT_Triangle *triangle = &AT_get_triangle(group, axis, i);
+        if (i <= mid_idx) {
+            triangle->left = 1;
+            left_n++;
+        } else {
+            triangle->left = 0;
+        }
+    }
 
     AT_SplitContext ctx = {
-        .threshold = midpoint,
+        .left_n = left_n,
         .axis = axis
     };
     return ctx;
@@ -129,18 +140,11 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
     do {
         // 1. Get longest axis
         // 2. Get centre of longest axis
-        ctx = get_longest_axis_mid(parent_group, nth_longest);
-
         // 3. Get triangles to left of axis
         // 4. Get triangles to right of axis
-        left_n = 0;
-        for (uint32_t i = 0; i < num_tri; i++) {
-            if (triangles[i].aabb.midpoint.arr[ctx.axis] < ctx.threshold) {
-                left_n++;
-            }
-        }
+        ctx = get_longest_axis_mid(parent_group, nth_longest);
 
-        right_n = num_tri - left_n;
+        left_n = ctx.left_n;
         right_n = num_tri - left_n;
     } while (
         (left_n == parent_group->num_tri || right_n == parent_group->num_tri) &&

@@ -43,7 +43,6 @@ typedef struct {
 } AT_BVH;
 
 typedef struct {
-    float threshold;
     int axis;
     uint32_t left_n;
 } AT_SplitContext;
