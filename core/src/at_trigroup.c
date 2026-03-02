@@ -65,11 +65,13 @@ AT_Result AT_triangle_groups_create(AT_TriangleGroups **out_group, int num_ts)
 
 void AT_triangle_groups_destroy(AT_TriangleGroups *tri_groups)
 {
+    if (!tri_groups) return;
     for (uint32_t i = 0; i < tri_groups->num_groups; i++) {
         if (!tri_groups->groups[i]) break;
         AT_trigroup_destroy(tri_groups->groups[i]);
     }
     free(tri_groups->groups);
+    free(tri_groups);
 }
 
 /** \brief Gets the longest side of a given triangle group's AABB.
