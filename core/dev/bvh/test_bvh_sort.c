@@ -1,6 +1,7 @@
 #include "../src/at_bvh.h"
 #include "../src/at_internal.h"
 #include "../src/at_trigroup.h"
+#include "../src/at_utils.h"
 #include "acoustic/at.h"
 #include "acoustic/at_model.h"
 
@@ -32,38 +33,31 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    uint32_t num_tri = model->index_count / 3;
-    AT_Triangle *ts = NULL;
-    if (AT_model_get_triangles(&ts, model) != AT_OK) {
-        fprintf(stderr, "Failed to load triangles from model\n");
+    AT_TriangleArrays *triangle_arrs = NULL;
+    if (AT_triangle_arrays_create(&triangle_arrs, model) != AT_OK) {
+        perror("Failed to create triangle arrays");
+        AT_model_destroy(model);
         return 1;
     }
 
-    AT_Triangle **dim_arrs = malloc(sizeof(*dim_arrs) * 3);
-    dim_arrs[0] = malloc(sizeof(AT_Triangle) * num_tri);
-    dim_arrs[1] = malloc(sizeof(AT_Triangle) * num_tri);
-    dim_arrs[2] = malloc(sizeof(AT_Triangle) * num_tri);
-    AT_BVH_sort_triangles(ts, num_tri, dim_arrs);
+    uint32_t num_tri = model->index_count / 3;
 
     AT_BVHConfig bvh_config = {
         .mini_tree_size = 100,
     };
-    AT_TriGroup *tri_group = NULL;
-    if (AT_trigroup_create(&tri_group, ts, dim_arrs, 0, num_tri) != AT_OK) {
-        perror("Failed to create the triangle group");
-        free(ts);
-        return 1;
-    }
 
-    AT_TriangleGroups *groups = NULL;
-    if (AT_triangle_groups_create(&groups, tri_group->num_tri) != AT_OK) {
+    AT_TriangleGroups *tri_groups = NULL;
+    if (AT_triangle_groups_create(&tri_groups, num_tri) != AT_OK) {
         perror("Failed to create the triangle groups holder");
-        free(ts);
+        AT_triangle_arrays_destroy(triangle_arrs);
+        AT_model_destroy(model);
         return 1;
     }
-    if (AT_trigroup_split(tri_group, groups, bvh_config.mini_tree_size) != AT_OK) {
+    if (AT_trigroup_split(triangle_arrs, num_tri, tri_groups, bvh_config.mini_tree_size) != AT_OK) {
         perror("Failed to split the triangle group");
-        free(ts);
+        AT_triangle_groups_destroy(tri_groups);
+        AT_triangle_arrays_destroy(triangle_arrs);
+        AT_model_destroy(model);
         return 1;
     }
 
@@ -79,27 +73,24 @@ int main(int argc, char *argv[])
     // for (uint32_t i = 0; i < num_tri; i++) {
     //     fprintf(z_file, "%f\n", dim_arrs[2][i].aabb.midpoint.z);
     // }
-    AT_TriGroup *groupX = groups->groups[strtol(argv[1], NULL, 10)];
-    AT_TriGroup *groupY = groups->groups[strtol(argv[2], NULL, 10)];
-    AT_TriGroup *groupZ = groups->groups[strtol(argv[3], NULL, 10)];
+    AT_TriGroup *groupX = tri_groups->groups[strtol(argv[1], NULL, 10)];
+    AT_TriGroup *groupY = tri_groups->groups[strtol(argv[2], NULL, 10)];
+    AT_TriGroup *groupZ = tri_groups->groups[strtol(argv[3], NULL, 10)];
     for (uint32_t i = 0; i < groupX->num_tri; i++) {
-        fprintf(x_file, "%f\n", groupX->dim_arrs[0][i].aabb.midpoint.x);
+        fprintf(x_file, "%f\n", AT_get_triangle(groupX, 0, i).aabb.midpoint.x);
     }
     for (uint32_t i = 0; i < groupY->num_tri; i++) {
-        fprintf(y_file, "%f\n", groupY->dim_arrs[1][i].aabb.midpoint.y);
+        fprintf(y_file, "%f\n", AT_get_triangle(groupY, 1, i).aabb.midpoint.y);
     }
     for (uint32_t i = 0; i < groupZ->num_tri; i++) {
-        fprintf(z_file, "%f\n", groupZ->dim_arrs[2][i].aabb.midpoint.z);
+        fprintf(z_file, "%f\n", AT_get_triangle(groupZ, 2, i).aabb.midpoint.z);
     }
     fclose(x_file);
     fclose(y_file);
     fclose(z_file);
 
-    free(ts);
-    free(dim_arrs[0]);
-    free(dim_arrs[1]);
-    free(dim_arrs[2]);
-    free(dim_arrs);
+    AT_triangle_groups_destroy(tri_groups);
+    AT_triangle_arrays_destroy(triangle_arrs);
     AT_model_destroy(model);
     return 0;
 }

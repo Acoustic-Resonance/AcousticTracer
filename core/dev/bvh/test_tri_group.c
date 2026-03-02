@@ -1,7 +1,7 @@
-#include "../src/at_aabb.h"
 #include "../src/at_bvh.h"
 #include "../src/at_internal.h"
 #include "../src/at_trigroup.h"
+#include "../src/at_utils.h"
 #include "acoustic/at.h"
 #include "acoustic/at_model.h"
 #include "raylib.h"
@@ -16,76 +16,42 @@
 
 int main(int argc, char *_[])
 {
-    AT_TriGroup *tri_group = NULL;
     AT_BVHConfig bvh_config;
-    AT_Triangle *ts;
-    AT_Model *model;
 
-    if (argc > 1) {
-        const char *filepath = "../assets/glb/Sponza.glb";
-        model = NULL;
-        if (AT_model_create(&model, filepath) != AT_OK) {
-            perror("Failed to create model");
-            return 1;
-        }
-
-        for (uint32_t i = 0; i < model->vertex_count; i++) {
-            model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.5);
-        }
-
-        if (AT_model_get_triangles(&ts, model) != AT_OK) {
-            perror("Error getting triangles from the given model");
-            return 1;
-        }
-        // bvh_config.mini_tree_size = (model->index_count / 3) / 16;
-        bvh_config.mini_tree_size = 100;
-
-        int t_count = model->index_count / 3;
-        AT_Triangle **dim_arrs = malloc(sizeof(*dim_arrs) * 3);
-        dim_arrs[0] = malloc(sizeof(AT_Triangle) * t_count);
-        dim_arrs[1] = malloc(sizeof(AT_Triangle) * t_count);
-        dim_arrs[2] = malloc(sizeof(AT_Triangle) * t_count);
-        AT_BVH_sort_triangles(ts, t_count, dim_arrs);
-
-        if (AT_trigroup_create(&tri_group, ts, dim_arrs, 0, model->index_count / 3) != AT_OK) {
-            perror("Failed to create the triangle group");
-            free(ts);
-            return 1;
-        }
-    } else {
-        uint32_t triangle_count = 7000000;
-        bvh_config.mini_tree_size = 100;
-        ts = (AT_Triangle *)malloc(sizeof(AT_Triangle) * triangle_count);
-        for (uint32_t i = 0; i < triangle_count; i++) {
-            AT_Triangle *triangle = &ts[i];
-            triangle->v1 = AT_vec3(0.4f, 0.2f * i, 0.34f);
-            triangle->v2 = AT_vec3(0.03f * i, 0.5f, 0.67f);
-            triangle->v3 = AT_vec3(0.2f, 0.6f, 0.09f * i);
-            triangle->aabb = AT_AABB_from_triangle(triangle);
-        }
-        int t_count = triangle_count;
-        AT_Triangle **dim_arrs = malloc(sizeof(*dim_arrs) * 3);
-        dim_arrs[0] = malloc(sizeof(AT_Triangle) * t_count);
-        dim_arrs[1] = malloc(sizeof(AT_Triangle) * t_count);
-        dim_arrs[2] = malloc(sizeof(AT_Triangle) * t_count);
-        AT_BVH_sort_triangles(ts, t_count, dim_arrs);
-
-        if (AT_trigroup_create(&tri_group, ts, dim_arrs, 0, triangle_count) != AT_OK) {
-            perror("Failed to create the triangle group");
-            free(ts);
-            return 1;
-        }
-    }
-
-    AT_TriangleGroups *groups = NULL;
-    if (AT_triangle_groups_create(&groups, tri_group->num_tri) != AT_OK) {
-        perror("Failed to create the triangle groups holder");
-        free(ts);
+    const char *filepath = "../assets/glb/Sponza.glb";
+    AT_Model *model = NULL;
+    if (AT_model_create(&model, filepath) != AT_OK) {
+        perror("Failed to create model");
         return 1;
     }
-    if (AT_trigroup_split(tri_group, groups, bvh_config.mini_tree_size) != AT_OK) {
+
+    for (uint32_t i = 0; i < model->vertex_count; i++) {
+        model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.05);
+    }
+
+    AT_TriangleArrays *triangle_arrs = NULL;
+    if (AT_triangle_arrays_create(&triangle_arrs, model) != AT_OK) {
+        perror("Failed to create triangle arrays");
+        AT_model_destroy(model);
+        return 1;
+    }
+
+    // bvh_config.mini_tree_size = (model->index_count / 3) / 16;
+    bvh_config.mini_tree_size = 100;
+
+    uint32_t num_tri = model->index_count / 3;
+
+    AT_TriangleGroups *groups = NULL;
+    if (AT_triangle_groups_create(&groups, num_tri) != AT_OK) {
+        perror("Failed to create the triangle groups holder");
+        AT_triangle_arrays_destroy(triangle_arrs);
+        AT_model_destroy(model);
+        return 1;
+    }
+    if (AT_trigroup_split(triangle_arrs, num_tri, groups, bvh_config.mini_tree_size) != AT_OK) {
         perror("Failed to split the triangle group");
-        free(ts);
+        AT_triangle_arrays_destroy(triangle_arrs);
+        AT_model_destroy(model);
         return 1;
     }
 
@@ -94,7 +60,7 @@ int main(int argc, char *_[])
         Color cols[4] = {BLACK, LIGHTGRAY, DARKGRAY, WHITE};
         int idx[SAMPLE_SIZE];
         for (int i = 0; i < SAMPLE_SIZE; i++) {
-            idx[i] = rand() % (groups->num_groups + 1);
+            idx[i] = rand() % (groups->num_groups);
         }
 
         // AT_AABB aabb = {};
@@ -141,7 +107,7 @@ int main(int argc, char *_[])
                 };
             }
             if (IsKeyPressed(KEY_F)) {
-                AT_Vec3 midpoint = groups->groups[index]->triangles[0].aabb.midpoint;
+                AT_Vec3 midpoint = AT_get_triangle(groups->groups[index], 3, 0).aabb.midpoint;
                 cam.target = (Vector3){
                     .x = midpoint.x,
                     .y = midpoint.y,
@@ -154,7 +120,7 @@ int main(int argc, char *_[])
                 };
             }
             if (IsKeyPressed(KEY_Q)) {
-                AT_Vec3 tri_mid = groups->groups[index]->triangles[++i % groups->groups[index]->num_tri].aabb.midpoint;
+                AT_Vec3 tri_mid = AT_get_triangle(groups->groups[index], 3, ++i % groups->groups[index]->num_tri).aabb.midpoint;
                 cam.position = (Vector3){
                     .x = tri_mid.x,
                     .y = tri_mid.y,
@@ -194,7 +160,7 @@ int main(int argc, char *_[])
                     // //     color
                     // // );
                     for (uint32_t j = 0; j < groups->groups[index]->num_tri; j++) {
-                        AT_Triangle triangle = groups->groups[index]->triangles[j];
+                        AT_Triangle triangle = AT_get_triangle(groups->groups[index], 3, j);
                         // AT_Vec3 triangle_mid = triangle.aabb.midpoint;
                         // bool is_left = triangle_mid.x <= midpoint.x ||
                         //                triangle_mid.y <= midpoint.y ||
@@ -205,7 +171,7 @@ int main(int argc, char *_[])
                         //     color = BLUE;
                         // }
                         // Color color = cols[j % 4];
-                        Color color = colors[j % sizeof(colors)];
+                        Color color = colors[j % (sizeof(colors) / sizeof(colors[0]))];
                         // Color color = GREEN;
                         // color.a = 100;
                         DrawTriangle3D(
@@ -213,6 +179,11 @@ int main(int argc, char *_[])
                             (Vector3){triangle.v2.x, triangle.v2.y, triangle.v2.z},
                             (Vector3){triangle.v3.x, triangle.v3.y, triangle.v3.z},
                             color
+                        );
+                        DrawSphere(
+                            (Vector3){triangle.aabb.midpoint.x, triangle.aabb.midpoint.y, triangle.aabb.midpoint.z},
+                            0.05f,
+                            RED
                         );
                         // }
                     }
@@ -236,7 +207,7 @@ int main(int argc, char *_[])
     }
 
     AT_triangle_groups_destroy(groups);
-    free(ts);
+    AT_triangle_arrays_destroy(triangle_arrs);
 
     return 0;
 }
