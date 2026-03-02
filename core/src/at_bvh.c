@@ -201,14 +201,13 @@ AT_SA get_node_SA(AT_BVHNode *node, AT_Triangle *triangles, uint32_t split_idx, 
     return area;
 }
 
-float AT_BVH_get_SAH(const AT_BVH *tree, const AT_BVHConfig *conf, uint32_t split_idx)
+float AT_BVH_get_SAH(const AT_BVHNode *node, const AT_BVHConfig *conf, uint32_t split_idx, int axis)
 {
     // SAH(tree) = c_t + c_i((SA(left) / SA(tree)) * N(left) + (SA(right) / SA(tree) * N(right)))
-    AT_BVHNode root = tree->nodes[0];
-    AT_SA areas = get_node_SA(&root, root.triangles, split_idx, root.num_tri);
-    float tree_SA = 1 / root.aabb.SA;
+    AT_SA areas = get_node_SA(node, axis, split_idx);
+    float tree_SA = 1 / node->aabb.SA;
     uint32_t left_n = split_idx;
-    uint32_t right_n = root.num_tri - left_n;
+    uint32_t right_n = node->num_tri - left_n;
     int c_t = conf->traversal_cost;
     int c_i = conf->intersection_cost;
 
