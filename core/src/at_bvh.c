@@ -124,6 +124,8 @@ AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group, const A
 
 void AT_BVH_destroy(AT_BVH *tree)
 {
+    if (!tree) return;
+
     free(tree->nodes);
     free(tree);
 }
@@ -220,12 +222,16 @@ void AT_BVH_sort_triangles(AT_TriangleArrays *triangles_arrs, uint32_t num_tri)
     free(res_buf);
 }
 
-void AT_BVH_partition_list(AT_TriangleArrays *triangle_arrs, int array_idx, uint32_t start, uint32_t num_tri, AT_SplitContext *ctx)
+AT_Result AT_BVH_partition_list(AT_TriangleArrays *triangle_arrs, int array_idx, uint32_t start, uint32_t num_tri, AT_SplitContext *ctx)
 {
     uint32_t left = 0, right = 0;
     // TODO: check for malloc error
     AT_TriArray left_tmp_buf = malloc(sizeof(*left_tmp_buf) * num_tri);
     AT_TriArray right_tmp_buf = malloc(sizeof(*right_tmp_buf) * num_tri);
+    if (!left_tmp_buf || !right_tmp_buf) {
+        if (!right_tmp_buf) free(left_tmp_buf);
+        return AT_ERR_ALLOC_ERROR;
+    }
     for (uint32_t i = 0; i < num_tri; i++) {
         bool is_left = AT_get_triangle_by_arr(start, array_idx, i).left;
         if (is_left && left < ctx->left_n) {
@@ -243,6 +249,8 @@ void AT_BVH_partition_list(AT_TriangleArrays *triangle_arrs, int array_idx, uint
 
     free(left_tmp_buf);
     free(right_tmp_buf);
+
+    return AT_OK;
 }
 
 AT_Medians AT_BVH_get_median_range(const AT_BVHNode *node, int axis)
