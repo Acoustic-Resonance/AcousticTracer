@@ -144,12 +144,17 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
         right_n = num_tri - left_n;
     } while (
         (left_n == parent_group->num_tri || right_n == parent_group->num_tri) &&
-        nth_longest++ < 3
-    );
-    ctx.left_n = left_n;
-    AT_BVH_partition_list(triangles, num_tri, &ctx);
-    for (int i = 0; i < 3; i++) {
-        AT_BVH_partition_list(dim_arrs[i], num_tri, &ctx);
+        nth_longest++ < 3);
+    AT_BVH_partition_list(triangle_arrs, 3, start, num_tri, &ctx);
+    if (ctx.axis == 0) {
+        AT_BVH_partition_list(parent_group->triangle_arrs, 1, parent_group->start, parent_group->num_tri, &ctx);
+        AT_BVH_partition_list(parent_group->triangle_arrs, 2, parent_group->start, parent_group->num_tri, &ctx);
+    } else if (ctx.axis == 1) {
+        AT_BVH_partition_list(parent_group->triangle_arrs, 0, parent_group->start, parent_group->num_tri, &ctx);
+        AT_BVH_partition_list(parent_group->triangle_arrs, 2, parent_group->start, parent_group->num_tri, &ctx);
+    } else {
+        AT_BVH_partition_list(parent_group->triangle_arrs, 0, parent_group->start, parent_group->num_tri, &ctx);
+        AT_BVH_partition_list(parent_group->triangle_arrs, 1, parent_group->start, parent_group->num_tri, &ctx);
     }
     AT_Result res;
     res = AT_trigroup_create(left_group, triangles, dim_arrs, 0, left_n);
