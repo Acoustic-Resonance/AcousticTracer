@@ -283,21 +283,12 @@ AT_Medians AT_BVH_get_median_range(const AT_BVHNode *node, int axis)
     return median;
 }
 
-AT_SA get_node_SA(AT_BVHNode *node, AT_Triangle *triangles, uint32_t split_idx, uint32_t num_tri)
+AT_SA get_node_SA(const AT_BVHNode *node, int axis, uint32_t split_idx)
 {
     AT_SA area;
 
-    AT_AABB left_aabb = AT_AABB_init();
-    AT_AABB_grow(&left_aabb, node->aabb.min);
-    AT_AABB right_aabb = AT_AABB_init();
-    right_aabb.max = node->aabb.max;
-    // TODO: check if split index is num_tri
-    for (uint32_t i = 0; i < split_idx + 1; i++) {
-        AT_AABB_grow(&left_aabb, triangles[i].aabb.max);
-    }
-    for (uint32_t i = split_idx + 1; i < num_tri; i++) {
-        AT_AABB_grow(&right_aabb, triangles[i].aabb.max);
-    }
+    AT_AABB left_aabb = get_node_aabb(node->triangle_arrs, axis, node->start, split_idx);
+    AT_AABB right_aabb = get_node_aabb(node->triangle_arrs, axis, split_idx, node->num_tri - split_idx);
     area.left_area = AT_AABB_get_SA(left_aabb);
     area.right_area = AT_AABB_get_SA(right_aabb);
 
