@@ -101,9 +101,22 @@ AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group, const A
 
     AT_BVH *bvh = malloc(sizeof(*bvh));
     if (!bvh) return AT_ERR_ALLOC_ERROR;
-    bvh->nodes = malloc(sizeof(*bvh->nodes) * ((2 * tri_group->num_tri) - 1));
-    if (!bvh->nodes) return AT_ERR_ALLOC_ERROR;
-    bvh->nodes[0] = create_node(tri_group->triangles, tri_group->num_tri, tri_group->aabb, 0);
+    bvh->max_node_count = (2 * tri_group->num_tri) - 1;
+    bvh->last_node_idx = 0;
+    bvh->nodes = malloc(sizeof(*bvh->nodes) * bvh->max_node_count);
+    if (!bvh->nodes) {
+        free(bvh);
+        return AT_ERR_ALLOC_ERROR;
+    }
+    AT_BVHNode_init(bvh, bvh->nodes, tri_group->triangle_arrs, tri_group->start, tri_group->num_tri, 0);
+
+    AT_Result res = AT_BVH_split(bvh, conf);
+    if (res != AT_OK) {
+        perror("Failed to split BVH");
+        free(bvh->nodes);
+        free(bvh);
+        return res;
+    }
 
     *out_tree = bvh;
     return AT_OK;
