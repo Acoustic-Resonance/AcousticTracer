@@ -177,7 +177,9 @@ AT_Result AT_trigroup_split(AT_Triangle *triangles, AT_Triangle **dim_arrs, uint
     }
 
     // 5. Repeat for sub trees
-    AT_TriGroup *stack[(int)ceil(log2(num_tri))];
+    // TODO: find minimum size for tri group stack
+    // AT_TriGroup *stack[(int)ceil(log2(num_tri))];
+    AT_TriGroup *stack[num_tri];
     int stack_top = 0;
     stack[stack_top] = tri_group;
     stack_top++;
