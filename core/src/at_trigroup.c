@@ -2,9 +2,9 @@
 #include "../src/at_aabb.h"
 #include "../src/at_bvh.h"
 
-AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, AT_Triangle **dim_arrs, uint32_t start, uint32_t n)
+AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_TriangleArrays *triangle_arrs, uint32_t start, uint32_t num_tri)
 {
-    if (!out_group || *out_group || !triangles) return AT_ERR_INVALID_ARGUMENT;
+    if (!out_group || *out_group || !triangle_arrs) return AT_ERR_INVALID_ARGUMENT;
 
     AT_TriGroup *tri_group = malloc(sizeof(*tri_group));
     if (!tri_group) {
@@ -13,22 +13,19 @@ AT_Result AT_trigroup_create(AT_TriGroup **out_group, AT_Triangle *triangles, AT
         return AT_ERR_ALLOC_ERROR;
     }
 
-    tri_group->triangles = &triangles[start];
-    tri_group->dim_arrs = malloc(sizeof(*dim_arrs) * 3);
-    for (int i = 0; i < 3; i++) {
-        tri_group->dim_arrs[i] = &dim_arrs[i][start];
-    }
-    tri_group->num_tri = n;
+    tri_group->triangle_arrs = triangle_arrs;
+    tri_group->start = start;
+    tri_group->num_tri = num_tri;
     // TODO: properly fix this shit bro
-    if (n == 0) {
+    if (num_tri == 0) {
         *out_group = tri_group;
         return AT_OK;
     }
 
     tri_group->aabb = AT_AABB_init();
     for (int i = 0; i < 3; i++) {
-        AT_AABB_grow(&tri_group->aabb, tri_group->dim_arrs[i][0].aabb.midpoint);
-        AT_AABB_grow(&tri_group->aabb, tri_group->dim_arrs[i][n - 1].aabb.midpoint);
+        AT_AABB_grow(&tri_group->aabb, AT_get_triangle(tri_group, i, 0).aabb.midpoint);
+        AT_AABB_grow(&tri_group->aabb, AT_get_triangle(tri_group, i, (num_tri - 1)).aabb.midpoint);
     }
 
     *out_group = tri_group;
@@ -132,9 +129,9 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
 
     uint32_t left_n = 0;
     uint32_t right_n = 0;
-    AT_Triangle *triangles = parent_group->triangles;
-    AT_Triangle **dim_arrs = parent_group->dim_arrs;
+    AT_TriangleArrays *triangle_arrs = parent_group->triangle_arrs;
     uint32_t num_tri = parent_group->num_tri;
+    uint32_t start = parent_group->start;
     int nth_longest = 1; // The xth longest axis
     AT_SplitContext ctx;
     do {
@@ -161,12 +158,12 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
         AT_BVH_partition_list(parent_group->triangle_arrs, 1, parent_group->start, parent_group->num_tri, &ctx);
     }
     AT_Result res;
-    res = AT_trigroup_create(left_group, triangles, dim_arrs, 0, left_n);
+    res = AT_trigroup_create(left_group, triangle_arrs, start, left_n);
     if (res != AT_OK) {
         perror("Failed to create left sub group");
         return res;
     }
-    res = AT_trigroup_create(right_group, triangles, dim_arrs, left_n, right_n);
+    res = AT_trigroup_create(right_group, triangle_arrs, start + left_n, right_n);
     if (res != AT_OK) {
         perror("Failed to create right sub group");
         return res;
@@ -175,12 +172,12 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
     return AT_OK;
 }
 
-AT_Result AT_trigroup_split(AT_Triangle *triangles, AT_Triangle **dim_arrs, uint32_t num_tri, AT_TriangleGroups *groups, uint32_t N)
+AT_Result AT_trigroup_split(AT_TriangleArrays *triangle_arrs, uint32_t num_tri, AT_TriangleGroups *groups, uint32_t N)
 {
     if (!groups) return AT_ERR_INVALID_ARGUMENT;
 
     AT_TriGroup *tri_group = NULL;
-    if (AT_trigroup_create(&tri_group, triangles, dim_arrs, 0, num_tri) != AT_OK) {
+    if (AT_trigroup_create(&tri_group, triangle_arrs, 0, num_tri) != AT_OK) {
         perror("Failed to create the triangle group");
         return 1;
     }
