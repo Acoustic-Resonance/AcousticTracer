@@ -6,10 +6,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef unsigned int *AT_TriArray;
 typedef struct {
-    AT_Triangle *triangles;
-    AT_Triangle **dim_arrs;
-    uint32_t num_tri;
+    AT_Triangle *triangles_db;
+    AT_TriArray *arrs; // 4 arrays, 0 - 2 are dimensional (x, y, z), and 3 is unsorted triangles
+} AT_TriangleArrays;
+
+typedef struct {
+    AT_TriangleArrays *triangle_arrs;
+    uint32_t start, num_tri;
     AT_AABB aabb;
 } AT_TriGroup;
 
@@ -26,8 +31,9 @@ typedef struct {
 typedef struct {
     AT_AABB aabb;
     int idx, left_child, right_child;
-    AT_Triangle *triangles;
-    uint32_t num_tri;
+    AT_TriangleArrays *triangle_arrs;
+    uint32_t start, num_tri;
+    // TODO: add parent index
 } AT_BVHNode;
 
 typedef struct {
@@ -53,7 +59,9 @@ typedef struct {
 
 typedef bool (*AT_CompareFunc)(AT_Vec3, AT_SplitContext *);
 
-AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group);
+AT_Result AT_triangle_arrays_create(AT_TriangleArrays **out_arrs, const AT_Model *model);
+void AT_triangle_arrays_destroy(AT_TriangleArrays *triangle_arrs);
+
 void AT_BVH_destroy(AT_BVH *tree);
 
 void AT_BVH_sort_triangles(AT_Triangle *triangles, uint32_t num_tri, AT_Triangle **dim_arrs);

@@ -7,18 +7,56 @@
 #include <stdlib.h>
 #include <string.h>
 
-AT_BVHNode create_node(AT_Triangle *triangles, uint32_t num_tri, AT_AABB aabb, int index)
+AT_Result AT_triangle_arrays_create(AT_TriangleArrays **out_arrs, const AT_Model *model)
 {
-    AT_BVHNode node = {
-        .aabb = aabb,
-        .idx = index,
-        .left_child = (2 * num_tri) + 1,
-        .right_child = 2 * (num_tri + 1),
-        .num_tri = num_tri,
-        .triangles = triangles,
-    };
+    if (!out_arrs || *out_arrs || !model) return AT_ERR_INVALID_ARGUMENT;
 
-    return node;
+    AT_TriangleArrays *tri_arrs = malloc(sizeof(*tri_arrs));
+    if (!tri_arrs) return AT_ERR_ALLOC_ERROR;
+
+    AT_Result res = AT_model_get_triangles(&tri_arrs->triangles_db, model);
+    if (res != AT_OK) {
+        free(tri_arrs);
+        return res;
+    }
+
+    tri_arrs->arrs = malloc(sizeof(*tri_arrs->arrs) * 4);
+    uint32_t num_tri = model->index_count / 3;
+    for (int i = 0; i < 4; i++) {
+        tri_arrs->arrs[i] = malloc(sizeof(*tri_arrs->arrs[i]) * num_tri);
+        if (!tri_arrs->arrs[i]) {
+            for (int j = i - 1; j >= 0; j--) {
+                free(tri_arrs->arrs[j]);
+            }
+            free(tri_arrs->arrs);
+            free(tri_arrs);
+            return AT_ERR_ALLOC_ERROR;
+        }
+    }
+
+    for (uint32_t i = 0; i < num_tri; i++) {
+        tri_arrs->arrs[0][i] = i;
+        tri_arrs->arrs[1][i] = i;
+        tri_arrs->arrs[2][i] = i;
+        tri_arrs->arrs[3][i] = i;
+    }
+
+    AT_BVH_sort_triangles(tri_arrs, num_tri);
+
+    *out_arrs = tri_arrs;
+
+    return AT_OK;
+}
+void AT_triangle_arrays_destroy(AT_TriangleArrays *triangle_arrs)
+{
+    if (!triangle_arrs) return;
+
+    for (int i = 0; i < 4; i++) {
+        free(triangle_arrs->arrs[i]);
+    }
+    free(triangle_arrs->arrs);
+    free(triangle_arrs->triangles_db);
+    free(triangle_arrs);
 }
 
 AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group)
