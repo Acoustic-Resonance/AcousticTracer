@@ -41,12 +41,12 @@ static inline AT_AABB AT_AABB_join(AT_AABB a, AT_AABB b)
 
 static inline float AT_AABB_get_SA(AT_AABB aabb)
 {
-    float sa = 1;
+    float diffs[3];
     for (int i = 0; i < 3; i++) {
-        sa *= aabb.max.arr[i] - aabb.min.arr[i];
+        diffs[i] = fabsf(aabb.max.arr[i] - aabb.min.arr[i]);
     }
 
-    return sa * 6;
+    return 2 * ((diffs[0] * diffs[1]) + (diffs[0] * diffs[2]) + (diffs[1] * diffs[2]));
 }
 
 #endif // AT_AABB_H
