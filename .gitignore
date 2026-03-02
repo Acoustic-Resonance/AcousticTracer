@@ -1,5 +1,6 @@
-# VsCode files
+# VsCode/Zed files
 .vscode/*
+.zed/*
 .github
 
 # Documentation whitelist
