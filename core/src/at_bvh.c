@@ -59,7 +59,7 @@ void AT_triangle_arrays_destroy(AT_TriangleArrays *triangle_arrs)
     free(triangle_arrs);
 }
 
-AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group)
+AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group, const AT_BVHConfig *conf)
 {
     if (!out_tree || *out_tree) return AT_ERR_INVALID_ARGUMENT;
 

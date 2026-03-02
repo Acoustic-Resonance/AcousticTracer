@@ -61,13 +61,14 @@ typedef bool (*AT_CompareFunc)(AT_Vec3, AT_SplitContext *);
 AT_Result AT_triangle_arrays_create(AT_TriangleArrays **out_arrs, const AT_Model *model);
 void AT_triangle_arrays_destroy(AT_TriangleArrays *triangle_arrs);
 
+AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group, const AT_BVHConfig *conf);
 void AT_BVH_destroy(AT_BVH *tree);
 
 void AT_BVH_sort_triangles(AT_TriangleArrays *triangle_arrs, uint32_t num_tri);
 void AT_BVH_partition_list(AT_TriangleArrays *triangle_arrs, int array_idx, uint32_t start, uint32_t num_tri, AT_SplitContext *ctx);
 
-AT_Medians AT_BVH_get_median_range(AT_Triangle *triangles, uint32_t num_tri, int axis);
-float AT_BVH_get_SAH(const AT_BVH *tree, const AT_BVHConfig *conf, uint32_t split_idx);
-uint32_t AT_BVH_get_optimal_split(const AT_BVH *tree, const AT_BVHConfig *conf);
+AT_Medians AT_BVH_get_median_range(const AT_BVHNode *node, int axis);
+float AT_BVH_get_SAH(const AT_BVHNode *node, const AT_BVHConfig *conf, uint32_t split_idx, int axis);
+AT_SplitContext AT_BVH_get_optimal_split(const AT_BVHNode *node, const AT_BVHConfig *conf);
 
 #endif // AT_BVH_H
