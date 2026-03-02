@@ -32,6 +32,8 @@ typedef struct {
 
 typedef struct {
     AT_BVHNode *nodes;
+    uint32_t max_node_count;
+    uint32_t last_node_idx;
 } AT_BVH;
 
 typedef struct {
