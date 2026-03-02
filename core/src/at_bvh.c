@@ -59,6 +59,42 @@ void AT_triangle_arrays_destroy(AT_TriangleArrays *triangle_arrs)
     free(triangle_arrs);
 }
 
+AT_AABB get_node_aabb(const AT_TriangleArrays *triangle_arrs, uint32_t axis, uint32_t start, uint32_t num_tri)
+{
+    AT_AABB aabb = AT_AABB_init();
+    for (uint32_t i = 0; i < num_tri; i++) {
+        AT_AABB_grow(&aabb, AT_get_triangle_by_arr(start, axis, i).aabb.min);
+        AT_AABB_grow(&aabb, AT_get_triangle_by_arr(start, axis, i).aabb.max);
+    }
+
+    return aabb;
+}
+
+AT_Result AT_BVHNode_init(AT_BVH *tree, const AT_BVHNode *nodes, AT_TriangleArrays *triangles_arrs, uint32_t start, uint32_t num_tri, int index)
+{
+    if (!nodes) {
+        return AT_ERR_INVALID_ARGUMENT;
+    }
+    AT_BVHNode *node = &nodes[index];
+    node->idx = index;
+    if (num_tri == 1) {
+        node->left_child = -1;
+        node->right_child = -1;
+        // TODO: reduce last node index to fix loops
+        // TODO: grow aabb to encompass full triangles
+    } else {
+        node->left_child = ++tree->last_node_idx;
+        node->right_child = ++tree->last_node_idx;
+    }
+    node->start = start;
+    node->num_tri = num_tri;
+    node->triangle_arrs = triangles_arrs;
+
+    node->aabb = get_node_aabb(node->triangle_arrs, 3, node->start, num_tri);
+
+    return AT_OK;
+}
+
 AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group, const AT_BVHConfig *conf)
 {
     if (!out_tree || *out_tree) return AT_ERR_INVALID_ARGUMENT;

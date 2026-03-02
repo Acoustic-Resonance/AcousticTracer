@@ -62,6 +62,7 @@ AT_Result AT_triangle_arrays_create(AT_TriangleArrays **out_arrs, const AT_Model
 void AT_triangle_arrays_destroy(AT_TriangleArrays *triangle_arrs);
 
 AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group, const AT_BVHConfig *conf);
+AT_Result AT_BVHNode_init(AT_BVH *tree, const AT_BVHNode *nodes, AT_TriangleArrays *triangle_arrs, uint32_t start, uint32_t num_tri, int index);
 void AT_BVH_destroy(AT_BVH *tree);
 
 void AT_BVH_sort_triangles(AT_TriangleArrays *triangle_arrs, uint32_t num_tri);
