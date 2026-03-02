@@ -358,3 +358,82 @@ AT_SplitContext AT_BVH_get_optimal_split(const AT_BVHNode *node, const AT_BVHCon
         .left_n = left_n,
     };
 }
+
+AT_Result AT_BVH_split(AT_BVH *tree, const AT_BVHConfig *conf)
+{
+    if (!tree || !conf) return AT_ERR_INVALID_ARGUMENT;
+
+    AT_BVHNode *root = &tree->nodes[0];
+    if (root->num_tri == 1) {
+        root->left_child = -1;
+        root->right_child = -1;
+        return AT_OK;
+    }
+
+    AT_BVHNode *stack[sizeof(tree->nodes) * tree->max_node_count];
+    int stack_top = 0;
+    stack[stack_top++] = root;
+    AT_BVHNode *parent;
+    int left, right;
+    while (stack_top > 0) {
+        parent = stack[--stack_top];
+        left = parent->left_child;
+        right = parent->right_child;
+        AT_SplitContext split_ctx = AT_BVH_get_optimal_split(parent, conf);
+
+        // Skip if not worth splitting
+        if (split_ctx.left_n >= parent->num_tri) {
+            parent->left_child = -1;
+            parent->right_child = -1;
+            // TODO: reduce last node index to fix loops
+            // TODO: grow aabb back to full size
+            continue;
+        }
+
+        if (AT_BVH_partition_list(parent->triangle_arrs, 3, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+            return AT_ERR_ALLOC_ERROR;
+        }
+
+        // TODO: figure out how to remove if statements
+        // i + 1 % 3
+        // 3 - 2 = 1 + 2 % 2
+        // 3 - 1 = 2 + 3 % 1
+        // 3 - 0 = 3 + 4 % 1
+        if (split_ctx.axis == 0) {
+            if (AT_BVH_partition_list(parent->triangle_arrs, 1, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+                return AT_ERR_ALLOC_ERROR;
+            }
+            if (AT_BVH_partition_list(parent->triangle_arrs, 2, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+                return AT_ERR_ALLOC_ERROR;
+            }
+        } else if (split_ctx.axis == 1) {
+            if (AT_BVH_partition_list(parent->triangle_arrs, 0, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+                return AT_ERR_ALLOC_ERROR;
+            }
+            if (AT_BVH_partition_list(parent->triangle_arrs, 2, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+                return AT_ERR_ALLOC_ERROR;
+            }
+        } else {
+            if (AT_BVH_partition_list(parent->triangle_arrs, 0, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+                return AT_ERR_ALLOC_ERROR;
+            }
+            if (AT_BVH_partition_list(parent->triangle_arrs, 1, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+                return AT_ERR_ALLOC_ERROR;
+            }
+        }
+
+        // Create children
+        AT_BVHNode_init(tree, tree->nodes, parent->triangle_arrs, parent->start + 0, split_ctx.left_n, left);
+        AT_BVHNode_init(tree, tree->nodes, parent->triangle_arrs, parent->start + split_ctx.left_n, parent->num_tri - split_ctx.left_n, right);
+
+        // Add if not leaf
+        if (tree->nodes[left].num_tri > 1) {
+            stack[stack_top++] = &tree->nodes[left];
+        }
+        if (tree->nodes[right].num_tri > 1) {
+            stack[stack_top++] = &tree->nodes[right];
+        }
+    }
+
+    return AT_OK;
+}

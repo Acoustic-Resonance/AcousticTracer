@@ -71,5 +71,6 @@ AT_Result AT_BVH_partition_list(AT_TriangleArrays *triangle_arrs, int array_idx,
 AT_Medians AT_BVH_get_median_range(const AT_BVHNode *node, int axis);
 float AT_BVH_get_SAH(const AT_BVHNode *node, const AT_BVHConfig *conf, uint32_t split_idx, int axis);
 AT_SplitContext AT_BVH_get_optimal_split(const AT_BVHNode *node, const AT_BVHConfig *conf);
+AT_Result AT_BVH_split(AT_BVH *tree, const AT_BVHConfig *conf);
 
 #endif // AT_BVH_H
