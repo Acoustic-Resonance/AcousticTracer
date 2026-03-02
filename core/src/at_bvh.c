@@ -171,21 +171,29 @@ void AT_BVH_sort_triangles(AT_TriangleArrays *triangles_arrs, uint32_t num_tri)
     free(res_buf);
 }
 
-void AT_BVH_partition_list(AT_Triangle *triangles, uint32_t num_tri, AT_SplitContext *ctx)
+void AT_BVH_partition_list(AT_TriangleArrays *triangle_arrs, int array_idx, uint32_t start, uint32_t num_tri, AT_SplitContext *ctx)
 {
-    uint32_t left = 0, right = ctx->left_n;
-    AT_Triangle *tmp_buf = malloc(sizeof(*tmp_buf) * num_tri);
+    uint32_t left = 0, right = 0;
+    // TODO: check for malloc error
+    AT_TriArray left_tmp_buf = malloc(sizeof(*left_tmp_buf) * num_tri);
+    AT_TriArray right_tmp_buf = malloc(sizeof(*right_tmp_buf) * num_tri);
     for (uint32_t i = 0; i < num_tri; i++) {
-        bool is_left = triangles[i].aabb.midpoint.arr[ctx->axis] < ctx->threshold;
-        if (is_left) {
-            tmp_buf[left++] = triangles[i];
+        bool is_left = AT_get_triangle_by_arr(start, array_idx, i).left;
+        if (is_left && left < ctx->left_n) {
+            left_tmp_buf[left++] = triangle_arrs->arrs[array_idx][start + i];
         } else {
-            tmp_buf[right++] = triangles[i];
+            right_tmp_buf[right++] = triangle_arrs->arrs[array_idx][start + i];
         }
     }
 
-    memcpy(triangles, tmp_buf, sizeof(*tmp_buf) * num_tri);
-    free(tmp_buf);
+    assert(left + right == num_tri);
+    assert(left == ctx->left_n);
+
+    memcpy(&triangle_arrs->arrs[array_idx][start], left_tmp_buf, sizeof(*left_tmp_buf) * left);
+    memcpy(&triangle_arrs->arrs[array_idx][start + left], right_tmp_buf, sizeof(*right_tmp_buf) * right);
+
+    free(left_tmp_buf);
+    free(right_tmp_buf);
 }
 
 AT_Medians AT_BVH_get_median_range(AT_Triangle *triangles, uint32_t num_tri, int axis)
