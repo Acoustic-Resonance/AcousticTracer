@@ -245,37 +245,37 @@ void AT_BVH_partition_list(AT_TriangleArrays *triangle_arrs, int array_idx, uint
     free(right_tmp_buf);
 }
 
-AT_Medians AT_BVH_get_median_range(AT_Triangle *triangles, uint32_t num_tri, int axis)
+AT_Medians AT_BVH_get_median_range(const AT_BVHNode *node, int axis)
 {
+    uint32_t num_tri = node->num_tri;
     // Object split
     AT_Medians median = {
-        .object = AT_max(0, (num_tri / 2) - 1),
+        .object = (num_tri > 1) ? (num_tri / 2) - 1 : 0,
         .spatial = UINT32_MAX,
     };
 
     // Spatial split
-    float threshold = (triangles[num_tri - 1].aabb.midpoint.arr[axis] - triangles[0].aabb.midpoint.arr[axis]) * 0.5f;
-    int start, end;
-    float prev = fabsf(threshold - triangles[median.object].aabb.midpoint.arr[axis]);
-    // Start in middle
-    // if threshold is larger then go right, else go left
-    if (threshold >= triangles[median.object].aabb.midpoint.arr[axis]) {
-        start = median.object + 1;
-        end = num_tri;
-        median.spatial = num_tri - 1;
-    } else {
-        start = -(median.object - 1);
-        end = -(-1);
-        median.spatial = 0;
-    }
-    float dist;
-    for (int i = start; i < end; i++) {
-        dist = fabsf(threshold - triangles[abs(i)].aabb.midpoint.arr[axis]);
-        // keep going until distance is larger
-        if (dist < prev) {
-            prev = dist;
+    float threshold = node->aabb.midpoint.arr[axis];
+    uint32_t low = 0, mid = 0;
+    uint32_t high = num_tri - 1;
+    float min_dist = FLT_MAX;
+    while (low <= high) {
+        mid = low + (high - low) / 2;
+        float dist = fabsf(AT_get_triangle(node, axis, mid).aabb.midpoint.arr[axis] - threshold);
+
+        if (dist < min_dist) {
+            min_dist = dist;
+            median.spatial = mid;
+        }
+
+        float midpoint = AT_get_triangle(node, axis, mid).aabb.midpoint.arr[axis];
+        if (midpoint < threshold) {
+            low = mid + 1;
+        } else if (midpoint > threshold) {
+            if (mid == 0) break;
+            high = mid - 1;
         } else {
-            median.spatial = abs(i - 1);
+            median.spatial = mid;
             break;
         }
     }
