@@ -73,4 +73,8 @@ float AT_BVH_get_SAH(const AT_BVHNode *node, const AT_BVHConfig *conf, uint32_t 
 AT_SplitContext AT_BVH_get_optimal_split(const AT_BVHNode *node, const AT_BVHConfig *conf);
 AT_Result AT_BVH_split(AT_BVH *tree, const AT_BVHConfig *conf);
 
+// TODO: bvh pruning
+// TODO: bvh merge
+// TODO: bvh traversal
+
 #endif // AT_BVH_H
