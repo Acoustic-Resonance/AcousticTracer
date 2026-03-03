@@ -31,7 +31,7 @@ int main()
 {
     printf("Voxel Ray Step\n");
 
-    const char *filepath = "../assets/glb/Sponza.glb";
+    const char *filepath = "../assets/glb/cathedral.glb";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -39,15 +39,15 @@ int main()
         return 1;
     }
 
-    for (uint32_t i = 0; i < model->vertex_count; i++) {
-        model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.01);
-    }
+    // for (uint32_t i = 0; i < model->vertex_count; i++) {
+    //      model->vertices[i] = AT_vec3_scale(model->vertices[i], 15.0f);
+    // }
 
     int num_sources = 1;
     AT_Source s1 = {
-        .direction = {{0.2, 0.0, 0}},
-        .intensity = 50.0,
-        .position = {{1, 2, 0}}
+        .direction = {{0.2f, -0.05f, -0.1f}},
+        .intensity = 1000.0f,
+        .position = {{0}}
     };
 
     AT_SceneConfig conf = {
@@ -63,10 +63,13 @@ int main()
         return 1;
     }
 
+    // scene->world_AABB.min = AT_vec3_scale(scene->world_AABB.min, 2);
+    // scene->world_AABB.max = AT_vec3_scale(scene->world_AABB.max, 2);
+
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 10,
-        .voxel_size = 1
+        .num_rays = 500,
+        .voxel_size = 0.5f
     };
 
     AT_Simulation *sim = NULL;
@@ -115,6 +118,7 @@ int main()
                 ClearBackground(RAYWHITE);
                 BeginMode3D(camera);
                 {
+                    /*
                     AT_Ray *rays = sim->rays;
                     for (uint32_t s = 0; s < sim->scene->num_sources; s++) {
                         for (uint32_t i = 0; i < sim->num_rays; i++) {
@@ -127,24 +131,23 @@ int main()
                             0.1, RED);
 
                             AT_Ray *curr = &ray;
-                            while (curr->child) {
-                                curr = curr->child;
-                                //printf("Child Ray(%i): total_dist: %f\n", curr->ray_id, curr->total_distance);
-                                DrawSphere(
-                                    (Vector3){
-                                        curr->origin.x,
-                                        curr->origin.y,
-                                        curr->origin.z,
-                                    }, 0.01, BLUE
-                                );
-
+                            while (curr) {
                                 if (curr->child) {
                                     DrawLine3D(
                                         (Vector3){curr->origin.x, curr->origin.y, curr->origin.z},
                                         (Vector3){curr->child->origin.x, curr->child->origin.y, curr->child->origin.z},
-                                        PURPLE);
+                                        PURPLE
+                                    );
+                                } else if (!curr->has_died) {
+                                    DrawRay((Ray){
+                                        (Vector3){curr->origin.x, curr->origin.y, curr->origin.z},
+                                        (Vector3){curr->direction.x, curr->direction.y, curr->direction.z}
+                                    }, GREEN);
                                 }
+                                curr = curr->child;
                             }
+
+
                             if (ray.child) {
                                 DrawLine3D(
                                     (Vector3){ray.origin.x, ray.origin.y, ray.origin.z},
@@ -154,10 +157,25 @@ int main()
                                 DrawRay((Ray){
                                 (Vector3){ray.origin.x, ray.origin.y, ray.origin.z},
                                 (Vector3){ray.direction.x, ray.direction.y, ray.direction.z}
-                                }, RED);
+                                }, BLUE);
                             }
+
                         }
                     }
+                    */
+
+                    DrawBoundingBox((BoundingBox){
+                        (Vector3){
+                            scene->world_AABB.min.x,
+                            scene->world_AABB.min.y,
+                            scene->world_AABB.min.z
+                        },
+                        (Vector3){
+                            scene->world_AABB.max.x,
+                            scene->world_AABB.max.y,
+                            scene->world_AABB.max.z
+                        }},
+                        RED);
 
                     for (uint32_t i = 0; i < t_count; i++) {
                             Vector3 v1 = {ts[i].v1.x, ts[i].v1.y, ts[i].v1.z};
@@ -168,8 +186,8 @@ int main()
                             DrawLine3D(v3, v1, BLACK);
                         }
 
-                    if (IsKeyPressed(KEY_L)) curr_bin++;
-                    if (IsKeyPressed(KEY_K) && curr_bin > 0) curr_bin--;
+                    if (IsKeyDown(KEY_L)) curr_bin++;
+                    if (IsKeyDown(KEY_K) && curr_bin > 0) curr_bin--;
 
                     //draw voxels
                     for (uint32_t z = 0; z < sim->grid_dimensions.z; z++) {
@@ -183,6 +201,7 @@ int main()
                                 AT_Voxel *v = &sim->voxel_grid[i];
 
                                 //printf("CURR BIN(%i): %i\n", curr_bin, curr_bin%bin_count);
+                                //float energy = AT_voxel_get_energy_curr(v, curr_bin%bin_count);
                                 float energy = AT_voxel_get_energy_curr(v, curr_bin%bin_count);
                                 //float energy = AT_voxel_get_energy(v, 2);
                                 //printf("ENERGY: %f\n", energy);
@@ -204,15 +223,16 @@ int main()
                                         Fade(RED, alpha)
                                     );
                                     //AT_voxel_print(v);
+                                    //printf("Voxel (%i): Num Bins: %zu Energy: %f\t\n", i, v->count, energy);
                                     continue;
-                                } else {
-                                    //printf("Voxel (%i): Num Bins: %zu Energy: %f\t", i, v->count, energy);
-                                    DrawCubeV(
-                                         pos,
-                                         (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
-                                         Fade(BLUE, 1.0f/100)
-                                    );
-                                }
+
+                                 } // else {
+                                //     DrawCubeV(
+                                //          pos,
+                                //          (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
+                                //          Fade(BLUE, 1.0f/100)
+                                //     );
+                                // }
 
                             }
                         }

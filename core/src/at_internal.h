@@ -9,6 +9,7 @@
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
 #include <stdint.h>
+#include <stdbool.h>
 
 // Private Types (typedef + define)
 typedef struct AT_Ray AT_Ray;
@@ -17,10 +18,12 @@ struct AT_Ray {
     AT_Ray *child;
     AT_Vec3 origin;
     AT_Vec3 direction;
+    AT_Vec3 hit_point;
     float energy;
     float total_distance;
     uint32_t ray_id;
     uint32_t bounce_count;
+    bool has_died;
 };
 
 // dynamic array structure
@@ -68,9 +71,9 @@ struct AT_Simulation {
 };
 
 static const AT_Material AT_MATERIAL_TABLE[AT_MATERIAL_COUNT] = {
-    [AT_MATERIAL_CONCRETE] = {.absorption = 0.02f},
-    [AT_MATERIAL_PLASTIC] = {.absorption = 0.03f},
-    [AT_MATERIAL_WOOD] = {.absorption = 0.10f},
+    [AT_MATERIAL_CONCRETE] = {.absorption = 0.02f, .scattering = 0.10f},
+    [AT_MATERIAL_PLASTIC] = {.absorption = 0.03f, .scattering = 0.05f},
+    [AT_MATERIAL_WOOD] = {.absorption = 0.10f, .scattering = 0.20f},
 };
 
 #endif // AT_INTERAL_H

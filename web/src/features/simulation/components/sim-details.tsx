@@ -1,13 +1,11 @@
-interface SimDetailsProps {
-  simDetails: any;
-}
+import type { SimDetails } from "../api/simulation-repository";
 
-export default function SimDetails({ simDetails }: SimDetailsProps) {
+export default function SimDetails({ simDetails }: { simDetails: SimDetails }) {
   if (!simDetails) return null;
 
   return (
     <div className="ml-auto relative group">
-    {/* Svg Icon */}
+      {/* Svg Icon */}
       <div className="text-text-secondary hover:text-text-primary cursor-help p-2 rounded-full hover:bg-white/10 transition-all duration-200">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -48,34 +46,34 @@ export default function SimDetails({ simDetails }: SimDetailsProps) {
               <span>Name:</span>
               <span className="text-text-primary">{simDetails.name}</span>
             </div>
-            <div className="flex justify-between">
-              <span>Rays:</span>
-              <span className="text-text-primary">
-                {simDetails.num_rays?.toLocaleString()}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>Iterations:</span>
-              <span className="text-text-primary">
-                {simDetails.num_iterations}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>Voxel Size:</span>
-              <span className="text-text-primary">
-                {simDetails.voxel_size} m
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>FPS:</span>
-              <span className="text-text-primary">{simDetails.fps}</span>
-            </div>
-            <div className="flex justify-between mt-1 pt-2 border-t border-white/10">
-              <span>Created:</span>
-              <span className="text-text-primary">
-                {new Date(simDetails.$createdAt).toLocaleDateString()}
-              </span>
-            </div>
+            {simDetails.status !== "staging" && (
+              <>
+                <div className="flex justify-between">
+                  <span>Rays:</span>
+                  <span className="text-text-primary">
+                    {simDetails.config.numRays.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Voxel Size:</span>
+                  <span className="text-text-primary">
+                    {simDetails.config.voxelSize}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>FPS:</span>
+                  <span className="text-text-primary">
+                    {simDetails.config.fps}
+                  </span>
+                </div>
+                <div className="flex justify-between mt-1 pt-2 border-t border-white/10">
+                  <span>Created:</span>
+                  <span className="text-text-primary">
+                    {new Date(simDetails.$createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

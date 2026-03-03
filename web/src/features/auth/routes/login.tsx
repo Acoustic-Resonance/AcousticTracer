@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useUser } from "../lib/context/user";
-
+import { useUser } from "../context/user-store";
+import { useNavigate } from "react-router";
 export default function Login() {
+  const navigate = useNavigate();
   const { login, register } = useUser();
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState("");
@@ -9,7 +10,7 @@ export default function Login() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setError("");
     try {
@@ -17,9 +18,10 @@ export default function Login() {
         await register(email, password, name);
       } else {
         await login(email, password);
+        navigate("/dashboard");
       }
-    } catch (err: any) {
-      setError(err.message || "An error occurred during authentication.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     }
   };
 
