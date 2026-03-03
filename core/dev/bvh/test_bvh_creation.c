@@ -32,7 +32,7 @@ int main(int argc, char *_[])
     }
 
     AT_BVHConfig bvh_config = {
-        .mini_tree_size = 1000,
+        .mini_tree_size = 100,
         .intersection_cost = 1,
         .traversal_cost = 0.5,
     };
@@ -55,13 +55,13 @@ int main(int argc, char *_[])
     }
 
     uint32_t max_count = 0;
-    AT_BVH **bvhs = calloc(tri_groups->num_groups, sizeof(*bvhs));
+    AT_MiniTree **mini_trees = calloc(tri_groups->num_groups, sizeof(*mini_trees));
     // for (uint32_t i = 0; i < groups->num_groups; i++) {
     uint32_t num_bvh = tri_groups->num_groups;
     // uint32_t num_bvh = 10;
     for (uint32_t i = 0; i < num_bvh; i++) {
         max_count = AT_max(tri_groups->groups[i]->num_tri, max_count);
-        AT_Result res = AT_BVH_create(&bvhs[i], tri_groups->groups[i], &bvh_config);
+        AT_Result res = AT_MiniTree_create(&mini_trees[i], tri_groups->groups[i], &bvh_config);
         if (res != AT_OK) {
             char txt[25];
             sprintf(txt, "Failed to create BVH %d %d", i, res);
@@ -92,9 +92,9 @@ int main(int argc, char *_[])
             // for (uint32_t grp_idx = 0; grp_idx < 1; grp_idx++) {
             // for (uint32_t i = 0; i < groups->groups[grp_idx]->num_tri; i++) {
             for (uint32_t bvh_idx = 0; bvh_idx < num_bvh; bvh_idx++) {
-                for (uint32_t node_idx = 0; node_idx < bvhs[bvh_idx]->last_node_idx; node_idx++) {
+                for (uint32_t node_idx = 0; node_idx < mini_trees[bvh_idx]->last_node_idx; node_idx++) {
                     Color color = colors[node_idx % (sizeof(colors) / sizeof(colors[0]))];
-                    AT_BVHNode *node = &bvhs[bvh_idx]->nodes[node_idx];
+                    AT_MiniTreeNode *node = &mini_trees[bvh_idx]->nodes[node_idx];
                     if (node->start == node->num_tri || node->num_tri < 100) continue;
                     // printf("i: %u, j: %u, start: %u, num_tri: %u\n", bvh_idx, node_idx, node->start, node->num_tri);
                     for (uint32_t tri_idx = 0; tri_idx < node->num_tri; tri_idx++) {
@@ -122,20 +122,20 @@ int main(int argc, char *_[])
     } else {
         // for (int i = 0; i < groups->num_groups; i++) {
         for (int i = 0; i < num_bvh; i++) {
-            AT_BVH *bvh = bvhs[i];
+            AT_MiniTree *bvh = mini_trees[i];
             // printf("BVH %d with %d tri.\n", i, bvh->nodes[0].num_tri);
-            AT_BVHNode *stack[sizeof(bvh->nodes) * bvh->max_node_count];
+            AT_MiniTreeNode *stack[sizeof(bvh->nodes) * bvh->max_node_count];
             int stack_top = 0;
             stack[stack_top++] = &bvh->nodes[0];
-            AT_BVHNode *parent;
+            AT_MiniTreeNode *parent;
             while (stack_top > 0) {
                 parent = stack[--stack_top];
                 // printf("\tParent %d: %f with %d tri.\n", parent->idx, parent->aabb.SA, parent->num_tri);
                 if (parent->left_child == -1 || parent->right_child == -1) {
                     continue;
                 }
-                AT_BVHNode *left = &bvh->nodes[parent->left_child];
-                AT_BVHNode *right = &bvh->nodes[parent->right_child];
+                AT_MiniTreeNode *left = &bvh->nodes[parent->left_child];
+                AT_MiniTreeNode *right = &bvh->nodes[parent->right_child];
                 // printf("\t\tLeft %d: %f with %d tri, Right %d: %f with %d tri\n", left->idx, left->aabb.SA, left->num_tri, right->idx, right->aabb.SA, right->num_tri);
                 if (left->num_tri > 1) {
                     stack[stack_top++] = left;
@@ -151,7 +151,7 @@ int main(int argc, char *_[])
     }
 
     for (uint32_t i = 0; i < num_bvh; i++) {
-        AT_BVH_destroy(bvhs[i]);
+        AT_MiniTree_destroy(mini_trees[i]);
     }
     AT_triangle_groups_destroy(tri_groups);
     AT_triangle_arrays_destroy(triangle_arrs);
