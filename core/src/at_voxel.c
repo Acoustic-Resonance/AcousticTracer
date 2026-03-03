@@ -119,8 +119,8 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
             float air_absorbtion = expf(-air_coefficient * total_world_dist);
             float energy_deposit = (ray->energy * world_segment / world_ray_length) * intensity_factor * air_absorbtion;
 
-            float curr_time = total_world_dist / SPEED_OF_SOUND;
-            //float curr_time = total_world_dist / SLOWER_SPEED;
+            // float curr_time = total_world_dist / SPEED_OF_SOUND;
+            float curr_time = total_world_dist / SLOWER_SPEED;
 
             size_t bin_index = (size_t)(curr_time / simulation->bin_width);
             //printf("BIN INDEX: %zu\n", bin_index);
