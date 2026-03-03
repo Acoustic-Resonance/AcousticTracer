@@ -373,7 +373,7 @@ AT_Result AT_BVH_split(AT_BVH *tree, const AT_BVHConfig *conf)
         return AT_OK;
     }
 
-    AT_BVHNode *stack[sizeof(tree->nodes) * tree->max_node_count];
+    AT_BVHNode *stack[tree->max_node_count];
     int stack_top = 0;
     stack[stack_top++] = root;
     AT_BVHNode *parent;

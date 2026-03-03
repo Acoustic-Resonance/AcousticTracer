@@ -190,9 +190,9 @@ AT_Result AT_trigroup_split(AT_TriangleArrays *triangle_arrs, uint32_t num_tri, 
     if (!groups) return AT_ERR_INVALID_ARGUMENT;
 
     AT_TriGroup *tri_group = NULL;
-    if (AT_trigroup_create(&tri_group, triangle_arrs, 0, num_tri) != AT_OK) {
-        perror("Failed to create the triangle group");
-        return 1;
+    AT_Result res = AT_trigroup_create(&tri_group, triangle_arrs, 0, num_tri);
+    if (res != AT_OK) {
+        return res;
     }
 
     // 5. Repeat for sub trees
