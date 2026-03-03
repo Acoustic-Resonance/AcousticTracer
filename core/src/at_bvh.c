@@ -148,7 +148,7 @@ uint32_t flt_to_int(float num)
 
 float int_to_flt(uint32_t num)
 {
-    bool is_neg = signbit(num);
+    bool is_neg = signbit((float)num);
     if (is_neg) {
         num ^= 0x80000000;
     } else {
