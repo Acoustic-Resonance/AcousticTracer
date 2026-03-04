@@ -1,6 +1,4 @@
-#include "../src/at_internal.h"
 #include "acoustic/at_scene.h"
-#include "acoustic/at.h"
 #include "../src/at_internal.h"
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
@@ -77,6 +75,11 @@ AT_Result AT_scene_create(AT_Scene **out_scene, const AT_SceneConfig *config)
 void AT_scene_destroy(AT_Scene *scene)
 {
     if (!scene) return;
+
+    for (uint32_t i = 0; i < scene->num_trees; i++) {
+        AT_MiniTree_destroy(scene->mini_trees[i]);
+    }
+    AT_triangle_arrays_destroy(scene->triangle_arrs);
     free(scene->sources);
     free(scene);
 }
