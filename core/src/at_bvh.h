@@ -94,5 +94,7 @@ AT_Result AT_MiniTree_split(AT_MiniTree *minitree, const AT_BVHConfig *conf);
 // TODO: bvh pruning
 // TODO: bvh merge
 // TODO: bvh traversal
+void AT_MiniTree_intersect(AT_IntersectContext *ctx, AT_MiniTree **minitrees, uint32_t num_trees, AT_Ray *in_ray);
+AT_IntersectContext AT_IntersectContext_init();
 
 #endif // AT_BVH_H

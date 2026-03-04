@@ -3,6 +3,7 @@
 #include "../src/at_internal.h"
 #include "../src/at_utils.h"
 #include "acoustic/at_model.h"
+#include "at_ray.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -439,4 +440,97 @@ AT_Result AT_MiniTree_split(AT_MiniTree *minitree, const AT_BVHConfig *conf)
     }
 
     return AT_OK;
+}
+
+bool aabb_intersects(AT_AABB *aabb, AT_Ray *ray)
+{
+    float t_min = 0.0f, t_max = FLT_MAX;
+    AT_Vec3 min = aabb->min, max = aabb->max;
+    AT_Vec3 origin = ray->origin, dir = ray->direction;
+    bool sign;
+    float box_min, box_max, dim_min, dim_max;
+    float inv_dir[3] = {1.0f / dir.x, 1.0f / dir.y, 1.0f / dir.z};
+    float corners[2][3] = {
+        {min.x, min.y, min.z},
+        {max.x, max.y, max.z}
+    };
+
+    for (int d = 0; d < 3; d++) {
+        sign = signbit(inv_dir[d]);
+        box_min = corners[sign][d];
+        box_max = corners[!sign][d];
+
+        dim_min = (box_min - origin.arr[d]) * inv_dir[d];
+        dim_max = (box_max - origin.arr[d]) * inv_dir[d];
+
+        t_min = AT_max(dim_min, t_min);
+        t_max = AT_min(dim_max, t_max);
+        if (t_max < t_min) {
+            return false;
+        }
+    }
+
+    return t_min <= t_max;
+}
+
+AT_IntersectContext AT_IntersectContext_init()
+{
+    AT_IntersectContext ctx = (AT_IntersectContext){
+        .intersects = false,
+        .out_normal = {0},
+        .out_ray = AT_ray_init((AT_Vec3){FLT_MAX, FLT_MAX, FLT_MAX}, (AT_Vec3){0}, 0.0f, 0, 0),
+    };
+
+    return ctx;
+}
+
+void check_triangles(AT_MiniTreeNode *node, AT_Ray *in_ray, AT_IntersectContext *ctx)
+{
+    for (uint32_t tri_idx = 0; tri_idx < node->num_tri; tri_idx++) {
+        AT_Triangle *triangle = &AT_get_triangle(node, 3, tri_idx);
+        if (AT_ray_triangle_intersect(in_ray, triangle, &ctx->out_ray, &ctx->out_normal)) {
+            ctx->intersects = true;
+            ctx->triangle_index = node->triangle_arrs->arrs[3][tri_idx];
+        }
+    }
+}
+
+void AT_MiniTree_intersect(AT_IntersectContext *ctx, AT_MiniTree **minitrees, uint32_t num_trees, AT_Ray *in_ray)
+{
+    // TODO: fix this shit bro
+    AT_MiniTreeNode *stack[num_trees];
+    for (uint32_t tree_idx = 0; tree_idx < num_trees; tree_idx++) {
+        int stack_top = 0;
+        AT_MiniTreeNode *nodes = minitrees[tree_idx]->nodes;
+        stack[stack_top++] = &nodes[0];
+        AT_MiniTreeNode *parent;
+        AT_MiniTreeNode *left_node, *right_node;
+        while (stack_top > 0) {
+            parent = stack[--stack_top];
+            if (parent->left_child == -1 || parent->right_child == -1) {
+                if (aabb_intersects(&parent->aabb, in_ray)) {
+                    check_triangles(parent, in_ray, ctx);
+                }
+                continue;
+            }
+            left_node = &nodes[parent->left_child];
+            right_node = &nodes[parent->right_child];
+            if (aabb_intersects(&left_node->aabb, in_ray)) {
+                if (left_node->left_child == -1 || left_node->right_child == -1) {
+                    check_triangles(left_node, in_ray, ctx);
+                } else {
+                    stack[stack_top++] = &nodes[left_node->left_child];
+                    stack[stack_top++] = &nodes[left_node->right_child];
+                }
+            }
+            if (aabb_intersects(&right_node->aabb, in_ray)) {
+                if (right_node->left_child == -1 || right_node->right_child == -1) {
+                    check_triangles(right_node, in_ray, ctx);
+                } else {
+                    stack[stack_top++] = &nodes[right_node->left_child];
+                    stack[stack_top++] = &nodes[right_node->right_child];
+                }
+            }
+        }
+    }
 }
