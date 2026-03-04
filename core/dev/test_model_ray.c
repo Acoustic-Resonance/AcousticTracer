@@ -1,5 +1,7 @@
+#include "../src/at_bvh.h"
 #include "../src/at_internal.h"
 #include "../src/at_ray.h"
+#include "../src/at_trigroup.h"
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
 #include "acoustic/at_model.h"
@@ -43,14 +45,60 @@ int main()
             (AT_Vec3){0},
             (AT_Vec3){i*(1.0f/MAX_RAYS), 0.1f, -1.0f},
             0.0f,
-            i);
+            1,
+            i
+        );
     }
 
-    uint32_t t_count = model->index_count / 3;
-    AT_Triangle *ts = NULL;
-    if (AT_model_get_triangles(&ts, model) != AT_OK) {
-        fprintf(stderr, "Failed to load triangles from model\n");
+    AT_TriangleArrays *triangle_arrs = NULL;
+    if (AT_triangle_arrays_create(&triangle_arrs, model) != AT_OK) {
+        perror("Failed to create triangle arrays");
+        for (uint32_t i = 0; i < MAX_RAYS; i++) {
+            AT_ray_destroy(rays[i].child);
+        }
+        AT_model_destroy(model);
         return 1;
+    }
+
+    AT_BVHConfig bvh_config = {
+        .mini_tree_size = 100,
+        .intersection_cost = 1,
+        .traversal_cost = 0.5,
+    };
+
+    uint32_t num_tri = model->index_count / 3;
+
+    AT_TriangleGroups *tri_groups = NULL;
+    if (AT_triangle_groups_create(&tri_groups, num_tri) != AT_OK) {
+        perror("Failed to create the triangle groups holder");
+        AT_triangle_arrays_destroy(triangle_arrs);
+        for (uint32_t i = 0; i < MAX_RAYS; i++) {
+            AT_ray_destroy(rays[i].child);
+        }
+        AT_model_destroy(model);
+        return 1;
+    }
+    if (AT_trigroup_split(triangle_arrs, num_tri, tri_groups, bvh_config.mini_tree_size) != AT_OK) {
+        perror("Failed to split the triangle group");
+        AT_triangle_groups_destroy(tri_groups);
+        AT_triangle_arrays_destroy(triangle_arrs);
+        for (uint32_t i = 0; i < MAX_RAYS; i++) {
+            AT_ray_destroy(rays[i].child);
+        }
+        AT_model_destroy(model);
+        return 1;
+    }
+
+    AT_MiniTree **mini_trees = calloc(tri_groups->num_groups, sizeof(*mini_trees));
+    uint32_t num_minitrees = tri_groups->num_groups;
+    for (uint32_t i = 0; i < num_minitrees; i++) {
+        AT_Result res = AT_MiniTree_create(&mini_trees[i], tri_groups->groups[i], &bvh_config);
+        if (res != AT_OK) {
+            char txt[25];
+            sprintf(txt, "Failed to create BVH %d %d", i, res);
+            perror(txt);
+            return 1;
+        }
     }
 
     //iterate rays
@@ -58,14 +106,11 @@ int main()
         uint32_t count = 0;
         AT_Ray *ray = &rays[i];
         while (count++ < 5) {
-            AT_Ray closest = AT_ray_init((AT_Vec3){ FLT_MAX, FLT_MAX, FLT_MAX }, (AT_Vec3){0}, 0.0f, 0);
-            bool intersects = false;
-            for (uint32_t j = 0; j < t_count; j++) {
-                if(AT_ray_triangle_intersect(ray, &ts[j], &closest)) intersects = true;
-            }
-            if (!intersects) break;
+            AT_IntersectContext ctx = AT_IntersectContext_init();
+            AT_MiniTree_intersect(&ctx, mini_trees, num_minitrees, ray);
+            if (!ctx.intersects) break;
             AT_Ray *child = malloc(sizeof(AT_Ray));
-            *child = closest;
+            *child = ctx.out_ray;
             child->child = NULL;
             ray->child = child;
             ray = ray->child;
@@ -135,12 +180,13 @@ int main()
                     }
                 }
 
-                for (uint32_t i = 0; i < t_count; i++) {
+                for (uint32_t i = 0; i < num_tri; i++) {
                     DrawTriangle3D(
-                        (Vector3){ts[i].v2.x, ts[i].v2.y, ts[i].v2.z},
-                        (Vector3){ts[i].v1.x, ts[i].v1.y, ts[i].v1.z},
-                        (Vector3){ts[i].v3.x, ts[i].v3.y, ts[i].v3.z},
-                        (Color)cols[i%3]);
+                        (Vector3){triangle_arrs->triangles_db[i].v2.x, triangle_arrs->triangles_db[i].v2.y, triangle_arrs->triangles_db[i].v2.z},
+                        (Vector3){triangle_arrs->triangles_db[i].v1.x, triangle_arrs->triangles_db[i].v1.y, triangle_arrs->triangles_db[i].v1.z},
+                        (Vector3){triangle_arrs->triangles_db[i].v3.x, triangle_arrs->triangles_db[i].v3.y, triangle_arrs->triangles_db[i].v3.z},
+                        (Color)cols[i % 3]
+                    );
                 }
 
                 DrawGrid(10, 1.0f);
@@ -152,10 +198,15 @@ int main()
     }
 
     CloseWindow();
-    free(ts);
-    AT_model_destroy(model);
-    for (uint32_t i = 0; i < MAX_RAYS; i++) {
-       AT_ray_destroy(rays[i].child);
+
+    for (uint32_t i = 0; i < num_minitrees; i++) {
+        AT_MiniTree_destroy(mini_trees[i]);
     }
+    AT_triangle_groups_destroy(tri_groups);
+    AT_triangle_arrays_destroy(triangle_arrs);
+    for (uint32_t i = 0; i < MAX_RAYS; i++) {
+        AT_ray_destroy(rays[i].child);
+    }
+    AT_model_destroy(model);
     return 0;
 }

@@ -1,5 +1,6 @@
 #include "acoustic/at.h"
 #include "acoustic/at_model.h"
+#include "acoustic/at_result.h"
 #include "../src/at_voxel.h"
 
 #include <stdint.h>
@@ -31,7 +32,7 @@ int main()
 {
     printf("Voxel Ray Step\n");
 
-    const char *filepath = "../assets/glb/cathedral.glb";
+    const char *filepath = "../assets/glb/Sponza.glb";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -40,7 +41,7 @@ int main()
     }
 
     // for (uint32_t i = 0; i < model->vertex_count; i++) {
-    //      model->vertices[i] = AT_vec3_scale(model->vertices[i], 15.0f);
+    //      model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.05f);
     // }
 
     int num_sources = 1;
@@ -68,8 +69,8 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 500,
-        .voxel_size = 0.5f
+        .num_rays = 1000000,
+        .voxel_size = 0.1f
     };
 
     AT_Simulation *sim = NULL;
