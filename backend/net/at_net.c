@@ -289,8 +289,8 @@ void AT_raytracer()
         write(client_fd, json, strlen(json));
         close(client_fd);
 
-        AT_scene_destroy(scene);
         AT_simulation_destroy(sim);
+        AT_scene_destroy(scene);
         cJSON_Delete(sim_json);
     }
 
