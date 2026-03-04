@@ -13,11 +13,12 @@ export interface Simulation {
   $createdAt: string;
   $updatedAt: string;
   name: string;
-  status: "pending" | "processing" | "completed" | "failed" | "staging";
+  status: "pending" | "completed" | "failed" | "staging";
   userId: string;
   inputFileId: string;
   resultFileId?: string;
   computeTimeMs?: number;
+  numVoxels?: number;
   fileName: string;
   config: {
     voxelSize: number;
@@ -56,6 +57,7 @@ export interface CreateSimulationParams {
   name: string;
   fileId: string;
   fileName: string;
+  numVoxels: number;
   config: {
     voxelSize: number;
     fps: number;
@@ -80,6 +82,7 @@ export interface UpdateSimulationParams {
   status?: Simulation["status"];
   resultFileId?: string;
   computeTimeMs?: number;
+  numVoxels?: number;
 }
 
 // Auto-convert snake_case to camelCase
@@ -95,6 +98,7 @@ function documentToSimulation(doc: SimulationDocument): Simulation {
     inputFileId: doc.input_file_id,
     resultFileId: doc.result_file_id,
     computeTimeMs: doc.compute_time_ms,
+    numVoxels: doc.num_voxels,
     fileName: doc.file_name,
     config: {
       voxelSize: doc.voxel_size,
@@ -135,6 +139,7 @@ function simulationToRowData(params: CreateSimulationParams) {
     direction_x: params.config.selectedSource.direction.x,
     direction_y: params.config.selectedSource.direction.y,
     direction_z: params.config.selectedSource.direction.z,
+    num_voxels: params.numVoxels,
   };
 }
 
@@ -218,6 +223,7 @@ class SimulationRepository {
       data.result_file_id = updates.resultFileId;
     if (updates.computeTimeMs !== undefined)
       data.compute_time_ms = updates.computeTimeMs;
+    if (updates.numVoxels !== undefined) data.num_voxels = updates.numVoxels;
 
     const doc = await tablesDB.updateRow({
       databaseId: CONFIG.databaseId,
@@ -306,6 +312,25 @@ class SimulationRepository {
     } catch (error) {
       console.warn(`Failed to delete file ${fileId}:`, error);
     }
+  }
+
+  /**
+   * Delete simulation and all associated files (input + result)
+   *
+   * @param id - Simulation ID
+   * @param fileIds - Array of file IDs to delete
+   * @throws Error if simulation deletion fails
+   */
+  async deleteWithFiles(id: string, fileIds: string[]): Promise<void> {
+    await this.delete(id);
+
+    await Promise.allSettled(
+      fileIds.map((fid) =>
+        this.deleteFile(fid).catch((error) =>
+          console.warn(`Failed to delete file ${fid}:`, error),
+        ),
+      ),
+    );
   }
 }
 

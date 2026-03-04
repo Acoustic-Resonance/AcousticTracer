@@ -42,7 +42,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }
 
   async function logout() {
-    await account.deleteSession("current");
+    await account.deleteSession({ sessionId: "current" });
     setUser(null);
   }
 
@@ -60,7 +60,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
       const loggedIn = await account.get();
       setUser(loggedIn);
-    } catch (err) {
+    } catch (err: unknown) {
+      // 401 = not authenticated → expected, go to login.
+      // Anything else is a transient/network error → log it.
+      const status =
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        typeof (err as { code: unknown }).code === "number"
+          ? (err as { code: number }).code
+          : 0;
+      if (status !== 0 && status !== 401) {
+        console.warn("Auth init failed (non-401):", err);
+      }
       setUser(null);
     } finally {
       setIsLoading(false);

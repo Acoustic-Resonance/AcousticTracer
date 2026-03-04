@@ -2,11 +2,12 @@ import type { Models } from "appwrite";
 
 export interface SimulationDocument extends Models.Document {
   name: string;
-  status: "pending" | "processing" | "completed" | "failed" | "staging";
+  status: "pending" | "completed" | "failed" | "staging";
   input_file_id: string;
   user_id: string;
   result_file_id?: string;
   compute_time_ms?: number;
+  num_voxels?: number;
 
   // Config columns
   voxel_size: number;
@@ -24,6 +25,8 @@ export interface SimulationDocument extends Models.Document {
   direction_x: number;
   direction_y: number;
   direction_z: number;
+
+  num_voxels: number;
 }
 
 export interface SimulationListResponse {

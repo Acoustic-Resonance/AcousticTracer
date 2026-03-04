@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useSceneStore } from "../stores/scene-store";
+import { getErrorMessage } from "@/utils/get-error-message";
 
 interface UploadFormProps {
   onClose?: () => void;
@@ -16,7 +17,7 @@ export default function UploadForm({ onClose }: UploadFormProps) {
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) {
-      setFormError("Please select a .glb file to upload")
+      setFormError("Please select a .glb file to upload");
       return;
     }
     if (!file.name.toLowerCase().endsWith(".glb")) {
@@ -34,7 +35,7 @@ export default function UploadForm({ onClose }: UploadFormProps) {
       // File will be retrieved from store
       navigate(`/scene/new?name=${encodeURIComponent(name)}`);
     } catch (err: unknown) {
-      setFormError(err instanceof Error ? err.message : String(err));
+      setFormError(getErrorMessage(err));
     }
   };
 
@@ -81,7 +82,6 @@ export default function UploadForm({ onClose }: UploadFormProps) {
                 id="model-upload"
                 accept=".glb"
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                required
                 className="hidden"
               />
               <label

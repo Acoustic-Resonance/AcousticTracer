@@ -15,6 +15,45 @@
   --color-success: #34d399;
   --color-link: #60a5fa;
   --color-hover-bg: #444444;
+
+  /* shadcn semantic tokens — mapped to our dark theme */
+  --color-background: #2d2d39;
+  --color-foreground: #ffffff;
+  --color-muted: #3a3a48;
+  --color-muted-foreground: #999999;
+  --color-popover: #282833;
+  --color-popover-foreground: #ffffff;
+  --color-primary: #4f46e5;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #3a3a48;
+  --color-secondary-foreground: #ffffff;
+  --color-destructive: #f87171;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #4b5563;
+  --color-input: #4b5563;
+  --color-ring: #4f46e5;
+  --radius: 0.5rem;
+
+  /* shadcn animation keyframes */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
 }
 
 /* Global Styles - Single Source of Truth for Backgrounds */

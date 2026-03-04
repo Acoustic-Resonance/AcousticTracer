@@ -17,6 +17,10 @@ AT_Result AT_scene_create(AT_Scene **out_scene, const AT_SceneConfig *config)
     AT_Scene *scene = calloc(1, sizeof(AT_Scene));
     if (!scene) return AT_ERR_ALLOC_ERROR;
 
+    for (uint32_t t = 0; t < config->environment->index_count / 3; t++) {
+        config->environment->triangle_materials[t] = config->material;
+    }
+
     scene->environment = config->environment;
     scene->material = config->material;
     scene->num_sources = config->num_sources;

@@ -8,6 +8,7 @@ import type {
   SimulationList,
 } from "./simulation-repository";
 import { simulationKeys } from "@/lib/query-keys";
+import { parseResultBuffer } from "./parse-result-binary";
 
 /**
  * Hook: List all simulations for the current user
@@ -115,8 +116,20 @@ export function useDeleteSimulation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, fileId }: { id: string; fileId?: string }) => {
-      if (fileId) return simulationRepo.deleteWithFile(id, fileId);
+    mutationFn: ({
+      id,
+      fileId,
+      resultFileId,
+    }: {
+      id: string;
+      fileId?: string;
+      resultFileId?: string;
+    }) => {
+      const fileIds = [fileId, resultFileId].filter(
+        (fid): fid is string => !!fid,
+      );
+      if (fileIds.length > 0)
+        return simulationRepo.deleteWithFiles(id, fileIds);
       return simulationRepo.delete(id);
     },
 
@@ -169,5 +182,32 @@ export function useDeleteSimulation() {
 export function useUploadSimulationFile() {
   return useMutation({
     mutationFn: (file: File) => simulationRepo.uploadFile(file),
+  });
+}
+
+/**
+ * Hook: Fetch and cache a simulation's ray response JSON
+ *
+ * Uses TanStack Query for in-memory caching so revisiting the same
+ * simulation serves instantly from cache instead of re-fetching.
+ *
+ * Usage:
+ * ```tsx
+ * const { data } = useRayResponse(simulation?.resultFileId);
+ * ```
+ */
+export function useRayResponse(resultFileId: string | undefined) {
+  return useQuery({
+    queryKey: simulationKeys.rayResponse(resultFileId || ""),
+    queryFn: async () => {
+      const url = simulationRepo.getFileUrl(resultFileId!);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch ray response");
+      const buffer = await res.arrayBuffer();
+      return parseResultBuffer(buffer);
+    },
+    enabled: !!resultFileId,
+    staleTime: Infinity, // Ray results never change once computed
+    gcTime: 10 * 60 * 1000, // Keep in cache 10 min after last use
   });
 }

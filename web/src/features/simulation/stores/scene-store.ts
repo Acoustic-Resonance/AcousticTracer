@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import * as THREE from "three";
 
-type RayResponse = Record<string, Record<string, number>[]>;
-
 interface SceneState {
   config: {
     fileName: string;
@@ -24,22 +22,24 @@ interface SceneState {
     };
   };
   bounds: THREE.Box3 | null;
+  num_voxels: number;
   showGrid: boolean;
   showTexture: boolean;
   pendingFile: File | null;
   gridDimensions: { nx: number; ny: number; nz: number } | null;
   worldDimensions: { x: number; y: number; z: number } | null;
-  sourceHasBeenPlaced: boolean;
+  voxelCount: number | null;
 
   setVoxelSize: (size: number) => void;
   setNumRays: (rays: number) => void;
   setFps: (fps: number) => void;
   setBounds: (box: THREE.Box3 | null) => void;
-  rayResponse: RayResponse | null;
+  resultFileId: string | null;
   frameIndex: number;
   wireframe: boolean;
-  setRayResponse: (response: RayResponse) => void;
 
+  setNumVoxels: (n: number) => void;
+  setResultFileId: (id: string | null) => void;
   setShowGrid: (visible: boolean) => void;
   setShowTexture: (visible: boolean) => void;
   setPendingFile: (file: File | null) => void;
@@ -50,6 +50,7 @@ interface SceneState {
   setWorldDimensions: (
     dims: { x: number; y: number; z: number } | null,
   ) => void;
+  setVoxelCount: (count: number | null) => void;
   setSelectedSource: (
     dims: { x: number; y: number; z: number },
     direction: { x: number; y: number; z: number },
@@ -84,15 +85,16 @@ export const useSceneStore = create<SceneState>()((set) => ({
   pendingFile: null,
   gridDimensions: null,
   worldDimensions: null,
-  rayResponse: null,
-  sourceHasBeenPlaced: false,
+  voxelCount: null,
+  resultFileId: null,
   frameIndex: 0,
   wireframe: false,
+  num_voxels: 0,
 
   // the actions functions to call when updating state
   setVoxelSize: (size) =>
     set((state) => ({
-      config: { ...state.config, voxelSize: size },
+      config: { ...state.config, voxelSize: Math.round(size * 100) / 100 },
     })),
   setNumRays: (rays) =>
     set((state) => ({
@@ -129,27 +131,37 @@ export const useSceneStore = create<SceneState>()((set) => ({
   },
   setShowGrid: (visible) => set({ showGrid: visible }),
   setShowTexture: (visible) => set({ showTexture: visible }),
-  setPendingFile: (file) =>
-    set({
-      pendingFile: file,
-      // Reset all transient / model-specific state
-      bounds: null,
-      gridDimensions: null,
-      worldDimensions: null,
-      rayResponse: null,
-      showGrid: true,
-      config: {
-        fileName: file ? file.name : "",
-        voxelSize: 2,
-        numRays: 10,
-        fps: 60,
-        material: "Plastic",
-        selectedSource: {
-          position: { x: 0, y: 0, z: 0 },
-          direction: { x: 0, y: 0, z: 0 },
+  setPendingFile: (file) => {
+    if (file) {
+      // New file selected — full reset so the scene starts fresh
+      set({
+        pendingFile: file,
+        bounds: null,
+        gridDimensions: null,
+        worldDimensions: null,
+        voxelCount: null,
+        resultFileId: null,
+        showGrid: true,
+        showTexture: true,
+        wireframe: false,
+        frameIndex: 0,
+        config: {
+          fileName: file.name,
+          voxelSize: 2,
+          numRays: 10,
+          fps: 60,
+          material: "Plastic",
+          selectedSource: {
+            position: { x: 0, y: 0, z: 0 },
+            direction: { x: 0, y: 0, z: 0 },
+          },
         },
-      },
-    }),
+      });
+    } else {
+      // Clearing pendingFile only (e.g. when loading a saved simulation)
+      set({ pendingFile: null });
+    }
+  },
   setMaterial: (value) =>
     set((state) => ({
       config: {
@@ -158,9 +170,11 @@ export const useSceneStore = create<SceneState>()((set) => ({
       },
     })),
 
+  setNumVoxels: (n: number) => set({ num_voxels: n }),
   setGridDimensions: (dims) => set({ gridDimensions: dims }),
   setWorldDimensions: (dims) => set({ worldDimensions: dims }),
-  setRayResponse: (response: RayResponse) => set({ rayResponse: response }),
+  setVoxelCount: (count) => set({ voxelCount: count }),
+  setResultFileId: (id: string | null) => set({ resultFileId: id }),
   setFrameIndex: (i: number) => set({ frameIndex: i }),
   setWireframe: (visible: boolean) => set({ wireframe: visible }),
 }));

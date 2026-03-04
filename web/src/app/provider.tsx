@@ -4,6 +4,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { MainErrorFallback } from "@/components/main-error-fallback";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import ToastContainer from "@/components/toast";
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -28,14 +29,14 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       <Suspense
         fallback={
           <div className="flex h-screen items-center justify-center">
-            Loading App.
+            Loading...
           </div>
         }
       >
         <QueryClientProvider client={queryClient}>
           <UserProvider>{children}</UserProvider>
-          <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
+        <ToastContainer />
       </Suspense>
     </ErrorBoundary>
   );

@@ -6,8 +6,7 @@ export default function useModelUrl(
   idOfFile: string | undefined,
   simulation: Simulation | undefined,
   pendingFile: File | null,
-): string | undefined
-{
+): string | undefined {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   useEffect(() => {
     if (!pendingFile) {
@@ -20,11 +19,13 @@ export default function useModelUrl(
   }, [pendingFile]);
 
   const modelUrl = useMemo(() => {
-    if (pendingFile && blobUrl) return blobUrl;
-    if (idOfFile === "new") return undefined;
-    if (simulation?.inputFileId) {
+    // For existing simulations, prefer the saved Appwrite file
+    if (idOfFile && idOfFile !== "new" && simulation?.inputFileId) {
       return simulationRepo.getFileUrl(simulation.inputFileId);
     }
+    // For new uploads, use the local pending file blob
+    if (pendingFile && blobUrl) return blobUrl;
+    return undefined;
   }, [idOfFile, blobUrl, pendingFile, simulation?.inputFileId]);
-  return modelUrl
+  return modelUrl;
 }

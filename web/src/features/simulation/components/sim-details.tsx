@@ -57,13 +57,25 @@ export default function SimDetails({ simDetails }: { simDetails: SimDetails }) {
                 <div className="flex justify-between">
                   <span>Voxel Size:</span>
                   <span className="text-text-primary">
-                    {simDetails.config.voxelSize}
+                    {simDetails.config.voxelSize}m
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Voxels:</span>
+                  <span className="text-text-primary">
+                    {simDetails.numVoxels?.toLocaleString() ?? "—"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>FPS:</span>
                   <span className="text-text-primary">
                     {simDetails.config.fps}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Material:</span>
+                  <span className="text-text-primary">
+                    {simDetails.config.material}
                   </span>
                 </div>
                 <div className="flex justify-between mt-1 pt-2 border-t border-white/10">

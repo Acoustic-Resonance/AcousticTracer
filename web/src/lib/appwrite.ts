@@ -1,5 +1,20 @@
 import { Client, Account, TablesDB, Storage } from "appwrite";
 
+// Validate required env vars at startup
+const REQUIRED_ENV = [
+  "VITE_APPWRITE_ENDPOINT",
+  "VITE_APPWRITE_PROJECT_ID",
+] as const;
+
+for (const key of REQUIRED_ENV) {
+  if (!import.meta.env[key]) {
+    throw new Error(
+      `Missing required environment variable: ${key}. ` +
+        "Check your .env file matches .env.example.",
+    );
+  }
+}
+
 const client = new Client();
 
 client

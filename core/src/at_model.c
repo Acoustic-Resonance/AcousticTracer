@@ -120,8 +120,7 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         return AT_ERR_ALLOC_ERROR;
     }
 
-    uint32_t tri = 0;
-    uint32_t *triangle_materials = malloc(sizeof(uint32_t) * (total_indices / 3));
+    uint32_t *triangle_materials = malloc(sizeof(AT_MaterialType) * (total_indices / 3));
 
     for (unsigned long i = 0; i < mesh->primitives_count; i++) {
 
@@ -155,11 +154,6 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
             indices[index_index + i] = idx + base_vertex;
         }
         index_index += index_count;
-
-        // Materials - set to be plastic for now
-        for (uint32_t i = 0; i < index_count; i+=3) {
-            triangle_materials[tri++] = AT_MATERIAL_PLASTIC;
-        }
 
         // Normals
         cgltf_accessor *norm_accessor = NULL;
@@ -217,7 +211,7 @@ void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model)
         AT_Vec3 vec = model->vertices[i];
         AT_AABB_grow(out_aabb, vec);
     }
-    
+
     out_aabb->midpoint = AT_AABB_calc_midpoint(out_aabb);
     out_aabb->SA = AT_AABB_get_SA(*out_aabb);
 }

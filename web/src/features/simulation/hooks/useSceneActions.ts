@@ -4,11 +4,15 @@ import {
   useCreateSimulation,
   useUploadSimulationFile,
   runRaytracer,
+  simulationRepo,
 } from "@/api/simulations";
 import { useSceneStore } from "../stores/scene-store";
 import { useUser } from "@/features/auth/context/user-store";
 import type { SimDetails } from "../api/simulation-repository";
 import { useErrorBoundary } from "react-error-boundary";
+import { queryClient } from "@/app/provider";
+import { simulationKeys } from "@/lib/query-keys";
+import { parseResultBuffer } from "../api/parse-result-binary";
 
 export interface SceneActionsResult {
   handleStartSimulation: () => Promise<void>;
@@ -28,13 +32,15 @@ export default function useSceneActions(
   const [startError, setStartError] = useState<string | null>(null);
 
   const handleStartSimulation = async () => {
-    const { bounds, config, pendingFile } = useSceneStore.getState();
+    const { bounds, config, pendingFile, voxelCount } =
+      useSceneStore.getState();
 
     if (!bounds || !current?.$id) return;
 
     setStartError(null);
 
     let fileId = simDetails?.inputFileId;
+    let simulationId: string | undefined;
     try {
       if (!fileId && pendingFile) {
         const uploadedFile = await uploadMutation.mutateAsync(pendingFile);
@@ -42,24 +48,78 @@ export default function useSceneActions(
       }
       if (!fileId) throw new Error("No file ID available");
 
-      await createMutation.mutateAsync({
+      const createdSimulation = await createMutation.mutateAsync({
         userId: current.$id,
         name: simDetails?.name || "Untitled",
         fileName: pendingFile?.name || "test",
         fileId,
+        numVoxels: voxelCount ?? 0,
         config,
       });
+      simulationId = createdSimulation.$id;
     } catch (err: unknown) {
       showBoundary(err);
       return;
     }
 
     try {
-      console.log(config);
+      // Navigate immediately — raytracer work continues in background
       navigate("/dashboard");
-      const raytracerResponse = await runRaytracer(config);
-      // console.log(raytracerResponse);
-      useSceneStore.getState().setRayResponse(raytracerResponse);
+
+      runRaytracer(config)
+        .then(async (raytracerResponse) => {
+          let resultFileId: string | undefined;
+
+          try {
+            const resultFile = new File(
+              [raytracerResponse],
+              `result-${simulationId}.atrb`,
+              { type: "application/octet-stream" },
+            );
+            const uploaded = await simulationRepo.uploadFile(resultFile);
+            resultFileId = uploaded.$id;
+          } catch {
+            console.warn(
+              "Failed to upload result file, status will still update",
+            );
+          }
+
+          // Pre-populate the ray response cache so the playback slider
+          // is available instantly when the user opens the scene.
+          if (resultFileId) {
+            const parsed = parseResultBuffer(raytracerResponse);
+            queryClient.setQueryData(
+              simulationKeys.rayResponse(resultFileId),
+              parsed,
+            );
+          }
+
+          if (simulationId) {
+            await simulationRepo.update(simulationId, {
+              status: "completed",
+              resultFileId,
+            });
+            queryClient.invalidateQueries({ queryKey: simulationKeys.lists() });
+          }
+        })
+        .catch(async (err: unknown) => {
+          if (simulationId) {
+            try {
+              await simulationRepo.update(simulationId, {
+                status: "failed",
+              });
+              queryClient.invalidateQueries({
+                queryKey: simulationKeys.lists(),
+              });
+            } catch {
+              // Swallow status-update errors to surface the original failure
+            }
+          }
+          console.error(
+            "Raytracer failed:",
+            err instanceof Error ? err.message : err,
+          );
+        });
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Raytracer failed. Please retry.";

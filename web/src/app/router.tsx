@@ -4,15 +4,17 @@ import {
   Outlet,
   Navigate,
 } from "react-router";
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 import { useUser } from "@/features/auth/context/user-store";
 import { FeatureErrorFallback } from "@/components/feature-error-boundary";
 import { ErrorBoundary } from "react-error-boundary";
 // Lazy loading the different pages
 
+const Home = lazy(() => import("@/features/simulation/routes/home"));
 const Dashboard = lazy(() => import("@/features/simulation/routes/dashboard"));
 const Scene = lazy(() => import("@/features/simulation/routes/scene"));
 const Login = lazy(() => import("@/features/auth/routes/login"));
+const Register = lazy(() => import("@/features/auth/routes/register"));
 
 const ProtectedRoute = () => {
   const { current, isLoading } = useUser();
@@ -20,23 +22,46 @@ const ProtectedRoute = () => {
   if (isLoading) return null;
 
   if (!current) return <Navigate to="/auth/login" replace />;
-  return <Outlet />;
+
+  // This Suspense boundary catches lazy-route chunk loads so the
+  // outer AppProvider Suspense doesn't unmount the whole tree
+  // (which would destroy any active WebGL Canvas and lose context).
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center text-text-primary">
+          Loading...
+        </div>
+      }
+    >
+      <Outlet />
+    </Suspense>
+  );
 };
 
 const router = createBrowserRouter([
+  {
+    // Home — public (shows guest CTA when logged out)
+    path: "/",
+    element: (
+      <Suspense
+        fallback={
+          <div className="flex h-screen items-center justify-center text-text-primary">
+            Loading...
+          </div>
+        }
+      >
+        <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
+          <Home />
+        </ErrorBoundary>
+      </Suspense>
+    ),
+  },
   {
     // Protected routes
     path: "/",
     element: <ProtectedRoute />,
     children: [
-      {
-        index: true,
-        element: (
-          <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
-            <Navigate to="/dashboard" replace />
-          </ErrorBoundary>
-        ),
-      },
       {
         path: "dashboard",
         element: (
@@ -69,6 +94,14 @@ const router = createBrowserRouter([
     element: (
       <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
         <Login />
+      </ErrorBoundary>
+    ),
+  },
+  {
+    path: "auth/register",
+    element: (
+      <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
+        <Register />
       </ErrorBoundary>
     ),
   },

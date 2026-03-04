@@ -5,9 +5,10 @@ import { getErrorMessage } from "@/utils/get-error-message";
 import { showToast } from "@/components/toast";
 import { Waves } from "lucide-react";
 
-export default function Login() {
+export default function Register() {
   const navigate = useNavigate();
-  const { login } = useUser();
+  const { register } = useUser();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -16,8 +17,8 @@ export default function Login() {
     e.preventDefault();
     setError("");
     try {
-      await login(email, password);
-      showToast("Login successful — welcome back!", "success");
+      await register(email, password, name);
+      showToast("Registration successful — welcome!", "success");
       navigate("/");
     } catch (err: unknown) {
       setError(getErrorMessage(err));
@@ -35,13 +36,31 @@ export default function Login() {
         </div>
 
         <h1 className="text-center mb-2 text-2xl font-bold text-text-primary">
-          Welcome Back
+          Create Account
         </h1>
         <p className="text-center mb-8 text-sm text-text-secondary">
-          Sign in to your Acoustic Tracer account
+          Get started with Acoustic Tracer
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <label
+              className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wide"
+              htmlFor="name"
+            >
+              Name
+            </label>
+            <input
+              id="name"
+              className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
+              type="text"
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
           <div className="flex flex-col gap-2">
             <label
               className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wide"
@@ -88,17 +107,17 @@ export default function Login() {
             className="w-full px-4 py-2.5 rounded-lg bg-button-primary text-white font-semibold text-sm transition-colors cursor-pointer border-none hover:bg-button-hover focus-visible:outline-2 focus-visible:outline-button-primary focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
             type="submit"
           >
-            Login
+            Sign Up
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm text-text-secondary">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            to="/auth/register"
+            to="/auth/login"
             className="text-link font-medium hover:underline no-underline"
           >
-            Create one
+            Log in
           </Link>
         </div>
       </div>

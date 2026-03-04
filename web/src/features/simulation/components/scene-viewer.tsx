@@ -8,20 +8,20 @@ import {
   Environment,
   GizmoHelper,
   GizmoViewport,
-  Grid,
-  ContactShadows,
   AdaptiveDpr,
 } from "@react-three/drei";
 import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
 import VoxelGrid from "./voxel-grid";
-import BoundBoxHelper from "./bbox-helper";
 import SourcePlacer from "./source-place";
 
 interface SceneCanvasProps {
   modelUrl: string | null;
   isStaging?: boolean;
+  /** True while a completed simulation's ray-response JSON is still loading.
+   *  Prevents mounting the heavy full-white VoxelGrid during the fetch gap. */
+  awaitingResults?: boolean;
 }
 function Loader() {
   const { progress } = useProgress();
@@ -55,67 +55,79 @@ function Model({
   // store the original texture, so the user can toggle
   const originalTexture = useRef(new Map());
 
+  // Effect 1: Geometry setup — reset scales, store originals, compute bounds
+  // Only re-runs when the scene itself changes (new model loaded)
   useEffect(() => {
-    if (scene) {
-      scene.traverse((child) => {
-        // node.position.set(0,0,0);
-        // node.rotation.set(0,0,0);
-        child.scale.set(1, 1, 1);
-        child.updateMatrix();
+    if (!scene) return;
 
-        if (child instanceof THREE.Mesh) {
-          if (!originalTexture.current.has(child.uuid)) {
-            originalTexture.current.set(child.uuid, child.material);
-          }
+    scene.traverse((child) => {
+      // child.scale.set(1, 1, 1);
+      // child.updateMatrix();
 
-          if (!showTexture) {
-            // If the user doesn't want to show the model texture
-            if (child instanceof THREE.Mesh) {
-              const color = new THREE.Color();
-              switch (material) {
-                case "Wood":
-                  color.set("#5c260e");
-                  break;
-                case "Concrete":
-                  color.set("#474747");
-                  break;
-                case "Plastic":
-                  color.set("#246982");
-                  break;
-              }
-              child.material = new THREE.MeshStandardMaterial({
-                color: color,
-                roughness: 0.8,
-                metalness: 0.1,
-                wireframe: wireframe,
-              });
-            }
-          } else {
-            if (originalTexture.current.has(child.uuid)) {
-              child.material = originalTexture.current.get(child.uuid);
-            }
-          }
+      if (child instanceof THREE.Mesh) {
+        if (!originalTexture.current.has(child.uuid)) {
+          originalTexture.current.set(child.uuid, child.material);
         }
-      });
-
-      scene.updateMatrixWorld(true);
-
-      const rawBox = new THREE.Box3().setFromObject(scene);
-      const size = new THREE.Vector3();
-
-      rawBox.getSize(size);
-      const maxDim = Math.max(size.x, size.y, size.z);
-      // Sponza is ridicously big so if one of dims is really large it scales it down similar to c code
-      if (maxDim > 100) {
-        const scaleFactor = 1 / Math.round(maxDim / 10);
-        scene.scale.set(scaleFactor, scaleFactor, scaleFactor);
-        scene.updateMatrixWorld(true);
       }
+    });
 
-      const box = new THREE.Box3().setFromObject(scene);
-      onLoad(box);
+    scene.updateMatrixWorld(true);
+
+    const rawBox = new THREE.Box3().setFromObject(scene);
+    const size = new THREE.Vector3();
+    rawBox.getSize(size);
+    const maxDim = Math.max(size.x, size.y, size.z);
+    // Sponza is ridiculously big so if one dim is really large, scale it down
+    if (maxDim > 100) {
+      const scaleFactor = 1 / Math.round(maxDim / 10);
+      scene.scale.set(scaleFactor, scaleFactor, scaleFactor);
+      scene.updateMatrixWorld(true);
     }
-  }, [scene, onLoad, showTexture, material, wireframe]);
+
+    const box = new THREE.Box3().setFromObject(scene);
+    onLoad(box);
+  }, [scene, onLoad]);
+
+  // Effect 2: Material application — runs when texture/wireframe/material toggles change
+  useEffect(() => {
+    if (!scene) return;
+
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        if (!showTexture) {
+          const color = new THREE.Color();
+          switch (material) {
+            case "Wood":
+              color.set("#5c260e");
+              break;
+            case "Concrete":
+              color.set("#474747");
+              break;
+            case "Plastic":
+              color.set("#246982");
+              break;
+            case "Metal":
+              color.set("#8a8a8a");
+              break;
+            case "Glass":
+              color.set("#88c0d0");
+              break;
+            default:
+              color.set("#246982");
+              break;
+          }
+          child.material = new THREE.MeshStandardMaterial({
+            color,
+            roughness: 0.8,
+            metalness: 0.1,
+            wireframe,
+          });
+        } else if (originalTexture.current.has(child.uuid)) {
+          child.material = originalTexture.current.get(child.uuid);
+        }
+      }
+    });
+  }, [scene, showTexture, material, wireframe]);
 
   return <primitive object={scene} />;
 }
@@ -123,6 +135,7 @@ function Model({
 export default function SceneCanvas({
   modelUrl,
   isStaging = false,
+  awaitingResults = false,
 }: SceneCanvasProps) {
   const setBounds = useSceneStore((state) => state.setBounds);
   const bounds = useSceneStore((state) => state.bounds);
@@ -139,17 +152,15 @@ export default function SceneCanvas({
 
   return (
     <Canvas shadows camera={{ position: [5, 5, 5], fov: 75 }}>
-      {/* Lighting */}
-      <Environment preset="warehouse" />
       {/* Adaptive resolution */}
       <AdaptiveDpr pixelated />
 
       <Suspense fallback={<Loader />}>
+        <Environment preset="warehouse" />
         <Bounds fit clip margin={2}>
           <Model url={modelUrl} onLoad={setBounds} />
         </Bounds>
-        {bounds && showGrid && <VoxelGrid />}
-        <BoundBoxHelper />
+        {bounds && showGrid && !awaitingResults && <VoxelGrid />}
         {bounds && <SourcePlacer isStaging={isStaging} />}
       </Suspense>
       {/* Orientation gizmo */}

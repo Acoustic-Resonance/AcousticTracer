@@ -4,6 +4,9 @@ export const simulationKeys = {
   list: (filters: string) => [...simulationKeys.lists(), { filters }] as const,
   details: () => [...simulationKeys.all, "detail"] as const,
   detail: (id: string) => [...simulationKeys.details(), id] as const,
+  rayResponses: () => [...simulationKeys.all, "rayResponse"] as const,
+  rayResponse: (fileId: string) =>
+    [...simulationKeys.rayResponses(), fileId] as const,
 };
 
 export const authKeys = {

@@ -8,6 +8,7 @@ import { useSceneStore } from "../stores/scene-store";
 import * as THREE from "three";
 
 type Axis = "all" | "x" | "y" | "z";
+type ActiveHandle = "source" | "direction" | null;
 
 export default function SourcePlacer({
   isStaging = false,
@@ -27,6 +28,7 @@ export default function SourcePlacer({
   const draggingRef = useRef(false);
   const [activeAxis, setActiveAxis] = useState<Axis>("all");
   const [controlsEnabled, setControlsEnabled] = useState(true);
+  const [activeHandle, setActiveHandle] = useState<ActiveHandle>("source");
 
   // Sync store to TransformControls (not the mesh) when NOT dragging
   useEffect(() => {
@@ -79,7 +81,7 @@ export default function SourcePlacer({
     };
   }, [setSelectedSource]);
 
-  // Keybinds: j = X axis, k = Y axis, l = Z axis, Escape = all axes
+  // Keybinds: X = X axis, Y = Y axis, Z = Z axis, Escape = all axes
   // Pressing the same key again toggles back to "all".
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -87,13 +89,13 @@ export default function SourcePlacer({
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
 
       switch (e.key.toLowerCase()) {
-        case "j":
+        case "x":
           setActiveAxis((prev) => (prev === "x" ? "all" : "x"));
           break;
-        case "k":
+        case "y":
           setActiveAxis((prev) => (prev === "y" ? "all" : "y"));
           break;
-        case "l":
+        case "z":
           setActiveAxis((prev) => (prev === "z" ? "all" : "z"));
           break;
         case "escape":
@@ -101,6 +103,12 @@ export default function SourcePlacer({
           break;
         case "h":
           setControlsEnabled((prev) => !prev);
+          break;
+        case "tab":
+          e.preventDefault();
+          setActiveHandle((prev) =>
+            prev === "source" ? "direction" : "source",
+          );
           break;
       }
     };
@@ -136,10 +144,25 @@ export default function SourcePlacer({
   const coneRadius = scale * 0.6;
   const coneHeight = coneRadius * 2.5;
 
+  const sourceActive = activeHandle === "source";
+
   const marker = (
-    <mesh renderOrder={999}>
+    <mesh
+      renderOrder={999}
+      onPointerDown={(e) => {
+        if (isStaging && activeHandle !== "source") {
+          e.stopPropagation();
+          setActiveHandle("source");
+        }
+      }}
+    >
       <sphereGeometry args={[markerSize, 16, 16]} />
-      <meshBasicMaterial color={0xff0000} transparent depthTest={false} />
+      <meshBasicMaterial
+        color={0xff0000}
+        transparent
+        opacity={isStaging && !sourceActive ? 0.5 : 1}
+        depthTest={false}
+      />
     </mesh>
   );
 
@@ -186,10 +209,22 @@ export default function SourcePlacer({
       <TransformControls
         ref={controlsRef}
         mode="translate"
-        enabled={controlsEnabled}
-        showX={controlsEnabled && (activeAxis === "all" || activeAxis === "x")}
-        showY={controlsEnabled && (activeAxis === "all" || activeAxis === "y")}
-        showZ={controlsEnabled && (activeAxis === "all" || activeAxis === "z")}
+        enabled={controlsEnabled && sourceActive}
+        showX={
+          controlsEnabled &&
+          sourceActive &&
+          (activeAxis === "all" || activeAxis === "x")
+        }
+        showY={
+          controlsEnabled &&
+          sourceActive &&
+          (activeAxis === "all" || activeAxis === "y")
+        }
+        showZ={
+          controlsEnabled &&
+          sourceActive &&
+          (activeAxis === "all" || activeAxis === "z")
+        }
       >
         {marker}
       </TransformControls>
@@ -199,6 +234,8 @@ export default function SourcePlacer({
         coneRadius={coneRadius}
         coneHeight={coneHeight}
         controlsEnabled={controlsEnabled}
+        activeHandle={activeHandle}
+        setActiveHandle={setActiveHandle}
       />
     </>
   );
@@ -210,12 +247,16 @@ function DirectionArrow({
   coneRadius,
   coneHeight,
   controlsEnabled,
+  activeHandle,
+  setActiveHandle,
 }: {
   sourceControlsRef: RefObject<TransformControlsImpl | null>;
   lineLength: number;
   coneRadius: number;
   coneHeight: number;
   controlsEnabled: boolean;
+  activeHandle: ActiveHandle;
+  setActiveHandle: (h: ActiveHandle) => void;
 }) {
   const setSelectedSource = useSceneStore((s) => s.setSelectedSource);
 
@@ -371,17 +412,26 @@ function DirectionArrow({
         ref={controlsRef}
         mode="translate"
         size={0.4}
-        enabled={controlsEnabled}
-        showX={controlsEnabled}
-        showY={controlsEnabled}
-        showZ={controlsEnabled}
+        enabled={controlsEnabled && activeHandle === "direction"}
+        showX={controlsEnabled && activeHandle === "direction"}
+        showY={controlsEnabled && activeHandle === "direction"}
+        showZ={controlsEnabled && activeHandle === "direction"}
       >
-        <mesh ref={coneRef} renderOrder={999}>
+        <mesh
+          ref={coneRef}
+          renderOrder={999}
+          onPointerDown={(e) => {
+            if (activeHandle !== "direction") {
+              e.stopPropagation();
+              setActiveHandle("direction");
+            }
+          }}
+        >
           <coneGeometry args={[coneRadius, coneHeight, 8]} />
           <meshBasicMaterial
             color={0xffaa00}
             transparent
-            opacity={0.9}
+            opacity={activeHandle === "direction" ? 0.9 : 0.4}
             depthTest={false}
           />
         </mesh>

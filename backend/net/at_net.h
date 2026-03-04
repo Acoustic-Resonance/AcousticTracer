@@ -19,6 +19,12 @@ AT_Result AT_simulation_to_json(
         AT_Simulation *simulation
 );
 
+AT_Result AT_simulation_to_binary(
+        uint8_t **out_buf,
+        size_t *out_size,
+        AT_Simulation *simulation
+);
+
 AT_Result AT_send_json_to_url(
     cJSON *json,
     const AT_NetworkConfig *config
