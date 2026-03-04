@@ -37,9 +37,15 @@ typedef struct {
 } AT_Voxel;
 
 // API Type definitions (just struct definitions, theyre already typedefed when forward declaring)
+typedef struct AT_MiniTree AT_MiniTree;
+typedef struct AT_TriangleArrays AT_TriangleArrays;
+
 struct AT_Scene {
     AT_Source *sources;
     AT_AABB world_AABB;
+    AT_TriangleArrays *triangle_arrs;
+    AT_MiniTree **mini_trees;
+    uint32_t num_trees;
     uint32_t num_sources;
     AT_MaterialType material;
     const AT_Model *environment;

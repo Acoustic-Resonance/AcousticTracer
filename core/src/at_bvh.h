@@ -2,15 +2,16 @@
 #define AT_BVH_H
 
 #include "acoustic/at.h"
+#include "at_internal.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 
 typedef unsigned int *AT_TriArray;
-typedef struct {
+struct AT_TriangleArrays {
     AT_Triangle *triangles_db;
     AT_TriArray *arrs; // 4 arrays, 0 - 2 are dimensional (x, y, z), and 3 is unsorted triangles
-} AT_TriangleArrays;
+};
 
 typedef struct {
     AT_TriangleArrays *triangle_arrs;
@@ -36,11 +37,11 @@ typedef struct {
     // TODO: add parent index
 } AT_MiniTreeNode;
 
-typedef struct {
+struct AT_MiniTree {
     AT_MiniTreeNode *nodes;
     uint32_t max_node_count;
     uint32_t last_node_idx;
-} AT_MiniTree;
+};
 
 typedef struct {
     AT_Vec3 centroid;
@@ -73,6 +74,14 @@ typedef struct {
 typedef struct {
     float left_area, right_area;
 } AT_SA;
+
+typedef struct {
+    bool intersects;
+    AT_Ray out_ray;
+    AT_Vec3 out_normal;
+    // TODO: check if we need triangles
+    uint32_t triangle_index;
+} AT_IntersectContext;
 
 typedef bool (*AT_CompareFunc)(AT_Vec3, AT_SplitContext *);
 
