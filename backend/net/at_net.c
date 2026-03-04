@@ -410,7 +410,6 @@ void AT_raytracer()
 
         AT_simulation_destroy(sim);
         AT_scene_destroy(scene);
-        cJSON_Delete(sim_json);
     }
 
     close(server_fd);
