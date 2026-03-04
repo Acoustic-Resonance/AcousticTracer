@@ -1,3 +1,4 @@
+#include "../src/at_internal.h"
 #include "acoustic/at_scene.h"
 #include "acoustic/at.h"
 #include "../src/at_internal.h"
