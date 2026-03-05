@@ -194,7 +194,7 @@ export default function VoxelGrid() {
         color="#ffffff"
         transparent
         opacity={isSparse ? 0.85 : 0.15}
-        depthWrite={false}
+        depthWrite={true}
       />
     </instancedMesh>
   );

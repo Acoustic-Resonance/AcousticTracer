@@ -7,7 +7,7 @@
 
 #define VOXEL_MAX_STEPS 100
 #define SPEED_OF_SOUND 343.0f
-#define SLOWER_SPEED 10.0f
+#define SLOWER_SPEED 50.0f
 
 void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
 {
