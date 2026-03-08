@@ -37,6 +37,3 @@
 ## References
 
 [^1]: Test
-
-yo
-test
