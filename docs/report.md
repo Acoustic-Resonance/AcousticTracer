@@ -11,8 +11,6 @@ test
 
 - Implementation
 
-<h1>Test<h1>
-
 - Rays
   - Voxels
 - Design choices (c library)
