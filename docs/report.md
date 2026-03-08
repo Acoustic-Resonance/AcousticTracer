@@ -1,9 +1,3 @@
----
-header-includes:
-  - \usepackage{float}
-  - \floatplacement{figure}{H}
----
-
 # Acoustic Tracer
 
 GitHub Repository Link: [Acoustic Tracer](https://github.com/Acoustic-Resonance/AcousticTracer)

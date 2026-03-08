@@ -9,6 +9,8 @@ docs/*
 !docs/*.tex
 !docs/*.pdf
 !docs/core/
+!docs/Makefile
+!docs/header.yaml
 
 # C files
 **/build/*
