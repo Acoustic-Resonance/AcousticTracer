@@ -6,7 +6,7 @@
 - Previous Works
 - Overview of ours (basically the presentation)
 - architecture (front & back)
-test
+
 ### C
 
 - Implementation
@@ -38,10 +38,3 @@ test
 ## References
 
 [^1]: Test
-
-test
-this is a change
-
-this is another change
-
-pat test cuh
