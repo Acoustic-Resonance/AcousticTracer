@@ -10,10 +10,13 @@
 ### C
 
 - Implementation
-
-- Rays
-  - Voxels
+  - Two phase simulation:
+    - Rays
+      - Moller-Trumbmore alg, linked list/tree structure of rays...
+    - Voxels
+      - DDA, energy bins design, voxel grid, attenuation, absorbtion...
 - Design choices (c library)
+  - at.h, opaque API, at_internal.h, returning AT_Result...
 - Optimisation
 
 - API comms (both, potent split into two sections)
