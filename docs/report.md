@@ -39,6 +39,36 @@ The front-end, as mentioned is our method of creating a universal visualiser for
 
 ## Simulation
 
+### Model
+
+Creating the model was inherently the first step of our project, as that is the first step to the user flow. During our initial implementation specification design, we settled on the following model definition:
+
+```C
+struct AT_Model {
+    AT_Vec3 *vertices;
+    AT_Vec3 *normals;
+    uint32_t *indices;
+    uint32_t *triangle_materials;
+    size_t vertex_count;
+    size_t index_count;
+};
+```
+
+This creation of the `AT_Model` struct was possible with the library `cgltf`, which is a single-file/stb-style C glTF loader and writer. This library is able to parse the `.glb` file the user provides, resulting in access to the vertices, nodes, indices, and transformation matrices for each of the vertices (Rotation, Scale, and Quaternion). Initially the `AT_model_create()` function only extracted the raw vertex data, which worked initially. But as the need for more complex models arose, we had to alter our approach to make the use of `cgltf_node` attributes with the vertex data, combined with the parent and world transformation matrices, to give the vertex position and state in relation to the world.
+
+A model is composed of each of the following members:
+
+- An array of vertices, each with an `x`, a `y`, and a `z` component, which represents a point in 3D space.
+- An array of normals, which is the direction that the triangle 'faces'. Represented as a three-dimensional vector.
+- An array of indices, which outlines the order into which to draw lines from each vertex, creating the triangles of the model.
+- An array of materials for each of the triangles, where the array is `index_count / 3` in length and the entry at `triangle_materials[t]` is the material for the triangle at `t`.
+- A number representing the total amount of vertices in the model
+- A number representing the total amount of indices in the model
+
+### Scene
+
+### Core Simulation Phases
+
 Our core C library, as mentioned, involves the simulation of sound as rays throughout a three-dimensional environment. This implementation involves two main steps:
 
 1. Ray Bounce Tree
@@ -74,7 +104,19 @@ Once we were able to get whether a ray intersected with a triangle, the next iss
 
 To combat the memory management associated with the `hit_list` approach of calculating the closest point of intersection, we pivoted to using a linked list approach for the ray implementation. Each ray would have a `child` ray that is the resultant ray after intersection, scattering, reflection etc. Upon the first intersection of a ray we would initialise a new ray with the computed origin and direction, and only update its direction and origin upon subsequent intersections, only if the distance from that point of intersection was less than the distance from the current rays origin to its child. This greatly simplified the computation, while also introducing an hierarchy among the rays, with a parent/child relationship. We could also easily navigate this ray hierarchy using linked list traversal methods.
 
-### Voxels
+Another ray phenomena implemented in our project is material absorption. Since this is not a concern of the end user of the library, this is defined in our `at_internal.h` header file where we declare functions, enumerations, and structs, to be used internally. For the absorption (and later scattering) we implemented, we decided to declare a table of materials along with their coefficients:
+
+```C
+static const AT_Material AT_MATERIAL_TABLE[AT_MATERIAL_COUNT] = {
+    [AT_MATERIAL_CONCRETE] = {.absorption = 0.02f, .scattering = 0.10f},
+    [AT_MATERIAL_PLASTIC] = {.absorption = 0.03f, .scattering = 0.05f},
+    [AT_MATERIAL_WOOD] = {.absorption = 0.10f, .scattering = 0.20f},
+};
+```
+
+Upon intersecting with a triangle, (whose material has been decided during `AT_scene_create()` as stated above), we can calculate the rays resultant energy modelled with the formula `child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[ctx.triangle_index]].absorption);` this accurately uses the absorption coefficient for each material to alter the resultant energy of the `child` ray, created from the intersection.
+
+### voxel stuff
 
 Phase two of the simulation. A voxel is a volumetric pixel, and in our case, a voxel is a dynamic array defined as follows:
 
