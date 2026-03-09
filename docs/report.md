@@ -119,7 +119,7 @@ The AcousticTracer project pairs a C simulation engine (the core) with a browser
 
 #### A Note on Role and Scope
 
-Although my title on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical: parsing a custom binary protocol, writing per-frame transform matrices directly into GPU-backed buffers, normalising direction vectors with quaternion math, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline that spans two independent backends. The user interface that wraps these systems is intentionally minimal - dark-themed panels, sliders, and status badges, because the engineering effort was concentrated on making the underlying data and rendering pipelines correct, fast, and reliable.
+Although my title on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical:  writing per-frame transform matrices directly into GPU-backed buffers, normalising direction vectors with quaternion math,parsing a custom binary protocol, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline that spans two independent backends. The user interface that wraps these systems is intentionally minimal with dark-themed panels, sliders, and status badges, this was because the engineering effort was concentrated on making the underlying data and rendering pipelines correct, fast, and reliable.
 
 This focus was not a deliberate deprioritisation of design, but an accurate reflection of where the complexity lay. A voxel renderer that drops frames is unusable regardless of how polished its surrounding UI is. A binary parser that misaligns a single byte offset produces garbage data that no amount of styling can mask. The frontend's value to the project was measured not in visual refinement but in its ability to bridge the gap between a C simulation engine and a browser-based 3D visualisation.
 
@@ -164,6 +164,64 @@ Before delving into the architectural design and implementation, I want to brief
 **The Repository Pattern and `simulation-repository.ts`.** As the data layer matured alongside the state management migration, I introduced a repository class, `SimulationRepository`, that encapsulates every Appwrite SDK call behind typed methods (`list`, `getById`, `create`, `update`, `delete`, `uploadFile`, `getFileUrl`). No component anywhere in the application imports from Appwrite directly. The repository also maintains two separate TypeScript interfaces, `SimulationDocument` (Appwrite's flat, snake_case database row) and `Simulation` (the camelCase domain object the app consumes) — connected by an explicit mapping function. This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper.
 
 **Late-project UI design** Towards the end of the project after the core features of the frontend had been developed and optimized, I could no longer ignore the need for a polished UI, a multitude of UI and UX design decisions were needed. Building these from scratch would have been a significant time investment ( which I did not have an abundance of due to the project deadline). Luckily I found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. Rather than installing a monolithic library, shadcn/ui provides individual component files that the developer owns and modifies. This approach aligned with the existing Tailwind-based styling and allowed incremental adoption, if I was to do this project again, I would have seriously leveraged the power of **Shadcn** in my development of the components and UI for this project.
+
+## Architectural Overview
+
+### Feature Orientated Architecture
+
+Roughly two weeks into development, the codebase was restructured from a flat component directory into the **Bulletproof React** pattern, a feature orientated architecture where each major feature is a self-contained directory:
+
+```text
+web/src/
+├── app/              # Shell: provider composition,router,global CSS
+├── api/              # Barrel re-exports the data contracts
+├── components/       # Shared UI
+├── features/
+│   ├── auth/         # Login, Register, Settings, OAuth, UserProvider
+│   └── simulation/   # Everything acoustic: API, components, hooks, routes, store
+├── lib/              # Infrastructure: Appwrite client, QueryClient, utils
+└── utils/            # Pure helpers
+```
+
+This codebase structure enforces the concept of **import direction**: feature code may import from `lib/` and `components/`, but never from another feature directly. The `auth` and `simulation` features communicate only through the provider hierarchy and through barrel exports in `api/`. This structure was well thought out and easy to navigate and understand once it was explained to my fellow team members.
+
+### Provider Hierarchy
+
+In React, a **provider** is a component that makes shared data or services available to every component nested inside it, without having to pass that data down manually through props at each level of the component tree.I used providers to compose the application's global infrastructure (error handling, loading states, data caching, authentication) into a single wrapper so that every page and component has access to these services automatically.
+
+The application's provider stack is composed in `provider.tsx`:
+
+```tsx
+<ErrorBoundary FallbackComponent={MainErrorFallback}>
+  <Suspense fallback={<LoadingSpinner />}>
+    <QueryClientProvider client={queryClient}>
+      <UserProvider>
+        {children}
+        <ToastContainer />
+      </UserProvider>
+    </QueryClientProvider>
+  </Suspense>
+</ErrorBoundary>
+```
+
+The ordering is incredibly important and deliberate:
+
+1. **ErrorBoundary** - catches any uncaught exception, including Suspense promise rejections, and renders a recovery UI. Nothing can escape this boundary.
+2. **Suspense** - displays a loading spinner while any descendant component suspends (e.g., during lazy-loaded route fetching).
+3. **QueryClientProvider** - makes the TanStack Query cache available to all descendants.
+4. **UserProvider** - initialises authentication state. On login and logout, it resets the Zustand SceneStore and clears the TanStack Query cache to prevent data leakage between sessions.
+
+### Core Abstractions
+
+Before examining code, I want to name the five abstractions that the entire frontend is built around. Every component, hook, and data flow in the application is connected to one or more of these:
+
+| Abstraction | Responsibility | Implementation |
+| ----------- | -------------- | -------------- |
+| **Simulation** | The domain entity: a configured acoustic experiment with its results. Exists in two shapes, a `SimulationDocument` (Appwrite's snake_case database row) and a `Simulation` (the camelCase domain object the app consumes). | `simulation-repository.ts` |
+| **SceneStore** | The client-side state container for everything the 3D scene needs: model bounds, voxel size, selected source position/direction, UI toggles (wireframe, grid visibility), the pending upload file, and the current playback frame index. | Zustand store in `scene-store.ts` |
+| **SceneCanvas** | The rendering surface. A React Three Fiber `<Canvas>` that bridges React's component model to Three.js's imperative scene graph. Manages camera, lighting, model loading, and child component composition.| `scene-viewer.tsx` |
+| **VoxelGrid** | The GPU-backed instanced voxel renderer. Given a bounding box, a voxel size, and an optional sequence of sparse energy frames, it maintains a single `InstancedMesh` with direct buffer writes for position and colour.| `voxel-grid.tsx` |
+| **Simulation Repository** | The data access layer. Encapsulates every Appwrite SDK call behind typed methods (`list`, `getById`, `create`, `update`, `delete`, `uploadFile`, `getFileUrl`). No component ever imports Appwrite directly. | `simulation-repository.ts` |
 
 - Design choices (front)
   - state storing
