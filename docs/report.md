@@ -10,7 +10,6 @@ Team Members:
 - Patryk Mrozek - Simulation Core
 - Eoghan Murphy - Simulation Core / Optimization
 - Michael McCarthy - Front-end
-
 ## Introduction
 
 Our project 'Acoustic Tracer' is a three-dimensional, acoustic visualiser that allows users to visualise sound travelling throughout a modelled environment as a heat map. At the core it is a C library, where the user can read in a `.glb` file (3D Model File), insert (a) speaker(s), specify simulation settings, and receive back a heat map of how the sound travelled through the environment over time. Our final project extends it into a web-based application that renders this heat map and makes the configuration of the scene and simulation more user-friendly, while also allowing more technical users to achieve their desired configuration. A user can create an account, upload `.glb` model files, view the models in a 3D scene-viewer, configure the scene and simulation settings, and finally run the simulation, returning a heat map which they can play through and replay at a later time if desired. The aim of this project was to create a unique software that could be used by architects, acoustic specialists, or anyone who desires to model how sound travels through their environment. This was also a passion project to explore the potential and concept of ray-tracing, along with creating a software that people would actually use.
@@ -54,7 +53,7 @@ struct AT_Model {
 };
 ```
 
-This creation of the `AT_Model` struct was possible with the library `cgltf`, which is a single-file/stb-style C glTF loader and writer. This library gives us the ability to parse the `.glb` file the user provides, resulting in access to the vertices, nodes, indices, and transformation matrices for each of the vertices (Rotation, Scale, and Quaternion). Initially the `AT_model_create()` function only extracted the raw vertex data, which worked initially. But as the need for more complex models arose, we had to alter our approach to make the use of `cgltf_node` attributes with the vertex data, combined with the parent and world transformation matrices, to give the vertex position and state in relation to the world.
+This creation of the `AT_Model` struct was possible with the library `cgltf`[^ref3], which is a single-file/stb-style C glTF loader and writer. This library gives us the ability to parse the `.glb` file the user provides, resulting in access to the vertices, nodes, indices, and transformation matrices for each of the vertices (Rotation, Scale, and Quaternion). Initially the `AT_model_create()` function only extracted the raw vertex data, which worked initially. But as the need for more complex models arose, we had to alter our approach to make the use of `cgltf_node` attributes with the vertex data, combined with the parent and world transformation matrices, to give the vertex position and state in relation to the world.
 
 A model is a struct, composed of each of the following members:
 
@@ -228,6 +227,45 @@ AT_model_destroy(model);
 The user must destroy in reverse of the creation order. This is because `AT_Simulation` borrows a pointer to `AT_Scene` and `AT_Scene` borrows a pointer to `AT_Model`. The ownership convention is documented well within the internal codebase.
 
 ### Internal Architecture `(at_internal.h)`
+
+### Communication between the Core and the Front-End
+
+With our exemplar front-end web application, the workflow consists of the front-end sending the following data to the core back-end:
+
+```json
+{
+  "filepath": "<path_to_glb>",
+  "voxel_size": "<size_of_voxel {float}>",
+  "material": {<model_material>},
+  "fps": "<fps {uint8}>",
+  "num_rays": "<num_rays {uint32}",
+  "source": {
+        "position": ["<pos_x {uint32}>", "<pos_y {uint32}>", "<pos_z {uint32}>"],
+        "direction": ["<dir_x {uint32}>", "<dir_y {uint32}>", "<dir_z {uint32}>"]
+  },
+}
+```
+
+Since this JSON is quite minimal, it is acceptable to send as-is.
+
+The back-end for our application is centred around a C server whose implementation is defined in `backend/at_net.c`. This involves setting up a TCP socket (which essentially behaves like a HTTP server). It listens for incoming connections, accepts only `POST /run` requests, parses the incoming configuration and settings, runs the ray-tracer, converts the frame data (voxel heat-map) to binary, and finally writes the binary stream as the response. The front-end receives this stream as a response, and can then parse the result, and construct the visualisation of the heat-map on the client-side.
+
+During our initial design phase, we outlined the communication standard for the voxel data as shown:
+
+```json
+{
+  "1": [{"1": 24}, {"3": 34}, {"6": 32}, {"13": 45}, ...]
+  "2": [...]
+  .
+  .
+  .
+  "n": [...]
+}
+```
+
+Here, the first key is the frame number, and the value is a list of `key: value` pairs where the key is the voxel index, and the value is the energy of the voxel at that current frame. We found that this was an easy to understand communication standard, while reducing the amount of total tokens required to transmit. Furthermore it is natively JSON, so it is easy to parse on the front-end application. In the final iteration we prefixed the frame number with `frame_` to distinguish between the frame number and the voxel index.
+
+On the back-end, we used the `cJSON` library [^ref4], to parse the configuration received from the front-end.
 
 ## Frontend
 
@@ -422,3 +460,7 @@ Before examining code, I want to name the five abstractions that the entire fron
 [^ref1]: [Möller-Trumbore Intersection Algorithm](https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing)
 
 [^ref2]: [Amantides-Woo Voxel Traversal Algorithm](https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing)
+
+[^ref3]: [cgltf Library](https://github.com/jkuhlmann/cgltf)
+
+[^ref4]: [cJSON library](https://github.com/DaveGamble/cJSON)
