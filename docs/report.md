@@ -10,6 +10,7 @@ Team Members:
 - Patryk Mrozek - Simulation Core
 - Eoghan Murphy - Simulation Core / Optimization
 - Michael McCarthy - Front-end
+
 ## Introduction
 
 Our project 'Acoustic Tracer' is a three-dimensional, acoustic visualiser that allows users to visualise sound travelling throughout a modelled environment as a heat map. At the core it is a C library, where the user can read in a `.glb` file (3D Model File), insert (a) speaker(s), specify simulation settings, and receive back a heat map of how the sound travelled through the environment over time. Our final project extends it into a web-based application that renders this heat map and makes the configuration of the scene and simulation more user-friendly, while also allowing more technical users to achieve their desired configuration. A user can create an account, upload `.glb` model files, view the models in a 3D scene-viewer, configure the scene and simulation settings, and finally run the simulation, returning a heat map which they can play through and replay at a later time if desired. The aim of this project was to create a unique software that could be used by architects, acoustic specialists, or anyone who desires to model how sound travels through their environment. This was also a passion project to explore the potential and concept of ray-tracing, along with creating a software that people would actually use.
@@ -21,6 +22,8 @@ Our project 'Acoustic Tracer' is a three-dimensional, acoustic visualiser that a
 On carrying out research into existing technologies before starting this project, we weren't able to find an exact software to meet our needs.
 
 ## Architecture
+
+<!-- TODO: rename section? -->
 
 Upon starting the project our first task was to set up the shared GitHub repository where our code was to be hosted. This was an involved process with the whole team, as we wanted to ensure a proper workflow with professional version control standards. We set up an organisation, as to not have a single person hosting the repository. We then created the repository `AcousticTracer` where we each forked it, giving ourselves a personal 'copy' of the repository to serve as our `origin`. We then added a remote `upstream` where we could merge changes from our personal forks to the original repository located in the organisation. This allowed us to each work independently on features in parallel and then push these changes into a shared repository. We configured approval rules to ensure that members could not approve their own pull requests, and that each pull request required at least one approval before merging into the main branch.
 
@@ -145,7 +148,7 @@ typedef struct {
 
 This approach required knowing the total simulation duration upfront in order to allocate the correct number of bins, though in practice this was not always possible, as the way rays interact with the scene cannot be determined before the simulation runs. We therefore moved to the dynamic array approach described above, where each voxel's bin array grows dynamically as energy is deposited into new time frames.
 
-Every ray generated in the first phase of the simulation is then traversed using the Digital Differential Analyzer (DDA) algorithm, implemented with reference to Amanatides and Woo's *A Fast Voxel Traversal Algorithm for Ray Tracing* algorithm[^ref2]. A naive approach to this problem might sample points along a ray at fixed intervals, but this risks skipping voxels entirely if they are only grazed by a ray, and also opens up the possibility for a voxel to be visited multiple times. The DDA algorithm allows us to track how far along a ray segment we need to travel to cross the next voxel boundary per axis, which is tracked by the variable `t_max`. At each step, the axis with the smallest `t_max` is advanced. This guarantees that every voxel the ray segment passes through is visited exactly once, regardless of the ray's direction or the size of the voxels.
+Every ray generated in the first phase of the simulation is then traversed using the Digital Differential Analyzer (DDA) algorithm, implemented with reference to Amanatides and Woo's _A Fast Voxel Traversal Algorithm for Ray Tracing_ algorithm[^ref2]. A naive approach to this problem might sample points along a ray at fixed intervals, but this risks skipping voxels entirely if they are only grazed by a ray, and also opens up the possibility for a voxel to be visited multiple times. The DDA algorithm allows us to track how far along a ray segment we need to travel to cross the next voxel boundary per axis, which is tracked by the variable `t_max`. At each step, the axis with the smallest `t_max` is advanced. This guarantees that every voxel the ray segment passes through is visited exactly once, regardless of the ray's direction or the size of the voxels.
 
 For each voxel the ray crosses, an amount of energy is deposited into that voxel. This energy deposit is weighted by three physical factors. First, the length of the ray segment inside the voxel, a ray travelling a longer path through a voxel contributes more energy to it. Second, inverse square attenuation with total distance `d` from the source, modelling how sound naturally loses intensity over distance. Third, air absorption, modelled as `exp(-k * d)`, where `k` is the air coefficient, which accounts for energy lost to the medium itself as the 'wave' propagates. The result of these three factors combined is a single float value that is added to the voxel's current bin.
 
@@ -240,9 +243,9 @@ With our exemplar front-end web application, the workflow consists of the front-
   "fps": "<fps {uint8}>",
   "num_rays": "<num_rays {uint32}",
   "source": {
-        "position": ["<pos_x {uint32}>", "<pos_y {uint32}>", "<pos_z {uint32}>"],
-        "direction": ["<dir_x {uint32}>", "<dir_y {uint32}>", "<dir_z {uint32}>"]
-  },
+    "position": ["<pos_x {uint32}>", "<pos_y {uint32}>", "<pos_z {uint32}>"],
+    "direction": ["<dir_x {uint32}>", "<dir_y {uint32}>", "<dir_z {uint32}>"]
+  }
 }
 ```
 
@@ -275,7 +278,7 @@ The AcousticTracer project pairs a C simulation engine (the core) with a browser
 
 #### A Note on Role and Scope
 
-Although my title on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical:  writing per-frame transform matrices directly into GPU-backed buffers, normalising direction vectors with quaternion math, parsing a custom binary protocol, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline that spans two independent backends. The user interface that wraps these systems is intentionally minimal with dark-themed panels, sliders, and status badges, this was because the engineering effort was concentrated on making the underlying data and rendering pipelines correct, fast, and reliable.
+Although my title on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical: writing per-frame transform matrices directly into GPU-backed buffers, normalising direction vectors with quaternion math, parsing a custom binary protocol, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline that spans two independent backends. The user interface that wraps these systems is intentionally minimal with dark-themed panels, sliders, and status badges, this was because the engineering effort was concentrated on making the underlying data and rendering pipelines correct, fast, and reliable.
 
 This focus was not a deliberate de-prioritisation of design, but an accurate reflection of where the complexity lay. A voxel renderer that drops frames is unusable regardless of how polished its surrounding UI is. A binary parser that misaligns a single byte offset produces garbage data that no amount of styling can mask. The frontend's value to the project was measured not in visual refinement but in its ability to bridge the gap between a C simulation engine and a browser-based 3D visualisation.
 
@@ -327,7 +330,7 @@ State management went through three distinct phases, each driven by the limitati
 
 #### The Repository Pattern
 
- As the data layer matured alongside the state management migration, I introduced a repository class, `SimulationRepository`, that encapsulates every Appwrite SDK call behind typed methods (`list`, `getById`, `create`, `update`, `delete`, `uploadFile`, `getFileUrl`). This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper.
+As the data layer matured alongside the state management migration, I introduced a repository class, `SimulationRepository`, that encapsulates every Appwrite SDK call behind typed methods (`list`, `getById`, `create`, `update`, `delete`, `uploadFile`, `getFileUrl`). This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper.
 
 ### Late-stage UI design
 
