@@ -54,9 +54,9 @@ struct AT_Model {
 };
 ```
 
-This creation of the `AT_Model` struct was possible with the library `cgltf`, which is a single-file/stb-style C glTF loader and writer. This library is able to parse the `.glb` file the user provides, resulting in access to the vertices, nodes, indices, and transformation matrices for each of the vertices (Rotation, Scale, and Quaternion). Initially the `AT_model_create()` function only extracted the raw vertex data, which worked initially. But as the need for more complex models arose, we had to alter our approach to make the use of `cgltf_node` attributes with the vertex data, combined with the parent and world transformation matrices, to give the vertex position and state in relation to the world.
+This creation of the `AT_Model` struct was possible with the library `cgltf`, which is a single-file/stb-style C glTF loader and writer. This library gives us the ability to parse the `.glb` file the user provides, resulting in access to the vertices, nodes, indices, and transformation matrices for each of the vertices (Rotation, Scale, and Quaternion). Initially the `AT_model_create()` function only extracted the raw vertex data, which worked initially. But as the need for more complex models arose, we had to alter our approach to make the use of `cgltf_node` attributes with the vertex data, combined with the parent and world transformation matrices, to give the vertex position and state in relation to the world.
 
-A model is composed of each of the following members:
+A model is a struct, composed of each of the following members:
 
 - An array of vertices, each with an `x`, a `y`, and a `z` component, which represents a point in 3D space.
 - An array of normals, which is the direction that the triangle 'faces'. Represented as a three-dimensional vector.
@@ -65,7 +65,9 @@ A model is composed of each of the following members:
 - A number representing the total amount of vertices in the model
 - A number representing the total amount of indices in the model
 
-### Scene
+### Scene & Simulation
+
+Creating the scene with `AT_scene_create()` is a simple aggregation of the `AT_SceneConfig` configuration, model (environment) pointer, and creation of the AABB (axis-aligned bounding box) of the model. Similarly the creation of the simulation with `AT_simulation_create()`, is another aggregation of the simulation settings (`AT_Settings`), calculation of the voxel grid dimensions and the allocation of the voxel grid.
 
 ### Core Simulation Phases
 
