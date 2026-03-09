@@ -183,17 +183,17 @@ The user must destroy in reverse of the creation order. This is because `AT_Simu
 
 ### Introduction and Motivation
 
-The AcousticTracer project pairs a C simulation engine (the core) with a browser-based frontend, which configures, stores, and visualises the simulation. Tools like ODEON exist for this domain, but they are desktop-only, expensive, and closed-source. A browser-based alternative would be freely accessible, require no installation, and immediate real-time use. This section describes the architecture of that browser frontend: what its major components are, how they interact at runtime, and what was learned building this project while starting with little to no prior experience in Three.js, WebGL, or production React architecture.
+The AcousticTracer project pairs a C simulation engine (the core) with a browser-based frontend, which configures, stores, and visualises the simulation. Tools like ODEON exist for this domain, but they are desktop-oanly, expensive, and closed-source. A browser-based alternative would be freely accessible, require no installation, and provide immediate real-time use. This section describes the architecture of that browser frontend: what its major components are, how they interact at runtime, and what was learned building this project while starting with little to no prior experience in Three.js, WebGL, or production React architecture.
 
 #### A Note on Role and Scope
 
-Although my title on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical:  writing per-frame transform matrices directly into GPU-backed buffers, normalising direction vectors with quaternion math,parsing a custom binary protocol, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline that spans two independent backends. The user interface that wraps these systems is intentionally minimal with dark-themed panels, sliders, and status badges, this was because the engineering effort was concentrated on making the underlying data and rendering pipelines correct, fast, and reliable.
+Although my title on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical:  writing per-frame transform matrices directly into GPU-backed buffers, normalising direction vectors with quaternion math, parsing a custom binary protocol, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline that spans two independent backends. The user interface that wraps these systems is intentionally minimal with dark-themed panels, sliders, and status badges, this was because the engineering effort was concentrated on making the underlying data and rendering pipelines correct, fast, and reliable.
 
 This focus was not a deliberate de-prioritisation of design, but an accurate reflection of where the complexity lay. A voxel renderer that drops frames is unusable regardless of how polished its surrounding UI is. A binary parser that misaligns a single byte offset produces garbage data that no amount of styling can mask. The frontend's value to the project was measured not in visual refinement but in its ability to bridge the gap between a C simulation engine and a browser-based 3D visualisation.
 
 ### A Learning Journey Through the React Ecosystem
 
-This project was my first experience building a (hopefully) production-scale application within the React ecosystem, and with 3D Web rendering thrown into the mix it was quite a challenge to undertake. Every major technology in the stack - React itself, TypeScript, Zustand, TanStack Query, Three.js, React Three Fiber, Tailwind CSS, Appwrite - was either encountered for the first time during development or a technology I had limited experience with. The consequence of this is visible in the project's commit history, which records not just feature additions but a series of architectural refactors, each driven by the discovery of a better approach to a problem that needs to be solved or had already been solved in a less effective way.
+This project was my first experience building a fullstack web application within the React ecosystem, and with 3D Web rendering thrown into the mix it was quite a challenge to undertake. Every major technology in the stack (React itself, TypeScript, Zustand, TanStack Query, Three.js, React Three Fiber, Tailwind CSS, Appwrite) was either encountered for the first time during development or a technology I had limited experience with. The consequence of this is visible in the project's commit history, which records not just feature additions but a series of architectural refactors, each driven by the discovery of a better approach to a problem that needs to be solved or had already been solved in a less effective way.
 
 My pattern of implementation was quite consistent throughout the development of the project, to start I would attempt to implement a feature with the tools and patterns understood at the time, encounter the limitations of that approach under real conditions/during testing, discover a more appropriate technology or pattern, and refactor. JavaScript gave way to TypeScript when runtime type errors became unmanageable. Manual `useEffect`-based data fetching gave way to TanStack Query when forgotten refetch calls produced stale UI after every mutation. A flat component directory gave way to feature-sliced architecture when cross-feature imports created circular dependencies. Raw CSS gave way to Tailwind when naming collisions appeared across fifteen components.
 
@@ -213,25 +213,37 @@ The frontend has three responsibilities that in the early stages of development 
 
 The design was shaped by three challenges that recur throughout this section:
 
-- **Performance budget.** Hundreds of thousands of voxels × 60 FPS × per-instance matrix and colour updates. This challenge eliminated most naive rendering approaches and drove the adoption of `InstancedMesh`.
-- **3D software development complexity.** Building an interactive 3D application in the browser required working with concepts that have no equivalent in conventional web development: scene graphs, projection matrices, quaternion rotations, axis-aligned bounding boxes, raycasting for hit detection, and GPU-instanced rendering,each concept introduced a substantial learning curve that extended well beyond typical frontend engineering.
-- **Backend coupling.** The frontend communicates with two backends - Appwrite (a Backend-as-a-Service for authentication, database, and file storage) and the C ray-tracer (a custom HTTP endpoint). The data layer must mediate between both without leaking SDK details into components.
+- **Performance budget.** - Hundreds of thousands of voxels × 60 FPS × per-instance matrix and colour updates. This challenge eliminated most naive rendering approaches and drove the adoption of `InstancedMesh`.
+- **3D software development complexity.** - Building an interactive 3D application in the browser required working with concepts that have no equivalent in conventional web development: scene graphs, projection matrices, quaternion rotations, axis-aligned bounding boxes, raycasting for hit detection, and GPU-instanced rendering,each concept introduced a substantial learning curve that extended well beyond typical frontend engineering.
+- **Backend coupling.** - The frontend communicates with two backends - Appwrite (a Backend-as-a-Service for authentication, database, and file storage) and the C ray-tracer (a custom HTTP endpoint). The data layer must mediate between both without leaking SDK details into components.
 
 ### Technology Decisions
 
 Before delving into the architectural design and implementation, I want to briefly describe the technologies I used and why I picked them.
 
-**React.** I chose React as the UI framework because I had invested time developing my skills with it before and during the early stages of the project, completing Scrimba's introductory and the majority of the advanced React courses as well as their TypeScript course. That preparation gave me enough fluency with React's component model, hooks, and ecosystem to be productive from the first week.
+#### React
 
-**JavaScript -> TypeScript.** The initial scaffold was plain JavaScript. It quickly became apparent that JavaScript alone would not be sufficient, the project was hitting runtime crashes caused by misspelled prop names and `undefined` values propagating silently through the component tree, bugs that TypeScript's structural type system catches at compile time. I invested time during the first three weeks of development learning TypeScript alongside the codebase.
+I chose React as the UI framework because I had invested time developing my skills with it before and during the early stages of the project, completing Scrimba's introductory course and the majority of the advanced React courses, as well as their TypeScript course. That preparation gave me enough fluency with React's component model, hooks, and ecosystem to be productive from the first week.
 
-**CSS → Tailwind CSS.** Hand-written CSS files worked fine while the project had five components. Once that count reached fifteen, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behavior, and structure are all visible in a single file.
+#### JavaScript -> TypeScript
 
-**`useState` -> Zustand -> Zustand + TanStack Query.** State management went through three distinct phases, each driven by the limitations of the previous approach. Initially every piece of state lived in React's built-in `useState` and `useEffect` hooks, voxel size, simulation lists, the currently loaded model, all of it scattered across individual components. This became unmanageable and messy quickly, multiple components needed access to the same state, prop drilling grew out of control, and there was no single source of truth for the 3D scene's configuration. Zustand replaced `useState` for client-side state and solved these problems cleanly — a single flat store with fine-grained selectors meant any component could read or write scene configuration without prop chains. However, Zustand was then also being used for server data (simulation lists, ray results), which required manually calling `loadData()` after every mutation. When one of those calls was forgotten, the UI showed stale data. TanStack Query replaced Zustand for all server state, bringing automatic cache invalidation after mutations, background refetching, and request deduplication. The split was now clear and clean: Zustand owns synchronous, client-only state, while TanStack Query owns anything that touches the network.
+The initial scaffold was plain JavaScript. It quickly became apparent that JavaScript alone would not be sufficient, the project was hitting runtime crashes caused by misspelled prop names and `undefined` values propagating silently through the component tree, bugs that TypeScript's structural type system catches at compile time. I invested time during the first three weeks of development learning TypeScript alongside the codebase.
 
-**The Repository Pattern and `simulation-repository.ts`.** As the data layer matured alongside the state management migration, I introduced a repository class, `SimulationRepository`, that encapsulates every Appwrite SDK call behind typed methods (`list`, `getById`, `create`, `update`, `delete`, `uploadFile`, `getFileUrl`). No component anywhere in the application imports from Appwrite directly. The repository also maintains two separate TypeScript interfaces, `SimulationDocument` (Appwrite's flat, snake_case database row) and `Simulation` (the camelCase domain object the app consumes) — connected by an explicit mapping function. This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper.
+### CSS → Tailwind CSS
 
-**Late-project UI design** Towards the end of the project after the core features of the frontend had been developed and optimized, I could no longer ignore the need for a polished UI, a multitude of UI and UX design decisions were needed. Building these from scratch would have been a significant time investment ( which I did not have an abundance of due to the project deadline). Luckily I found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. Rather than installing a monolithic library, shadcn/ui provides individual component files that the developer owns and modifies. This approach aligned with the existing Tailwind-based styling and allowed incremental adoption, if I was to do this project again, I would have seriously leveraged the power of **Shadcn** in my development of the components and UI for this project.
+Hand-written CSS files worked fine while the project had five components. Once that count reached fifteen, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behavior, and structure are all visible in a single file.
+
+### `useState` -> Zustand -> Zustand + TanStack Query
+
+State management went through three distinct phases, each driven by the limitations of the previous approach. Initially every piece of state lived in React's built-in `useState` and `useEffect` hooks, voxel size, simulation lists, the currently loaded model, all of it scattered across individual components. This became unmanageable and messy quickly, multiple components needed access to the same state, prop drilling grew out of control, and there was no single source of truth for the 3D scene's configuration. Zustand replaced `useState` for client-side state and solved these problems cleanly — a single flat store with fine-grained selectors meant any component could read or write scene configuration without prop chains. However, Zustand was then also being used for server data (simulation lists, ray results), which required manually calling `loadData()` after every mutation. When one of those calls was forgotten, the UI showed stale data. TanStack Query replaced Zustand for all server state, bringing automatic cache invalidation after mutations, background refetching, and request deduplication. The split was now clear and clean: Zustand owns synchronous, client-only state, while TanStack Query owns anything that touches the network.
+
+#### The Repository Pattern
+
+ As the data layer matured alongside the state management migration, I introduced a repository class, `SimulationRepository`, that encapsulates every Appwrite SDK call behind typed methods (`list`, `getById`, `create`, `update`, `delete`, `uploadFile`, `getFileUrl`). This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper.
+
+### Late-stage UI design
+
+Towards the end of the project after the core features of the frontend had been developed and optimized, I could no longer ignore the need for a polished UI, a multitude of UI and UX design decisions were needed. Building these from scratch would have been a significant time investment ( which I did not have an abundance of due to the project deadline). Luckily I found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. Rather than installing a monolithic library, shadcn/ui provides individual component files that the developer owns and modifies. This approach aligned with the existing Tailwind-based styling and allowed incremental adoption, if I was to do this project again, I would have seriously leveraged the power of **Shadcn** in my development of the components and UI for this project.
 
 ## Architectural Overview
 
@@ -241,21 +253,21 @@ Roughly two weeks into development, the codebase was restructured from a flat co
 
 ```text
 web/src/
-├── app/              # Shell: provider composition,router,global CSS
-├── api/              # Barrel re-exports the data contracts
-├── components/       # Shared UI
-├── features/
-│   ├── auth/         # Login, Register, Settings, OAuth, UserProvider
-│   └── simulation/   # Everything acoustic: API, components, hooks, routes, store
-├── lib/              # Infrastructure: Appwrite client, QueryClient, utils
-└── utils/            # Pure helpers
++-- app/              # Shell: provider composition, router, global CSS
++-- api/              # Barrel re-exports the data contracts
++-- components/       # Shared UI
++-- features/
+|   +-- auth/         # Login, Register, Settings, OAuth, UserProvider
+|   +-- simulation/   # Everything acoustic: API, components, hooks, routes, store
++-- lib/              # Infrastructure: Appwrite client, QueryClient, utils
++-- utils/            # Pure helpers
 ```
 
 This codebase structure enforces the concept of **import direction**: feature code may import from `lib/` and `components/`, but never from another feature directly. The `auth` and `simulation` features communicate only through the provider hierarchy and through barrel exports in `api/`. This structure was well thought out and easy to navigate and understand once it was explained to my fellow team members.
 
 ### Provider Hierarchy
 
-In React, a **provider** is a component that makes shared data or services available to every component nested inside it, without having to pass that data down manually through props at each level of the component tree.I used providers to compose the application's global infrastructure (error handling, loading states, data caching, authentication) into a single wrapper so that every page and component has access to these services automatically.
+In React, a **provider** is a component that makes shared data or services available to every component nested inside it, without having to pass that data down manually through props at each level of the component tree. I used providers to compose the application's global infrastructure (error handling, loading states, data caching, authentication) into a single wrapper so that every page and component has access to these services automatically.
 
 The application's provider stack is composed in `provider.tsx`:
 
@@ -283,13 +295,46 @@ The ordering is incredibly important and deliberate:
 
 Before examining code, I want to name the five abstractions that the entire frontend is built around. Every component, hook, and data flow in the application is connected to one or more of these:
 
-| Abstraction | Responsibility | Implementation |
-| ----------- | -------------- | -------------- |
-| **Simulation** | The domain entity: a configured acoustic experiment with its results. Exists in two shapes, a `SimulationDocument` (Appwrite's snake_case database row) and a `Simulation` (the camelCase domain object the app consumes). | `simulation-repository.ts` |
-| **SceneStore** | The client-side state container for everything the 3D scene needs: model bounds, voxel size, selected source position/direction, UI toggles (wireframe, grid visibility), the pending upload file, and the current playback frame index. | Zustand store in `scene-store.ts` |
-| **SceneCanvas** | The rendering surface. A React Three Fiber `<Canvas>` that bridges React's component model to Three.js's imperative scene graph. Manages camera, lighting, model loading, and child component composition.| `scene-viewer.tsx` |
-| **VoxelGrid** | The GPU-backed instanced voxel renderer. Given a bounding box, a voxel size, and an optional sequence of sparse energy frames, it maintains a single `InstancedMesh` with direct buffer writes for position and colour.| `voxel-grid.tsx` |
-| **Simulation Repository** | The data access layer. Encapsulates every Appwrite SDK call behind typed methods (`list`, `getById`, `create`, `update`, `delete`, `uploadFile`, `getFileUrl`). No component ever imports Appwrite directly. | `simulation-repository.ts` |
++--------------------+----------------------------------------+-------------------------+
+| Abstraction        | Responsibility                         | Implementation          |
++====================+========================================+=========================+
+| **Simulation**     | The domain entity: a configured        | `simulation-            |
+|                    | acoustic experiment with its results.  | repository.ts`          |
+|                    | Exists in two shapes, a                |                         |
+|                    | `SimulationDocument` (Appwrite's       |                         |
+|                    | snake\_case database row) and a        |                         |
+|                    | `Simulation` (the camelCase object     |                         |
+|                    | the web app uses).                     |                         |
++--------------------+----------------------------------------+-------------------------+
+| **SceneStore**     | The client-side state container for    | Zustand store in        |
+|                    | everything the 3D scene needs: model   | `scene-store.ts`        |
+|                    | bounds, voxel size, selected source    |                         |
+|                    | position/direction, UI toggles         |                         |
+|                    | (wireframe, grid visibility), the      |                         |
+|                    | pending upload file, and the current   |                         |
+|                    | playback frame index.                  |                         |
++--------------------+----------------------------------------+-------------------------+
+| **SceneCanvas**    | The rendering surface. A React Three   | `scene-viewer.tsx`      |
+|                    | Fiber `<Canvas>` that bridges React's  |                         |
+|                    | component model to Three.js's scene.   |                         |
+|                    | Manages camera, lighting, model        |                         |
+|                    | loading, and child component           |                         |
+|                    | composition.                           |                         |
++--------------------+----------------------------------------+-------------------------+
+| **VoxelGrid**      | The GPU-backed instanced voxel         | `voxel-grid.tsx`        |
+|                    | renderer. Given a bounding box, a      |                         |
+|                    | voxel size, and an optional sequence   |                         |
+|                    | of sparse energy frames, it maintains  |                         |
+|                    | a single `InstancedMesh` with direct   |                         |
+|                    | buffer writes for position and colour. |                         |
++--------------------+----------------------------------------+-------------------------+
+| **Simulation       | The data access layer. Encapsulates    | `simulation-            |
+| Repository**       | every Appwrite SDK call behind typed   | repository.ts`          |
+|                    | methods (`list`, `getById`, `create`,  |                         |
+|                    | `update`, `delete`, `uploadFile`,      |                         |
+|                    | `getFileUrl`). No component ever       |                         |
+|                    | imports Appwrite directly.             |                         |
++--------------------+----------------------------------------+-------------------------+
 
 - Design choices (front)
   - state storing
