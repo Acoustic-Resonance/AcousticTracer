@@ -120,9 +120,9 @@ static const AT_Material AT_MATERIAL_TABLE[AT_MATERIAL_COUNT] = {
 
 Upon intersecting with a triangle, (whose material has been decided during `AT_scene_create()` as stated above), we can calculate the rays resultant energy modelled with the formula `child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[ctx.triangle_index]].absorption);` this accurately uses the absorption coefficient for each material to alter the resultant energy of the `child` ray, created from the intersection.
 
-### voxel stuff
+### Voxels
 
-Phase two of the simulation. A voxel is a volumetric pixel, and in our case, a voxel is a dynamic array defined as follows:
+The second phase of the simulation is the DDA voxel sweep. A voxel is a volumetric pixel, and in our case, a voxel is a dynamic array defined as follows:
 
 ```C
 typedef struct {
@@ -146,7 +146,7 @@ typedef struct {
 } Voxel_t
 ```
 
-This approach required knowing the total simulation duration upfront in order to allocate the correct number of bins, though in practice this was not always possible, as the way rays interact with the scene cannot be determined before the simulation runs. We therefore moved to the dynamic array approach described above, where each voxel's bin array grows dynamically as energy is deposited into new time frames.
+This approach required knowing the total simulation duration upfront in order to allocate the correct number of bins, though in practice this was not always possible. The total duration of a simulation depends on how far the rays travel before their energy drops below the termination threshold, which in turn depends on the geometry of the scene and the configuration of the source. The amount of times a ray bounces and how it loses energy throughout the environment simply is not something we can know until the simulation is run. We therefore moved to the dynamic array approach described above, where each voxel's bin array grows dynamically as energy is deposited into new time frames.
 
 Every ray generated in the first phase of the simulation is then traversed using the Digital Differential Analyzer (DDA) algorithm, implemented with reference to Amanatides and Woo's _A Fast Voxel Traversal Algorithm for Ray Tracing_ algorithm[^ref2]. A naive approach to this problem might sample points along a ray at fixed intervals, but this risks skipping voxels entirely if they are only grazed by a ray, and also opens up the possibility for a voxel to be visited multiple times. The DDA algorithm allows us to track how far along a ray segment we need to travel to cross the next voxel boundary per axis, which is tracked by the variable `t_max`. At each step, the axis with the smallest `t_max` is advanced. This guarantees that every voxel the ray segment passes through is visited exactly once, regardless of the ray's direction or the size of the voxels.
 
@@ -168,7 +168,7 @@ typedef struct AT_Scene AT_Scene;
 typedef struct AT_Simulation AT_Simulation;
 ```
 
-Because they are incomplete types, a user can hold a pointer to them but cannot dereference them to access their members directly. The full struct definitions are never visible outside the library. This also allows us to change the internal layout of any struct without breaking any code that uses the library.
+Because they are incomplete types, a user can hold a pointer to them but cannot dereference them to access their members directly. The full struct definitions are never visible outside the library. This also allows us to change the internal layout of any struct without breaking any code that uses the library, because the user only every holds a pointer to an incomplete type, the compiler never needs to know the size of the struct itself.
 
 All publicly available functions follow the same naming convention, prefixed with `AT_` and the name of the type they operate on:
 
@@ -195,9 +195,14 @@ if (AT_model_create(&model, "room.glb") != AT_OK) {
     return 1;
 }
 
+AT_Source source = {
+        .direction = {{0.0f, 1.0f, 0.0f}},
+        .position = {{0.0f, 0.0f, 0.0f}}
+};
+
 AT_SceneConfig config = {
     .environment = model,
-    .sources = sources,
+    .sources = &source,
     .num_sources = 1,
     .material = AT_MATERIAL_CONCRETE,
 };
@@ -230,6 +235,63 @@ AT_model_destroy(model);
 The user must destroy in reverse of the creation order. This is because `AT_Simulation` borrows a pointer to `AT_Scene` and `AT_Scene` borrows a pointer to `AT_Model`. The ownership convention is documented well within the internal codebase.
 
 ### Internal Architecture `(at_internal.h)`
+
+The full struct definitions for all three opaque types live in `at_internal.h`, along with any other types that need to be shared across multiple source files but should never be exposed publicly. The reason that this internal header exists, as opposed to simply defining the structs within their respective `.c` files, is that multiple source files need access to full definitions simultaneously.
+
+The full definitions are as follows:
+
+```C
+struct AT_Model {
+    AT_Vec3 *vertices;
+    AT_Vec3 *normals;
+    uint32_t *indices;
+    uint32_t *triangle_materials;
+    size_t vertex_count;
+    size_t index_count;
+};
+
+struct AT_Scene {
+    AT_Source *sources;
+    AT_AABB world_AABB;
+    uint32_t num_sources;
+    AT_MaterialType material;
+    const AT_Model *environment;
+    //...
+};
+
+struct AT_Simulation {
+    const AT_Scene *scene;
+    AT_Voxel *voxel_grid;
+    AT_Ray *rays;
+    AT_Vec3 origin;
+    AT_Vec3 dimensions;
+    AT_Vec3 grid_dimensions;
+    float voxel_size;
+    float bin_width;
+    uint32_t num_rays;
+    uint32_t num_voxels;
+    uint8_t fps;
+};
+```
+
+The chain of ownership can be seen directly in the struct definitions. `AT_Simulation` holds a `const AT_Scene *` and `AT_Scene` holds a `const AT_Model *`. The const keyword here signals that these are borrowed references, and that the struct is not responsible for freeing them. In contrast, `AT_Voxel *voxel_grid` inside `AT_Simulation` carries no `const`, meaning the simulation owns that data outright, and `AT_simulation_destroy` is responsible for freeing it. This is also why destroy calls must be made in reverse order of creation. `AT_Simulation` must be freed before `AT_Scene`, because freeing the scene while the simulation still holds a pointer to it would leave the simulation with a dangling reference.
+
+### Error Handling `(AT_Result)`
+
+Every function in the library that could potentially fail returns a `AT_Result`:
+
+```C
+typedef enum {
+    AT_OK = 0,
+    AT_ERR_INVALID_ARGUMENT,
+    AT_ERR_ALLOC_ERROR,
+    AT_ERR_NETWORK_FAILURE
+} AT_Result;
+```
+
+To combat the fact that C can't throw exceptions, the convention is to return an error code that the caller must explicitly check. This is particularly important for our library since the simulation involves a large number of heap allocations, any of which could fail. Detecting these failures early produces a clear error message, rather than a segfault.
+
+`at_result.h` also provides a small helper function `AT_handle_result()` which prints the error type and a custom message to `stderr`, used throughout development to quickly surface allocation ad argument errors without having to write a switch case every time.
 
 ### Communication between the Core and the Front-End
 
@@ -460,7 +522,7 @@ Before examining code, I want to name the five abstractions that the entire fron
 
 <!-- TODO: auto add citations using bibtex and citeproc -->
 
-[^ref1]: [Möller-Trumbore Intersection Algorithm](https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing)
+[^ref1]: [Möller-Trumbore Intersection Algorithm](https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm)
 
 [^ref2]: [Amantides-Woo Voxel Traversal Algorithm](https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing)
 
