@@ -103,7 +103,21 @@ The current time of the simulation `t` is calculated as `d / v` where `v` is the
 
 ## Introduction and Motivation
 
-The AcousticTracer project pairs a C simulation engine with a browser-based frontend, which configures, stores, and visualises the simulation. Tools like ODEON exist for this domain, but they are desktop-only, expensive, and closed-source. A browser-based alternative would be freely accessible, require no installation, and immediate real-time use. This section describes the architecture of that browser frontend: what its major components are, how they interact at runtime, and what was learned building this project while starting with little to no prior experience in Three.js, WebGL, or production React architecture.
+The AcousticTracer project pairs a C simulation engine (the core) with a browser-based frontend, which configures, stores, and visualises the simulation. Tools like ODEON exist for this domain, but they are desktop-oanly, expensive, and closed-source. A browser-based alternative would be freely accessible, require no installation, and immediate real-time use. This section describes the architecture of that browser frontend: what its major components are, how they interact at runtime, and what was learned building this project while starting with little to no prior experience in Three.js, WebGL, or production React architecture.
+
+### A Note on Role and Scope
+
+Although my title on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical: parsing a custom binary protocol, writing per-frame transform matrices directly into GPU-backed buffers, normalising direction vectors with quaternion math, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline that spans two independent backends. The user interface that wraps these systems is intentionally minimal - dark-themed panels, sliders, and status badges, because the engineering effort was concentrated on making the underlying data and rendering pipelines correct, fast, and reliable.
+
+This focus was not a deliberate deprioritisation of design, but an accurate reflection of where the complexity lay. A voxel renderer that drops frames is unusable regardless of how polished its surrounding UI is. A binary parser that misaligns a single byte offset produces garbage data that no amount of styling can mask. The frontend's value to the project was measured not in visual refinement but in its ability to bridge the gap between a C simulation engine and a browser-based 3D visualisation.
+
+### A Learning Journey Through the React Ecosystem
+
+This project was my first experience building a (hopefully) production-scale application within the React ecosystem, and with 3D Web rendering thrown into the mix it was quite a challenge to undertake. Every major technology in the stack - React itself, TypeScript, Zustand, TanStack Query, Three.js, React Three Fiber, Tailwind CSS, Appwrite - was either encountered for the first time during development or a technology I had limited experience with. The consequence of this is visible in the project's commit history, which records not just feature additions but a series of architectural refactors, each driven by the discovery of a better approach to a problem that needs to be solved or had already been solved in a less effective way.
+
+My pattern of implementation was quite consistent throughout the development of the project, to start I would attempt to implement a feature with the tools and patterns understood at the time, encounter the limitations of that approach under real conditions/during testing, discover a more appropriate technology or pattern, and refactor. JavaScript gave way to TypeScript when runtime type errors became unmanageable. Manual `useEffect`-based data fetching gave way to TanStack Query when forgotten refetch calls produced stale UI after every mutation. A flat component directory gave way to feature-sliced architecture when cross-feature imports created circular dependencies. Raw CSS gave way to Tailwind when naming collisions appeared across fifteen components.
+
+These refactors in hindsight may look like signs of poor planning,but I think they were the mechanism through which the architecture improved, Each one required understanding *why* the previous approach failed, not just *that* it failed, and this understanding informed every subsequent decision. The result is an architecture that was not designed upfront but arrived at through iteration, with each decision justified by a concrete problem it solved.
 
 ### Core Goals
 
@@ -114,6 +128,14 @@ The frontend has three responsibilities, each with distinct technical demands:
 2. **Decode and store** — The C backend returns simulation results as a custom binary format (`.atrb`). The frontend must decode this into typed arrays, store it in cloud file storage for persistent storage, and cache the parsed result so revisiting a completed simulation is instantaneous.
 
 3. **Render and replay** — The decoded frames must be visualised as a 3D voxel heat map overlaid on the room model, animated at the simulation's original FPS. A typical simulation produces tens of thousands to hundreds of thousands of voxels, each requiring per-frame position and color updates. This must run at interactive frame rates in a browser, with a fully functioning playback system.
+
+### Initial Challenges
+
+The design was shaped by three challenges that recur throughout this section:
+
+- **Performance budget.** Hundreds of thousands of voxels × 60 FPS × per-instance matrix and colour updates. This challenge eliminated most naive rendering approaches and drove the adoption of `InstancedMesh`.
+- **3D software development complexity.** Building an interactive 3D application in the browser required working with concepts that have no equivalent in conventional web development: scene graphs, projection matrices, quaternion rotations, axis-aligned bounding boxes, raycasting for hit detection, and GPU-instanced rendering,each concept introduced a substantial learning curve that extended well beyond typical frontend engineering.
+- **Backend coupling.** The frontend communicates with two backends — Appwrite (a Backend-as-a-Service for authentication, database, and file storage) and the C ray-tracer (a custom HTTP endpoint). The data layer must mediate between both without leaking SDK details into components.
 
 - Design choices (front)
   - state storing
