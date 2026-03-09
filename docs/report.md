@@ -58,6 +58,8 @@ struct AT_Model {
 
 This creation of the `AT_Model` struct was possible with the library `cgltf`[^ref3], which is a single-file/stb-style C glTF loader and writer. This library gives us the ability to parse the `.glb` file the user provides, resulting in access to the vertices, nodes, indices, and transformation matrices for each of the vertices (Rotation, Scale, and Quaternion). Initially the `AT_model_create()` function only extracted the raw vertex data, which worked initially. But as the need for more complex models arose, we had to alter our approach to make the use of `cgltf_node` attributes with the vertex data, combined with the parent and world transformation matrices, to give the vertex position and state in relation to the world.
 
+Instead of naively extracting the raw vertex, index and normal data from the `.glb`, we must apply the parent and world rotation, scale, and quaternion matrices to each node. This is achieved by 'walking' up the node hierarchy, and multiplying each of the three matrices, until we arrive at the desired node. In this way, the three matrices accumulate across the parents, giving us an exact state of the node in relation to the 'world'.
+
 A model is a struct, composed of each of the following members:
 
 - An array of vertices, each with an `x`, a `y`, and a `z` component, which represents a point in 3D space.
