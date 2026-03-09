@@ -236,7 +236,7 @@ With our exemplar front-end web application, the workflow consists of the front-
 {
   "filepath": "<path_to_glb>",
   "voxel_size": "<size_of_voxel {float}>",
-  "material": {"<model_material>"},
+  "material": "<model_material>",
   "fps": "<fps {uint8}>",
   "num_rays": "<num_rays {uint32}",
   "source": {
