@@ -75,7 +75,7 @@ Once we were able to get whether a ray intersected with a triangle, the next iss
 
 To combat the memory management associated with the `hit_list` approach of calculating the closest point of intersection, we pivoted to using a linked list approach for the ray implementation. Each ray would have a `child` ray that is the resultant ray after intersection, scattering, reflection etc. Upon the first intersection of a ray we would initialise a new ray with the computed origin and direction, and only update its direction and origin upon subsequent intersections, only if the distance from that point of intersection was less than the distance from the current rays origin to its child. This greatly simplified the computation, while also introducing an hierarchy among the rays, with a parent/child relationship. We could also easily navigate this ray hierarchy using linked list traversal methods.
 
-### voxel stuff
+### Voxels
 
 Phase two of the simulation. A voxel is a volumetric pixel, and in our case, a voxel is a dynamic array defined as follows:
 
@@ -103,13 +103,82 @@ typedef struct {
 
 This approach required knowing the total simulation duration upfront in order to allocate the correct number of bins, though in practice this was not always possible, as the way rays interact with the scene cannot be determined before the simulation runs. We therefore moved to the dynamic array approach described above, where each voxel's bin array grows dynamically as energy is deposited into new time frames.
 
-Every ray generated in the first phase of the simulation is then traversed using the Digital Differential Analyzer (DDA) algorithm, implemented with reference to Amanatides and Woo's *A Fast Voxel Traversal Algorithm for Ray Tracing* algorithm [ref]. A naive approach to this problem might sample points along a ray at fixed intervals, but this risks skipping voxels entirely if they are only grazed by a ray, and also opens up the possibility for a voxel to be visited multiple times. The DDA algorithm allows us to track how far along a ray segment we need to travel to cross the next voxel boundary per axis, which is tracked by the variable `t_max`. At each step, the axis with the smallest `t_max` is advanced. This guarantees that every voxel the ray segment passes through is visited exactly once, regardless of the ray's direction or the size of the voxels.
+Every ray generated in the first phase of the simulation is then traversed using the Digital Differential Analyzer (DDA) algorithm, implemented with reference to Amanatides and Woo's *A Fast Voxel Traversal Algorithm for Ray Tracing* algorithm. A naive approach to this problem might sample points along a ray at fixed intervals, but this risks skipping voxels entirely if they are only grazed by a ray, and also opens up the possibility for a voxel to be visited multiple times. The DDA algorithm allows us to track how far along a ray segment we need to travel to cross the next voxel boundary per axis, which is tracked by the variable `t_max`. At each step, the axis with the smallest `t_max` is advanced. This guarantees that every voxel the ray segment passes through is visited exactly once, regardless of the ray's direction or the size of the voxels.
 
 For each voxel the ray crosses, an amount of energy is deposited into that voxel. This energy deposit is weighted by three physical factors. First, the length of the ray segment inside the voxel, a ray travelling a longer path through a voxel contributes more energy to it. Second, inverse square attenuation with total distance `d` from the source, modelling how sound naturally loses intensity over distance. Third, air absorption, modelled as `exp(-k * d)`, where `k` is the air coefficient, which accounts for energy lost to the medium itself as the 'wave' propagates. The result of these three factors combined is a single float value that is added to the voxel's current bin.
 
 The current time of the simulation `t` is calculated as `d / v` where `v` is the current simulation speed. Throughout the development of this project, `v` was one of two values. First being 343 m/s, which is the speed of sound, and an arbitrary slower speed that was used while building the visualisation, to make the movement of the sound energy through the heat map easier to observe. The current "bin" index is then calculated with `floor(t / bin_width)`, where `bin_width = 1 / fps`. This is the design decision that makes the output a temporal result rather than a static energy snapshot. Each voxel records how much energy arrived, as well as when it arrived. Each voxel's bin array grows dynamically since at allocation time the duration of the simulation is not yet known.
 
-### C Library
+## C Library
+
+As mentioned before, C has no classes or namespaces. Building a library with a clean public interface that hides internals therefore requires deliberate design choices. The following describes the pattern we used to achieve this.
+
+### Public API `(at.h)`
+
+The only file a user of our library needs to include is `at.h`. This file contains all of the function signatures, type definitions and enum declarations that are publicly available. The three main types of the library are declared here as incomplete types:
+
+```C
+typedef struct AT_Model AT_Model;
+typedef struct AT_Scene AT_Scene;
+typedef struct AT_Simulation AT_Simulation;
+```
+
+Because they are incomplete types, a user can hold a pointer to them but cannot dereference them to access their members directly. The full struct definitions are never visible outside the library. This also allows us to change the internal layout of any struct without breaking any code that uses the library.
+
+All publicly available functions follow the same naming convention, prefixed with `AT_` and the name of the type they operate on:
+
+```C
+AT_Result AT_model_create(AT_Model **out_model, const char *filepath);
+void      AT_model_destroy(AT_Model *model);
+
+AT_Result AT_scene_create(AT_Scene **out_scene, const AT_SceneConfig *config);
+void      AT_scene_destroy(AT_Scene *scene);
+
+AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *scene, const AT_Settings *settings);
+AT_Result AT_simulation_run(AT_Simulation *simulation);
+void      AT_simulation_destroy(AT_Simulation *simulation);
+```
+
+The `AT_` prefix was a deliberate decision made during the planning phase of this project. Without it, names like `model_create` or `simulation_run` could easily clash with function names from other libraries, producing confusing linker errors. The prefix sort of acts like a manual namespace.
+
+A typical usage of the library follows a consistent create, use, destroy cycle:
+
+```C
+AT_Model *model = NULL;
+if (AT_model_create(&model, "room.glb") != AT_OK) {
+    fprintf(stderr, "Failed to load model\n");
+    return 1;
+}
+
+AT_SceneConfig config = {
+    .environment = model,
+    .sources = sources,
+    .num_sources = 1,
+    .material = AT_MATERIAL_CONCRETE,
+};
+
+AT_Scene *scene = NULL;
+if (AT_scene_create(&scene, &config) != AT_OK) {
+    fprintf(stderr, "Failed to create scene\n");
+    return 1;
+}
+
+AT_Simulation *sim = NULL;
+if (AT_simulation_create(&sim, scene, &settings) != AT_OK) {
+    fprintf(stderr, "Failed to create simulation\n");
+    return 1;
+}
+
+AT_simulation_run(sim);
+
+AT_simulation_destroy(sim);
+AT_scene_destroy(scene);
+AT_model_destroy(model);
+```
+
+The user must destroy in reverse of the creation order. This is because `AT_Simulation` borrows a pointer to `AT_Scene` and `AT_Scene` borrows a pointer to `AT_Model`. The ownership convention is documented well within the internal codebase.
+
+### Internal Architecture `(at_internal.h)`
 
 ## Frontend
 
