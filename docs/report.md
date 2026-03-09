@@ -322,6 +322,8 @@ Before examining code, I want to name the five abstractions that the entire fron
 
 ## References
 
+<!-- TODO: auto add citations using bibtex and citeproc -->
+
 [^ref1]: [Möller-Trumbore Intersection Algorithm](https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing)
 
 [^ref2]: [Amantides-Woo Voxel Traversal Algorithm](https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing)
