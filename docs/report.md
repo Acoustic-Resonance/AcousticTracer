@@ -204,6 +204,12 @@ if (AT_scene_create(&scene, &config) != AT_OK) {
     return 1;
 }
 
+AT_Settings settings = {
+    .fps = 60,
+    .num_rays = 1000,
+    .voxel_size = 1.0f
+};
+
 AT_Simulation *sim = NULL;
 if (AT_simulation_create(&sim, scene, &settings) != AT_OK) {
     fprintf(stderr, "Failed to create simulation\n");
