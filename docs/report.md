@@ -120,8 +120,6 @@ static const AT_Material AT_MATERIAL_TABLE[AT_MATERIAL_COUNT] = {
 };
 ```
 
-The scattering coefficient determines the probability that a ray, upon hitting a surface, is redirected diffusely in a random direction within the hemisphere above the surface normal, rather than following the angle of perfect specular reflection. A rough concrete wall scatters more than a smooth plastic surface, which is reflected in the coefficients above.
-
 Upon intersecting with a triangle, (whose material has been decided during `AT_scene_create()` as stated above), we can calculate the rays resultant energy modelled with the formula:
 
 ```C
@@ -129,6 +127,8 @@ child->energy = ray->energy * (1.0f - triangle_material.absorption_coefficient);
 ```
 
 This accurately uses the absorption coefficient for each material to alter the resultant energy of the `child` ray, created from the intersection.
+
+The scattering coefficient determines the probability that a ray, upon hitting a surface, is redirected diffusely in a random direction within the hemisphere above the surface normal, rather than following the angle of perfect specular reflection. A rough concrete wall scatters more than a smooth plastic surface, which is reflected in the coefficients above.
 
 The initial direction of each ray is also not arbitrary. Rather than emitting rays uniformly in all directions, we used cosine-weighted hemisphere sampling, implemented in `AT_sample_cosine_hemisphere()` in `at_utils.h`, with reference to the sampling method described in the PBR Book [^ref5]. The function constructs an orthonormal basis from the source's direction vector, and samples a direction in the hemisphere above that surface using two uniform random floats. The polar angle is derived as `acos(sqrt(1 - u))` rather than `acos(u)`, and it is this square root that produces the cosine weighting as a consequence of the geometry of the sphere, biasing rays towards the forward direction of the source and away from grazing angles. The same function is also used when a ray scatters diffusely off a surface.
 
