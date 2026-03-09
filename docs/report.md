@@ -124,6 +124,7 @@ Upon intersecting with a triangle, (whose material has been decided during `AT_s
 child->energy = ray->energy * (1.0f - triangle_material.absorption_coefficient);
 
 ```
+
 This accurately uses the absorption coefficient for each material to alter the resultant energy of the `child` ray, created from the intersection.
 
 ### Voxels
