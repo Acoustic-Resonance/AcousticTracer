@@ -1,5 +1,7 @@
 # Acoustic Tracer
 
+## Authors
+
 GitHub Repository Link: [Acoustic Tracer](https://github.com/Acoustic-Resonance/AcousticTracer)
 
 Team Members:
@@ -9,15 +11,14 @@ Team Members:
 - Eoghan Murphy - Simulation Core / Optimization
 - Michael McCarthy - Front-end
 
-## Table of Contents
-
-- Introduction
+## Introduction
 
 Our project 'Acoustic Tracer' is a three-dimensional, acoustic visualiser that allows users to visualise sound travelling throughout a modelled environment as a heat map. At the core it is a C library, where the user can read in a `.glb` file (3D Model File), insert (a) speaker(s), specify simulation settings, and receive back a heat map of how the sound travelled through the environment over time. Our final project extends it into a web-based application that renders this heat map and makes the configuration of the scene and simulation more user-friendly, while also allowing more technical users to achieve their desired configuration. A user can create an account, upload `.glb` model files, view the models in a 3D scene-viewer, configure the scene and simulation settings, and finally run the simulation, returning a heat map which they can play through and replay at a later time if desired. The aim of this project was to create a unique software that could be used by architects, acoustic specialists, or anyone who desires to model how sound travels through their environment. This was also a passion project to explore the potential and concept of ray-tracing, along with creating a software that people would actually use.
 
-- Previous Works
+## Previous Works
 
  <!-- TODO -->
+
 On carrying out research into existing technologies before starting this project, we weren't able to find an exact software to meet our needs.
 
 - Overview of ours (basically the presentation)
@@ -39,13 +40,12 @@ The front-end, as mentioned is our method of creating a universal visualiser for
 
 ## Simulation
 
-
 Our core C library, as mentioned, involves the simulation of sound as rays throughout a three-dimensional environment. This implementation involves two main steps:
 
 1. Ray Bounce Tree
 2. DDA (Digital Differential Analyser) Voxel Sweep
 
-#### Rays
+### Rays
 
 A ray, for our purposes in this project, is a 3D representation of a line that extends infinitely from a source point (represented as a three-dimensional vector `{x, y, z}`), in a given direction (also represented as a three-dimensional vector `{dx, dy, dz}`, where each of the components is the change of the position along the x, y, and z axes, respectively).
 
@@ -99,13 +99,13 @@ The current time of the simulation `t` is calculated as `d / v` where `v` is the
 
 ### C Library
 
-### Frontend
+## Frontend
 
-## Introduction and Motivation
+### Introduction and Motivation
 
 The AcousticTracer project pairs a C simulation engine (the core) with a browser-based frontend, which configures, stores, and visualises the simulation. Tools like ODEON exist for this domain, but they are desktop-oanly, expensive, and closed-source. A browser-based alternative would be freely accessible, require no installation, and immediate real-time use. This section describes the architecture of that browser frontend: what its major components are, how they interact at runtime, and what was learned building this project while starting with little to no prior experience in Three.js, WebGL, or production React architecture.
 
-### A Note on Role and Scope
+#### A Note on Role and Scope
 
 Although my title on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical: parsing a custom binary protocol, writing per-frame transform matrices directly into GPU-backed buffers, normalising direction vectors with quaternion math, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline that spans two independent backends. The user interface that wraps these systems is intentionally minimal - dark-themed panels, sliders, and status badges, because the engineering effort was concentrated on making the underlying data and rendering pipelines correct, fast, and reliable.
 
