@@ -118,7 +118,13 @@ static const AT_Material AT_MATERIAL_TABLE[AT_MATERIAL_COUNT] = {
 };
 ```
 
-Upon intersecting with a triangle, (whose material has been decided during `AT_scene_create()` as stated above), we can calculate the rays resultant energy modelled with the formula `child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[ctx.triangle_index]].absorption);` this accurately uses the absorption coefficient for each material to alter the resultant energy of the `child` ray, created from the intersection.
+Upon intersecting with a triangle, (whose material has been decided during `AT_scene_create()` as stated above), we can calculate the rays resultant energy modelled with the formula:
+
+```C
+child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[ctx.triangle_index]].absorption);
+
+```
+This accurately uses the absorption coefficient for each material to alter the resultant energy of the `child` ray, created from the intersection.
 
 ### Voxels
 
