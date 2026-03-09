@@ -3,6 +3,7 @@ header-includes: |
   \usepackage{float}
   \floatplacement{figure}{H}
 geometry: margin=2cm
+fontsize: 11pt
 monofont: "DejaVu Sans Mono"
 ---
 
