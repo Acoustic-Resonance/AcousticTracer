@@ -17,7 +17,7 @@ Our project 'Acoustic Tracer' is a three-dimensional, acoustic visualiser that a
 
 ## Previous Works
 
- <!-- TODO -->
+  <!-- TODO -->
 
 On carrying out research into existing technologies before starting this project, we weren't able to find an exact software to meet our needs.
 
@@ -117,11 +117,11 @@ This project was my first experience building a (hopefully) production-scale app
 
 My pattern of implementation was quite consistent throughout the development of the project, to start I would attempt to implement a feature with the tools and patterns understood at the time, encounter the limitations of that approach under real conditions/during testing, discover a more appropriate technology or pattern, and refactor. JavaScript gave way to TypeScript when runtime type errors became unmanageable. Manual `useEffect`-based data fetching gave way to TanStack Query when forgotten refetch calls produced stale UI after every mutation. A flat component directory gave way to feature-sliced architecture when cross-feature imports created circular dependencies. Raw CSS gave way to Tailwind when naming collisions appeared across fifteen components.
 
-These refactors in hindsight may look like signs of poor planning,but I think they were the mechanism through which the architecture improved, Each one required understanding *why* the previous approach failed, not just *that* it failed, and this understanding informed every subsequent decision. The result is an architecture that was not designed upfront but arrived at through iteration, with each decision justified by a concrete problem it solved.
+These refactors in hindsight may look like signs of poor planning, but I think they were the mechanism through which the architecture improved, Each one required understanding *why* the previous approach failed, not just *that* it failed, and this understanding informed every subsequent decision. The result is an architecture that was not designed upfront but arrived at through iteration, with each decision justified by a concrete problem it solved.
 
 ### Core Goals
 
-The frontend has three responsibilities, each with distinct technical demands:
+The frontend has three responsibilities that in the early stages of development we discussed and outlined but did not know how to tackle and each issue came with distinct technical demands:
 
 1. **Configure and submit** - The user uploads a `.glb` 3D room model, sets simulation parameters (voxel size, ray count, FPS, surface material), and interactively places a sound source by clicking inside the 3D scene. The configuration is sent to the C backend as JSON.
 
@@ -135,7 +135,23 @@ The design was shaped by three challenges that recur throughout this section:
 
 - **Performance budget.** Hundreds of thousands of voxels × 60 FPS × per-instance matrix and colour updates. This challenge eliminated most naive rendering approaches and drove the adoption of `InstancedMesh`.
 - **3D software development complexity.** Building an interactive 3D application in the browser required working with concepts that have no equivalent in conventional web development: scene graphs, projection matrices, quaternion rotations, axis-aligned bounding boxes, raycasting for hit detection, and GPU-instanced rendering,each concept introduced a substantial learning curve that extended well beyond typical frontend engineering.
-- **Backend coupling.** The frontend communicates with two backends — Appwrite (a Backend-as-a-Service for authentication, database, and file storage) and the C ray-tracer (a custom HTTP endpoint). The data layer must mediate between both without leaking SDK details into components.
+- **Backend coupling.** The frontend communicates with two backends - Appwrite (a Backend-as-a-Service for authentication, database, and file storage) and the C ray-tracer (a custom HTTP endpoint). The data layer must mediate between both without leaking SDK details into components.
+
+### Technology Decisions
+
+Before delving into the architectural design and implementation, I want to briefly describe the technologies I used and why I picked them.
+
+**React.** I chose React as the UI framework because I had invested time developing my skills with it before and during the early stages of the project, completing Scrimba's introductory and the majority of the advanced React courses as well as their TypeScript course. That preparation gave me enough fluency with React's component model, hooks, and ecosystem to be productive from the first week.
+
+**JavaScript -> TypeScript.** The initial scaffold was plain JavaScript. It quickly became apparent that JavaScript alone would not be sufficient, the project was hitting runtime crashes caused by misspelled prop names and `undefined` values propagating silently through the component tree, bugs that TypeScript's structural type system catches at compile time. I invested time during the first three weeks of development learning TypeScript alongside the codebase.
+
+**CSS → Tailwind CSS.** Hand-written CSS files worked fine while the project had five components. Once that count reached fifteen, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behavior, and structure are all visible in a single file.
+
+**`useState` -> Zustand -> Zustand + TanStack Query.** State management went through three distinct phases, each driven by the limitations of the previous approach. Initially every piece of state lived in React's built-in `useState` and `useEffect` hooks, voxel size, simulation lists, the currently loaded model, all of it scattered across individual components. This became unmanageable and messy quickly, multiple components needed access to the same state, prop drilling grew out of control, and there was no single source of truth for the 3D scene's configuration. Zustand replaced `useState` for client-side state and solved these problems cleanly — a single flat store with fine-grained selectors meant any component could read or write scene configuration without prop chains. However, Zustand was then also being used for server data (simulation lists, ray results), which required manually calling `loadData()` after every mutation. When one of those calls was forgotten, the UI showed stale data. TanStack Query replaced Zustand for all server state, bringing automatic cache invalidation after mutations, background refetching, and request deduplication. The split was now clear and clean: Zustand owns synchronous, client-only state, while TanStack Query owns anything that touches the network.
+
+**The Repository Pattern and `simulation-repository.ts`.** As the data layer matured alongside the state management migration, I introduced a repository class, `SimulationRepository`, that encapsulates every Appwrite SDK call behind typed methods (`list`, `getById`, `create`, `update`, `delete`, `uploadFile`, `getFileUrl`). No component anywhere in the application imports from Appwrite directly. The repository also maintains two separate TypeScript interfaces, `SimulationDocument` (Appwrite's flat, snake_case database row) and `Simulation` (the camelCase domain object the app consumes) — connected by an explicit mapping function. This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper.
+
+**Late-project UI design** Towards the end of the project after the core features of the frontend had been developed and optimized, I could no longer ignore the need for a polished UI, a multitude of UI and UX design decisions were needed. Building these from scratch would have been a significant time investment ( which I did not have an abundance of due to the project deadline). Luckily I found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. Rather than installing a monolithic library, shadcn/ui provides individual component files that the developer owns and modifies. This approach aligned with the existing Tailwind-based styling and allowed incremental adoption, if I was to do this project again, I would have seriously leveraged the power of **Shadcn** in my development of the components and UI for this project.
 
 - Design choices (front)
   - state storing
