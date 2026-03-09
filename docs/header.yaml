@@ -1,7 +1,8 @@
 ---
-header-includes:
-  - \usepackage{float}
-  - \floatplacement{figure}{H}
+header-includes: |
+  \usepackage{float}
+  \floatplacement{figure}{H}
 numbersections: true
 geometry: margin=2cm
 ---
+
