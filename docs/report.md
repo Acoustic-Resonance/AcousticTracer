@@ -247,15 +247,6 @@ The full struct definitions for all three opaque types live in `at_internal.h`, 
 The full definitions are as follows:
 
 ```C
-struct AT_Model {
-    AT_Vec3 *vertices;
-    AT_Vec3 *normals;
-    uint32_t *indices;
-    uint32_t *triangle_materials;
-    size_t vertex_count;
-    size_t index_count;
-};
-
 struct AT_Scene {
     AT_Source *sources;
     AT_AABB world_AABB;
