@@ -366,21 +366,17 @@ With this communication standard, we avoid sending unnecessary data to the clien
 
 The AcousticTracer project, pairs a C simulation engine (the core) with a browser-based frontend, which configures, stores, and visualises the simulation. Although the team member's role on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical: writing per-frame transform matrices directly into GPU-backed buffers, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline spanning two independent backends.
 
-The focus on these technical aspects was not a deliberate de-prioritization but was an accurate reflection of where the complexity lay. A voxel renderer that drops frames is unusable regardless of how polished its surrounding UI is. A binary parser that misaligns a single byte offset produces garbage data that no amount of styling can mask. The frontend's contributions to the project was not measured in how visually appealing the frontend looked but in its ability to bridge the gap between a C simulation engine and a browser-based 3D visualisation.
+The focus on these technical aspects was not a deliberate de-prioritization but was an accurate reflection of where the complexity lay. The frontend's contributions to the project was not measured in how visually appealing the frontend looked but in its ability to bridge the gap between a C simulation engine and a browser-based 3D visualisation.
 
-### Core Goals
+### Goals
 
 The frontend has three responsibilities that we discussed and outlined early in development but did not yet know how to tackle, and each came with distinct technical demands:
 
 1. **Configure and submit** — The user uploads a `.glb` room model, sets simulation parameters (voxel size, ray count, FPS, surface material), and interactively places a sound source by adjusting its position inside the 3D scene. The configuration is sent to the C backend as JSON matching the communication standard defined earlier.
 
-2. **Decode and store** — Initially the C backend returns results in JSON format but due to performance limitations we had incorporate a custom `ATRB` binary format. The frontend decodes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instant.
+2. **Decode and store** — Initially the C backend returns results in JSON format but due to performance limitations we had incorporate a custom `ATRB` (Acoustic Tracer Result Binary) binary format. The frontend decodes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instant.
 
 3. **Render and replay** — The decoded frames are visualised as a 3D voxel heat map overlaid on the room model. Consider a modest room of 8m × 5m × 5m with a voxel size of 0.1m, that produces 80 x 50 x 50 = 200,000 voxels, and a typical simulation might fire 100,000 rays. Each of those 200,000 voxels requires per-frame position and colour updates at the configured frame rate. These are not even worst-case scenario numbers, yet the frontend needed to be able to provide a smooth and interactive experience.
-
-### A Learning Journey Through the React Ecosystem
-
-This project was the frontend developer's first experience building a fullstack web application within the React ecosystem, and with 3D Web rendering thrown into the mix it was quite a challenge to undertake. Every major technology in the stack (React itself, TypeScript, Zustand, TanStack Query, Three.js, React Three Fiber, Tailwind CSS, Appwrite) was either encountered for the first time during development or a technology the frontend developer had limited experience with. The consequence of this is visible in the project's commit history, which records not just feature additions but a series of architectural refactors, each driven by the discovery of a better approach to a problem that needs to be solved or had already been solved in a less effective way.
 
 ### Technology Decisions
 
@@ -621,7 +617,7 @@ export function parseResultBuffer(buffer: ArrayBuffer): RayFrame[] {
 
 ### Three.js, React Three Fiber, and Drei
 
-The 3D Rendering aspect of the frontend consisted of 3 layers, At the base layer sits **Threejs**. It gives us access to powerful API abstractions, which allows us to translate developer-friendly code into the complex WebGL instructions needed to render 3D graphics. The frontend aspect of this project would not have been possible without this library and we cannot stress enough the important of it. It gave us access to critical methods such as, `InstancedMesh()`, `BufferGeometry()`, `Matrix4()`, `Color()`,and `Box3()`, that were used throughout the development of this project.
+The 3D Rendering aspect of the frontend consisted of 3 layers, At the base layer sits **Three.js**. It gives us access to powerful API abstractions, which allows us to translate developer-friendly code into the complex WebGL instructions needed to render 3D graphics. The frontend aspect of this project would not have been possible without this library and we cannot stress enough the important of it. It gave us access to critical methods such as, `InstancedMesh()`, `BufferGeometry()`, `Matrix4()`, `Color()`,and `Box3()`, that were used throughout the development of this project.
 
 On top of the base layer sits **React Three Fiber** (henceforth R3F), it is a custom React renderer that maps JSX elements to three.js objects. What makes R3F so powerful is that it lets us describe a 3D scene using the same declarative, component-based model we use for the rest of the UI. Without R3F, we would have had to manually create objects, add them to the scene, remove them on cleanup, and synchronise state between React and Three.js by hand. R3F eliminates the need to do this entirely, adding a voxel grid to the scene is no different from adding a button to a form, it is a component that mounts, updates when its props change, and unmounts cleanly.
 
@@ -643,7 +639,7 @@ Having outlined the rendering stack, the following section walks through the cor
 
   - data layer
   - rendering
-  - storing (not state)
+  - storing (state management)
   - replaying
   - auth
   - routing
