@@ -402,7 +402,7 @@ React was chosen as the UI framework because the frontend developer had invested
 
 The initial scaffold was plain JavaScript. It quickly became apparent that JavaScript alone would not be sufficient, the project was hitting runtime crashes caused by misspelled prop names and `undefined` values propagating silently through the component tree, bugs that TypeScript's structural type system catches at compile time. The frontend developer invested time during the first three weeks of development learning TypeScript alongside developing the codebase.
 
-### CSS → Tailwind CSS
+### CSS -> Tailwind CSS
 
 Hand-written CSS files worked fine while the project had five components. Once that count reached fifteen, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behavior, and structure are all visible in a single file. Tailwind v4's CSS-native `@theme` directives allowed us to define project-wide design tokens directly in `index.css`.
 
@@ -424,7 +424,7 @@ Hand-written CSS files worked fine while the project had five components. Once t
 
 State management went through three distinct phases, each driven by the limitations of the previous approach. This evolution is discussed in detail in the State Management section below.
 
-### Late-stage UI design
+### Late-Stage UI Design
 
 Towards the end of the project, after the core features of the frontend had been developed and optimised, the need for a polished UI could no longer be ignored. Dropdown menus with keyboard navigation, accessible dialogs, and responsive tables were all needed, and building these from scratch would have been a significant time investment that we did not have the luxury of. We found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. Rather than installing a monolithic library, shadcn/ui provides individual component files that we own and modify. This approach aligned with our existing Tailwind-based styling and allowed incremental adoption. If we were to start this project again, we would have leveraged shadcn far earlier in the development process.
 
