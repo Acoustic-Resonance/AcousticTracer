@@ -521,6 +521,8 @@ Before examining code, it is worth naming the five abstractions that the entire 
 
 ## The Data Layer
 
+The data layer is the set of modules that sit between the UI components and the two external services the frontend depends on: Appwrite (for authentication, database, and file storage) and the C ray-tracer backend (for running simulations and returning binary results). Its purpose is to ensure that no component in the application ever communicates with either service directly. Instead, every network request, database query, file upload, and binary response is routed through a small number of typed functions that translate between the external world and the internal domain model. In practical terms, the data layer is responsible for four things. First, it defines the shape of the data as it arrives from Appwrite and as it is consumed by the frontend, maintaining an explicit mapping between the two. Second, it encapsulates all Appwrite SDK calls behind a repository object with typed methods, so that the SDK never appears in component code. Third, it manages caching, background refetching, and cache invalidation through TanStack Query, ensuring that the UI always reflects the current state of the database without requiring manual refetch calls after every mutation. Fourth, it handles the decoding of the ATRB binary format returned by the C backend, parsing the raw `ArrayBuffer` into typed arrays that the rendering pipeline can consume directly. Each of these responsibilities is discussed in the subsections that follow.
+
 ### Two Type Systems, One Mapper
 
 The Appwrite database stores simulation records as flat, snake_case documents (`SimulationDocument` in `contracts.ts`). The frontend consumes them as nested, camelCase domain objects (`Simulation` in `simulation-repository.ts`). Without a clear boundary between these two representations, Appwrite's naming conventions and flat structure would leak into every component that touches simulation data, coupling the entire UI to implementation details of a third-party service. If we ever changed our database provider, or even just renamed a column, the change would ripple across dozens of files. We needed a single translation point where Appwrite's shape goes in and our domain shape comes out, and nothing beyond that point ever sees the raw document. Rather than allowing these two representations to leak across the codebase, we introduced an explicit mapping function to connect them:
@@ -572,6 +574,23 @@ export const simulationRepo = {
 ```
 
 This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper. The repository is consumed exclusively through TanStack Query hooks (`useSimulationsList`, `useSimulationDetail`, `useCreateSimulation`, etc.) re-exported through `api/simulations.ts`.
+
+### Query Keys and Caching Strategy
+
+TanStack Query uses structured keys defined in `query-keys.ts` to manage caching and invalidation:
+
+```typescript
+export const simulationKeys = {
+  all:           ["simulations"] as const,
+  lists:         (userID?: string) => [...simulationKeys.all, "list", userID] as const,
+  details:       () => [...simulationKeys.all, "detail"] as const,
+  detail:        (id: string) => [...simulationKeys.details(), id] as const,
+  rayResponses:  () => [...simulationKeys.all, "rayResponse"] as const,
+  rayResponse:   (fileId: string) => [...simulationKeys.rayResponses(), fileId] as const,
+};
+```
+
+This hierarchy enables precise cache invalidation. For example, after creating a simulation, calling `invalidateQueries({ queryKey: simulationKeys.lists() })` refetches the list without disturbing cached detail queries or ray responses. The query client is configured with `staleTime: 5 minutes` and `gcTime: 30 minutes`, which we found to be a good balance between freshness and avoiding unnecessary network requests during a typical session.
 
 - Design choices (front)
   - state storing
