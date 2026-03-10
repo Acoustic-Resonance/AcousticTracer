@@ -616,10 +616,34 @@ export function parseResultBuffer(buffer: ArrayBuffer): RayFrame[] {
   return frames;
 }
 ```
-- Design choices (front)
-  - state storing
-  - storing (not state)
+
+## The Rendering Pipeline
+
+### Three.js, React Three Fiber, and Drei
+
+The 3D Rendering aspect of the frontend consisted of 3 layers, At the base layer sits **Threejs**. It gives us access to powerful API abstractions, which allows us to translate developer-friendly code into the complex WebGL instructions needed to render 3D graphics. The frontend aspect of this project would not have been possible without this library and we cannot stress enough the important of it. It gave us access to critical methods such as, `InstancedMesh()`, `BufferGeometry()`, `Matrix4()`, `Color()`,and `Box3()`, that were used throughout the development of this project.
+
+On top of the base layer sits **React Three Fiber** (henceforth R3F), it is a custom React renderer that maps JSX elements to three.js objects. What makes R3F so powerful is that it lets us describe a 3D scene using the same declarative, component-based model we use for the rest of the UI. Without R3F, we would have had to manually create objects, add them to the scene, remove them on cleanup, and synchronise state between React and Three.js by hand. R3F eliminates the need to do this entirely, adding a voxel grid to the scene is no different from adding a button to a form, it is a component that mounts, updates when its props change, and unmounts cleanly.
+
+The third layer is **Drei**, a companion library of pre-built R3F components and hooks. Drei saved significant development time by providing these components/helpers. To name a few:
+
+   - `OrbitControls` for camera interaction.
+   - `Bounds` for automatic camera framing around the model.
+   - `useGLTF` for loading `.glb` files.
+   - `TransformControls` for the source placement gizmos.
+   - `Environment` for scene lighting,
+
+The abstraction provided by these three libraries was essential to completing this project. Three.js abstracted WebGL code into objects and methods we could deal with, R3F abstracted Three.js into React components we already knew how to compose, and Drei abstracted common 3D patterns into single-line imports. The 3D rendering was by far the most technically demanding aspect of the frontend, and without this layer of abstractions it would not have been possible within the project's timeframe to implement the core features we wanted for the frontend.
+
+### The Components
+
+Having outlined the rendering stack, the following section walks through the core components that were built on top of it. Each component demonstrates how the three layers described above were combined in practice, how they interacted with client-side state, server-side state, and user input to deliver the frontend's key features.
+
+#### SceneCanvas
+
+  - data layer
   - rendering
+  - storing (not state)
   - replaying
   - auth
   - routing
