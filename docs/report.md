@@ -158,7 +158,7 @@ typedef struct {
 } Voxel_t
 ```
 
-This approach required knowing the total simulation duration upfront in order to allocate the correct number of bins, though in practice this was not always possible. The total duration of a simulation depends on how far the rays travel before their energy drops below the termination threshold, which in turn depends on the geometry of the scene and the configuration of the source. The amount of times a ray bounces and how it loses energy throughout the environment simply is not something we can know until the simulation is run. We therefore moved to the dynamic array approach described above, where each voxel's bin array grows dynamically as energy is deposited into new time frames.
+This approach required knowing the total simulation duration upfront in order to allocate the correct number of bins, though in practice this was not always possible. The total duration of a simulation depends on how far the rays travel before their energy drops below the termination threshold, which in turn depends on the geometry of the scene and the configuration of the source. The amount of times a ray bounces and how it loses energy throughout the environment is not something we can know until the simulation is run. We therefore moved to the dynamic array approach described above, where each voxel's bin array grows dynamically as energy is deposited into new time frames.
 
 Every ray generated in the first phase of the simulation is then traversed using the Digital Differential Analyzer (DDA) algorithm, implemented with reference to Amanatides and Woo's _A Fast Voxel Traversal Algorithm for Ray Tracing_ algorithm[^ref2]. A naive approach to this problem might sample points along a ray at fixed intervals, but this risks skipping voxels entirely if they are only grazed by a ray, and also opens up the possibility for a voxel to be visited multiple times. The DDA algorithm allows us to track how far along a ray segment we need to travel to cross the next voxel boundary per axis, which is tracked by the variable `t_max`. At each step, the axis with the smallest `t_max` is advanced. This guarantees that every voxel the ray segment passes through is visited exactly once, regardless of the ray's direction or the size of the voxels.
 
@@ -191,7 +191,9 @@ void      AT_model_destroy(AT_Model *model);
 AT_Result AT_scene_create(AT_Scene **out_scene, const AT_SceneConfig *config);
 void      AT_scene_destroy(AT_Scene *scene);
 
-AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *scene, const AT_Settings *settings);
+AT_Result AT_simulation_create(AT_Simulation **out_simulation,
+                               const AT_Scene *scene,
+                               const AT_Settings *settings);
 AT_Result AT_simulation_run(AT_Simulation *simulation);
 void      AT_simulation_destroy(AT_Simulation *simulation);
 ```
@@ -208,8 +210,8 @@ if (AT_model_create(&model, "room.glb") != AT_OK) {
 }
 
 AT_Source source = {
-        .direction = {{0.0f, 1.0f, 0.0f}},
-        .position = {{0.0f, 0.0f, 0.0f}}
+    .direction = {{0.0f, 1.0f, 0.0f}},
+    .position = {{0.0f, 0.0f, 0.0f}}
 };
 
 AT_SceneConfig config = {
@@ -281,7 +283,7 @@ The chain of ownership can be seen directly in the struct definitions. `AT_Simul
 
 ### Error Handling `(AT_Result)`
 
-Every function in the library that could potentially fail returns a `AT_Result`:
+Every function in the library that could potentially fail returns an `AT_Result`:
 
 ```C
 typedef enum {
