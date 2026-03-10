@@ -362,33 +362,25 @@ With this communication standard, we avoid sending unnecessary data to the clien
 
 ## Frontend
 
-## Introduction
+### Introduction to Frontend
 
-> **Note:** The project's purpose, the C simulation engine, the binary communication standard, the public API (`at.h`), and the overall architecture are described in the preceding sections of this report. This section focuses exclusively on the browser frontend: how it configures, stores, and visualises simulations.
+The AcousticTracer project, pairs a C simulation engine (the core) with a browser-based frontend, which configures, stores, and visualises the simulation. Although the team member's role on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical: writing per-frame transform matrices directly into GPU-backed buffers, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline spanning two independent backends.
 
-The AcousticTracer project, as described, pairs a C simulation engine (the core) with a browser-based frontend, which configures, stores, and visualises the simulation. Tools like ODEON exist for this domain, but they are desktop-only, expensive, and closed-source. A browser-based alternative would be freely accessible, require no installation, and provide immediate real-time use. Although the team member's role on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical: writing per-frame transform matrices directly into GPU-backed buffers, normalising direction vectors with quaternion math, parsing the custom ATRB binary protocol described earlier, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline spanning two independent backends.
-
-This focus was not a deliberate de-prioritisation of design, but an accurate reflection of where the complexity lay. A voxel renderer that drops frames is unusable regardless of how polished its surrounding UI is. A binary parser that misaligns a single byte offset produces garbage data that no amount of styling can mask. The frontend's value to the project was measured not in visual refinement but in its ability to bridge the gap between a C simulation engine and a browser-based 3D visualisation.
+The focus on these technical aspects was not a deliberate de-prioritization but was an accurate reflection of where the complexity lay. A voxel renderer that drops frames is unusable regardless of how polished its surrounding UI is. A binary parser that misaligns a single byte offset produces garbage data that no amount of styling can mask. The frontend's contributions to the project was not measured in how visually appealing the frontend looked but in its ability to bridge the gap between a C simulation engine and a browser-based 3D visualisation.
 
 ### Core Goals
 
 The frontend has three responsibilities that we discussed and outlined early in development but did not yet know how to tackle, and each came with distinct technical demands:
 
-1. **Configure and submit** — The user uploads a `.glb` room model, sets simulation parameters (voxel size, ray count, FPS, surface material), and interactively places a sound source by adjustng its position inside the 3D scene. The configuration is sent to the C backend as JSON matching the communication standard defined earlier.
+1. **Configure and submit** — The user uploads a `.glb` room model, sets simulation parameters (voxel size, ray count, FPS, surface material), and interactively places a sound source by adjusting its position inside the 3D scene. The configuration is sent to the C backend as JSON matching the communication standard defined earlier.
 
-2. **Decode and store** — The C backend returns results in the ATRB binary format. The frontend decodes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instantaneous.
+2. **Decode and store** — Initially the C backend returns results in JSON format but due to performance limitations we had incorporate a custom `ATRB` binary format. The frontend decodes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instant.
 
-3. **Render and replay** — The decoded frames are visualised as a 3D voxel heat map overlaid on the room model. A typical simulation at `voxelSize = 0.05` on a 5m × 3m × 4m room produces 480,000 voxels, each requiring per-frame position and colour updates at interactive frame rates.
-
-### Initial Challenges
-
-The design was shaped by three challenges that recur throughout this section. First, the performance budget: hundreds of thousands of voxels multiplied by 60 FPS and per-instance matrix and colour updates eliminated most naive rendering approaches. Second, the complexity of 3D software development in a browser, which required working with concepts that have no equivalent in conventional web development: scene graphs, projection matrices, quaternion rotations, raycasting for hit detection, and GPU-instanced rendering. Third, the coupling between backends: the frontend mediates between Appwrite (authentication, database, file storage) and the C ray-tracer (custom HTTP endpoint), and the data layer must sit between both without leaking SDK details into components.
+3. **Render and replay** — The decoded frames are visualised as a 3D voxel heat map overlaid on the room model. Consider a modest room of 8m × 5m × 5m with a voxel size of 0.1m, that produces 80 x 50 x 50 = 200,000 voxels, and a typical simulation might fire 100,000 rays. Each of those 200,000 voxels requires per-frame position and colour updates at the configured frame rate. These are not even worst-case scenario numbers, yet the frontend needed to be able to provide a smooth and interactive experience.
 
 ### A Learning Journey Through the React Ecosystem
 
 This project was the frontend developer's first experience building a fullstack web application within the React ecosystem, and with 3D Web rendering thrown into the mix it was quite a challenge to undertake. Every major technology in the stack (React itself, TypeScript, Zustand, TanStack Query, Three.js, React Three Fiber, Tailwind CSS, Appwrite) was either encountered for the first time during development or a technology the frontend developer had limited experience with. The consequence of this is visible in the project's commit history, which records not just feature additions but a series of architectural refactors, each driven by the discovery of a better approach to a problem that needs to be solved or had already been solved in a less effective way.
-
-The pattern of implementation was quite consistent throughout the development of the project. It would start with an attempt to implement a feature with the tools and patterns understood at the time, encounter the limitations of that approach under real conditions during testing, discover a more appropriate technology or pattern, and refactor. These refactors were uncomfortable but correct — each one required understanding *why* the previous approach failed, not just *that* it failed, and this understanding informed every subsequent decision.
 
 ### Technology Decisions
 
@@ -422,7 +414,7 @@ Hand-written CSS files worked fine while the project had five components. Once t
 
 ### useState -> Zustand -> Zustand + TanStack Query
 
-State management went through three distinct phases, each driven by the limitations of the previous approach. This evolution is discussed in detail in the State Management section below.
+State management went through three distinct phases, each driven by the limitations of the previous approach. These stages are discussed in detail in the State Management section below.
 
 ### Late-Stage UI Design
 
@@ -469,7 +461,7 @@ The application's provider stack is composed in `provider.tsx`:
 
 The ordering is incredibly important and deliberate:
 
-1. **ErrorBoundary** - catches any uncaught exception, including Suspense promise rejections, and renders a recovery UI. Nothing can escape this boundary.
+1. **ErrorBoundary** - catches any uncaught exception, including Suspense promise rejections, and renders a recovery UI.
 2. **Suspense** - displays a loading spinner while any descendant component suspends (e.g., during lazy-loaded route fetching).
 3. **QueryClientProvider** - makes the TanStack Query cache available to all descendants.
 4. **UserProvider** - initialises authentication state. On login and logout, it resets the Zustand SceneStore and clears the TanStack Query cache to prevent data leakage between sessions.
@@ -481,9 +473,9 @@ Before examining code, it is worth naming the five abstractions that the entire 
 +--------------------+----------------------------------------+-------------------------+
 | Abstraction        | Responsibility                         | Implementation          |
 +====================+========================================+=========================+
-| **Simulation**     | The domain entity: a configured        | `simulation-            |
-|                    | acoustic experiment with its results.  | repository.ts`          |
-|                    | Exists in two shapes, a                |                         |
+| **Simulation**     | The final structure of an acoustic     | `simulation-            |
+|                    | experiment with its results. It        | repository.ts`          |
+|                    | exists in two shapes, a                |                         |
 |                    | `SimulationDocument` (Appwrite's       |                         |
 |                    | snake\_case database row) and a        |                         |
 |                    | `Simulation` (the camelCase object     |                         |
@@ -520,8 +512,6 @@ Before examining code, it is worth naming the five abstractions that the entire 
 +--------------------+----------------------------------------+-------------------------+
 
 ## The Data Layer
-
-The data layer is the set of modules that sit between the UI components and the two external services the frontend depends on: Appwrite (for authentication, database, and file storage) and the C ray-tracer backend (for running simulations and returning binary results). Its purpose is to ensure that no component in the application ever communicates with either service directly. Instead, every network request, database query, file upload, and binary response is routed through a small number of typed functions that translate between the external world and the internal domain model. In practical terms, the data layer is responsible for four things. First, it defines the shape of the data as it arrives from Appwrite and as it is consumed by the frontend, maintaining an explicit mapping between the two. Second, it encapsulates all Appwrite SDK calls behind a repository object with typed methods, so that the SDK never appears in component code. Third, it manages caching, background refetching, and cache invalidation through TanStack Query, ensuring that the UI always reflects the current state of the database without requiring manual refetch calls after every mutation. Fourth, it handles the decoding of the ATRB binary format returned by the C backend, parsing the raw `ArrayBuffer` into typed arrays that the rendering pipeline can consume directly. Each of these responsibilities is discussed in the subsections that follow.
 
 ### Two Type Systems, One Mapper
 
@@ -573,7 +563,7 @@ export const simulationRepo = {
 };
 ```
 
-This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper. The repository is consumed exclusively through TanStack Query hooks (`useSimulationsList`, `useSimulationDetail`, `useCreateSimulation`, etc.) re-exported through `api/simulations.ts`.
+This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper. The repository is accessed exclusively through TanStack Query hooks (`useSimulationsList`, `useSimulationDetail`, `useCreateSimulation`, etc.) that are re-exported through `api/simulations.ts`.
 
 ### Query Keys and Caching Strategy
 
@@ -590,8 +580,42 @@ export const simulationKeys = {
 };
 ```
 
-This hierarchy enables precise cache invalidation. For example, after creating a simulation, calling `invalidateQueries({ queryKey: simulationKeys.lists() })` refetches the list without disturbing cached detail queries or ray responses. The query client is configured with `staleTime: 5 minutes` and `gcTime: 30 minutes`, which we found to be a good balance between freshness and avoiding unnecessary network requests during a typical session.
+This structure allows for efficient cache invalidation. For example, after creating a simulation, calling `invalidateQueries({ queryKey: simulationKeys.lists() })` refetches the list without disturbing cached detail queries or ray responses. The query client is configured with `staleTime: 5 minutes` and `gcTime: 30 minutes`, which we found to be a good balance between freshness and avoiding unnecessary network requests during a typical session.
 
+### The Binary Protocol (ATRB)
+
+**Note on AI assistance:** The binary protocol, both the C server code that writes the ATRB format and the TypeScript parser that reads it was developed with the help of AI tooling. We were aware from the early stages of the project that transitioning from JSON to a compact binary format would eventually be necessary, but by the time we reached this stage the project deadline was very close. The format needed to contain (sparse voxel indices and energies per frame) was defined by us, but the implementation of how those bytes are written on the C side and read on the TypeScript side was AI-assisted. While we relied on AI for this aspect of the project we still made an attempt to understand and incorporate the generated code into our project.
+
+As discussed in the communication standards section, the initial design for the voxel data used JSON. While JSON was easy to understand and parse, the payload sizes for a real simulation (200,000+ voxels with 100,000+ rays) were extremely large. The ATRB binary format replaced it, and on the frontend this binary response is decoded by `parseResultBuffer`.
+
+```typescript
+/** One frame of sparse voxel energy data (zero-copy views). */
+export interface RayFrame {
+  indices: Uint32Array;
+  energies: Float32Array;
+}
+
+/** Parse an ATRB binary result buffer into frames. */
+export function parseResultBuffer(buffer: ArrayBuffer): RayFrame[] {
+  const view = new DataView(buffer);
+  const numFrames = view.getUint32(4, true);
+  const frames: RayFrame[] = new Array(numFrames);
+
+  for (let f = 0; f < numFrames; f++) {
+    const tableEntry = 16 + f * 8;
+    const offset = view.getUint32(tableEntry, true);
+    const count = view.getUint32(tableEntry + 4, true);
+
+    // Zero-copy views directly into the ArrayBuffer
+    frames[f] = {
+      indices: new Uint32Array(buffer, offset, count),
+      energies: new Float32Array(buffer, offset + count * 4, count),
+    };
+  }
+
+  return frames;
+}
+```
 - Design choices (front)
   - state storing
   - storing (not state)
