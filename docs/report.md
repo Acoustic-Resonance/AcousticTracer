@@ -27,14 +27,13 @@ Prior to beginning development, we surveyed the existing landscape of acoustic s
 
 None of the tools we found offered a browser-based interface, real-time 3D visualisation of sound energy propagation as a voxel heat map, or a clean separation between a portable C simulation core and a platform-agnostic frontend. The volumetric, temporal voxel grid approach we implemented, where each voxel independently records a time-binned energy history, does not appear to be a design used by any of the tools above, which typically output room impulse response parameters or auralisation rather than a spatial energy distribution over time.
 
-
 ## Architecture
 
 <!-- TODO: rename section? -->
 
 Upon starting the project our first task was to set up the shared GitHub repository where our code was to be hosted. This was an involved process with the whole team, as we wanted to ensure a proper workflow with professional version control standards. We set up an organisation, as to not have a single person hosting the repository. We then created the repository `AcousticTracer` where we each forked it, giving ourselves a personal 'copy' of the repository to serve as our `origin`. We then added a remote `upstream` where we could merge changes from our personal forks to the original repository located in the organisation. This allowed us to each work independently on features in parallel and then push these changes into a shared repository. We configured approval rules to ensure that members could not approve their own pull requests, and that each pull request required at least one approval before merging into the main branch.
 
-Once the GitHub had been configured the next step was to work on the C library specification, since that is the core essence of the project. The C Library will henceforth be referred to as the 'core' of the project. The members working on the core of the project began at the 'top' of the core, creating the specification and outline of the public API presented by the core to the end user. Our initial scope of the project included a 'command buffer' that the output would be written do. The idea behind the command buffer was that the output of the simulation would be instructions for any graphics engine (OpenGL, Vulkan, etc.), on how to draw our heat map. This was in the hopes to create a truly independent, graphics library agnostic library, but this was later scrapped due to the complexity. We settled on creating a consistent communication standard instead, that could be parsed by any front-end, or visualisation tool. This communication standard will be discussed at a later stage.
+Once the GitHub had been configured the next step was to work on the C library specification, since that is the core essence of the project. The C Library will henceforth be referred to as the 'core' of the project. The members working on the core of the project began at the 'top' of the core, creating the specification and outline of the public API presented by the core to the end user. Our initial scope of the project included a 'command buffer' that the output would be written to. The idea behind the command buffer was that the output of the simulation would be instructions for any graphics engine (OpenGL, Vulkan, etc.), on how to draw our heat map. This was in the hopes to create a truly independent, graphics library agnostic implementation, but this was later scrapped due to the complexity. We decided on creating a consistent communication standard instead, that could be parsed by any front-end, or visualisation tool. This communication standard will be discussed at a later stage.
 
 The architecture / workflow we envisioned for the user was as follows:
 
@@ -340,9 +339,9 @@ With our exemplar front-end web application, the workflow consists of the front-
 
 Since this JSON is quite minimal, it is acceptable to send as-is.
 
-The back-end for our application is centred around a C server whose implementation is defined in `backend/at_net.c`. This involves setting up a TCP socket (which essentially behaves like a HTTP server). It listens for incoming connections, accepts only `POST /run` requests, parses the incoming configuration and settings, runs the ray-tracer, converts the frame data (voxel heat-map) to binary, and finally writes the binary stream as the response. The front-end receives this stream as a response, and can then parse the result, and construct the visualisation of the heat-map on the client-side.
+The back-end for our application is centred around a C server whose implementation is defined in `backend/at_net.c`. This involves setting up a TCP socket (which essentially behaves like a HTTP server). It listens for incoming connections, accepts only `POST /run` requests, parses the incoming configuration and settings, runs the ray-tracer, converts the frame data (voxel bins) to binary, and finally writes the binary stream as the response to the client. The front-end receives this stream, parses the result, and constructs the visualisation of the heat-map on the client-side.
 
-During our initial design phase, we outlined the communication standard for the voxel data as shown:
+During our initial design phase, we outlined the communication standard for the voxel data (bins) as shown:
 
 ```json
 {
@@ -358,6 +357,8 @@ During our initial design phase, we outlined the communication standard for the 
 Here, the first key is the frame number, and the value is a list of `key: value` pairs where the key is the voxel index, and the value is the energy of the voxel at that current frame. We found that this was an easy to understand communication standard, while reducing the amount of total tokens required to transmit. Furthermore it is natively JSON, so it is easy to parse on the front-end application. In the final iteration we prefixed the frame number with `frame_` to distinguish between the frame number and the voxel index.
 
 On the back-end, we used the `cJSON` library [^ref4], to parse the configuration received from the front-end.
+
+With this communication standard, we avoid sending unnecessary data to the client, only sending voxels with their energy over a minimum threshold defined internally.
 
 ## Frontend
 
