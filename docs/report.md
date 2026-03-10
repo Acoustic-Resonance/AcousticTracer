@@ -519,6 +519,60 @@ Before examining code, it is worth naming the five abstractions that the entire 
 |                    | imports Appwrite directly.             |                         |
 +--------------------+----------------------------------------+-------------------------+
 
+## The Data Layer
+
+### Two Type Systems, One Mapper
+
+The Appwrite database stores simulation records as flat, snake_case documents (`SimulationDocument` in `contracts.ts`). The frontend consumes them as nested, camelCase domain objects (`Simulation` in `simulation-repository.ts`). Without a clear boundary between these two representations, Appwrite's naming conventions and flat structure would leak into every component that touches simulation data, coupling the entire UI to implementation details of a third-party service. If we ever changed our database provider, or even just renamed a column, the change would ripple across dozens of files. We needed a single translation point where Appwrite's shape goes in and our domain shape comes out, and nothing beyond that point ever sees the raw document. Rather than allowing these two representations to leak across the codebase, we introduced an explicit mapping function to connect them:
+
+```typescript
+function documentToSimulation(doc: SimulationDocument): Simulation {
+  return {
+    $id: doc.$id,
+    $createdAt: doc.$createdAt,
+    $updatedAt: doc.$updatedAt,
+    name: doc.name,
+    status: doc.status,
+    userId: doc.user_id,
+    inputFileId: doc.input_file_id,
+    resultFileId: doc.result_file_id,
+    computeTimeMs: doc.compute_time_ms,
+    numVoxels: doc.num_voxels,
+    fileName: doc.file_name,
+    config: {
+      voxelSize: doc.voxel_size,
+      fps: doc.fps,
+      numRays: doc.num_rays,
+      material: doc.material,
+      selectedSource: {
+        position: { x: doc.position_x, y: doc.position_y, z: doc.position_z },
+        direction: { x: doc.direction_x, y: doc.direction_y, z: doc.direction_z },
+      },
+    },
+  };
+}
+```
+
+The reasoning is the same as our C library's separation of `at.h` and `at_internal.h`: changing the database schema requires updating only the contract type and the mapper, not every component that reads simulation data. A single point of change rather than a scattered one.
+
+### Repository Pattern
+
+Just as our C library hides all internal implementation behind the public API in `at.h`, we did not want any component in the frontend importing from the Appwrite SDK directly. So we introduced a `SimulationRepository` that encapsulates all Appwrite SDK interactions behind typed methods:
+
+```typescript
+export const simulationRepo = {
+  list: (userId: string): Promise<SimulationList> => { ... },
+  getById: (id: string): Promise<Simulation> => { ... },
+  create: (params: CreateSimulationParams): Promise<Simulation> => { ... },
+  update: (id: string, params: UpdateSimulationParams): Promise<Simulation> => { ... },
+  delete: (id: string, fileId: string, resultFileId?: string): Promise<void> => { ... },
+  uploadFile: (file: File | Blob, name?: string): Promise<string> => { ... },
+  getFileUrl: (fileId: string): string => { ... },
+};
+```
+
+This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper. The repository is consumed exclusively through TanStack Query hooks (`useSimulationsList`, `useSimulationDetail`, `useCreateSimulation`, etc.) re-exported through `api/simulations.ts`.
+
 - Design choices (front)
   - state storing
   - storing (not state)
