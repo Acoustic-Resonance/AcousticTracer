@@ -530,6 +530,15 @@ Before examining code, it is worth naming the five abstractions that the entire 
 - What we would do different (ODEON)
 - Lessons learned
 - Future Feature Plans
+
+We were ambitious throughout the duration for this project and had many ideas for features we wished to implement along the way. However, due to the time constraint of the project we were not able to finish every feature we had set our eyes on. We will continue to work on this project after the deadline as it is something we are each proud of and passionate about. Some features we wished to add include:
+
+**Multiple Source Selection on the Front-End Web Application** We have included support for multiple sources in our core library, with the user able to specify an arbitrary number of sources and pass them as an array into the scene configuration. However, due to the time constraint we were unable to implement this functionality in the front-end application. This would have been quite the spectacle in the final demonstration.
+
+**Genetic Algorithm for Optimal Source Position[^ref9]** One of our most desired features during the design phase of this project was to include a Machine Learning artefact into our solution. We speculated on creating a version of the genetic algorithm to locate the most optimal position for a source, and it's direction given the 3D space. This was in the hopes that if the user was constructing an environment, and wanted to find out the best position and direction for an arbitrary source, that our software would provide this functionality. This could also introduce the concept of reinforcement learning in artificial intelligence [^ref10], which essentially rewards a machine learning model upon making optimal choices in a dynamic environment. We all found this topic extremely interesting upon its discovery. However again, due to the time constraint and inherent complexity of this feature, we had to prioritise polishing the already completed features.
+
+**LiDar Scanning for 3D Environment[^ref11]** Similar to the genetic algorithm for Machine Learning, we wished to include a hardware inspired element for our project. We thought of using a LiDar scanner (a detection system which works on the principle of radar, but uses light from a laser), sometimes found in modern smartphone devices, to allow a user to scan their environment, then upload to our software. However this approach came with many caveats for its implementation. Firstly, high quality LiDar scanners are extremely expensive, and were not readily available to us during this project. The LiDar scanner in select mobile phones (most recent Pro and Pro Max models of the iPhone), is not exposed heavily to the end user, and is used interally. Additionally its quality is inferior to the more expensive devices, which causes the environment scanned during its use to be much more 'noisy' and would require a high level of post-processing or smoothing to turn into a usable model. Methods to expose the LiDar functionality do exist, but require a payment subscription or limited free-tier usage. We decided that this method was infeasible to us, along with the end user, and thus decided to go with the 3D modelling approach, which is much more user friendly and accessible.
+
 - Conclusions
 - references
 
@@ -567,3 +576,9 @@ Before examining code, it is worth naming the five abstractions that the entire 
 [^ref7]: [CATT-Acoustic](https://www.catt.se/)
 
 [^ref8]: [I-Simpa](https://github.com/Universite-Gustave-Eiffel/I-Simpa)
+
+[^ref9]: [Genetic Algorithm](https://en.wikipedia.org/wiki/Genetic_algorithm)
+
+[^ref10]: [Reinforcement Learning](https://en.wikipedia.org/wiki/Reinforcement_learning)
+
+[^ref11]: [LiDar](https://en.wikipedia.org/wiki/Lidar)
