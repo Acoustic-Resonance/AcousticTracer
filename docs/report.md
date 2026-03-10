@@ -361,41 +361,33 @@ On the back-end, we used the `cJSON` library [^ref4], to parse the configuration
 
 ## Frontend
 
-### Introduction and Motivation
+## Introduction
 
-The AcousticTracer project pairs a C simulation engine (the core) with a browser-based frontend, which configures, stores, and visualises the simulation. Tools like ODEON exist for this domain, but they are desktop-oanly, expensive, and closed-source. A browser-based alternative would be freely accessible, require no installation, and provide immediate real-time use. This section describes the architecture of that browser frontend: what its major components are, how they interact at runtime, and what was learned building this project while starting with little to no prior experience in Three.js, WebGL, or production React architecture.
+> **Note:** The project's purpose, the C simulation engine, the binary communication standard, the public API (`at.h`), and the overall architecture are described in the preceding sections of this report. This section focuses exclusively on the browser frontend: how it configures, stores, and visualises simulations.
 
-#### A Note on Role and Scope
-
-Although the frontend developer's title on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical:  writing per-frame transform matrices directly into GPU-backed buffers, normalising direction vectors with quaternion math, parsing a custom binary protocol, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline that spans two independent backends. The user interface that wraps these systems is intentionally minimal with dark-themed panels, sliders, and status badges, this was because the engineering effort was concentrated on making the underlying data and rendering pipelines correct, fast, and reliable.
+The AcousticTracer project, as described, pairs a C simulation engine (the core) with a browser-based frontend, which configures, stores, and visualises the simulation. Tools like ODEON exist for this domain, but they are desktop-only, expensive, and closed-source. A browser-based alternative would be freely accessible, require no installation, and provide immediate real-time use. Although the team member's role on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical: writing per-frame transform matrices directly into GPU-backed buffers, normalising direction vectors with quaternion math, parsing the custom ATRB binary protocol described earlier, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline spanning two independent backends.
 
 This focus was not a deliberate de-prioritisation of design, but an accurate reflection of where the complexity lay. A voxel renderer that drops frames is unusable regardless of how polished its surrounding UI is. A binary parser that misaligns a single byte offset produces garbage data that no amount of styling can mask. The frontend's value to the project was measured not in visual refinement but in its ability to bridge the gap between a C simulation engine and a browser-based 3D visualisation.
+
+### Core Goals
+
+The frontend has three responsibilities that we discussed and outlined early in development but did not yet know how to tackle, and each came with distinct technical demands:
+
+1. **Configure and submit** — The user uploads a `.glb` room model, sets simulation parameters (voxel size, ray count, FPS, surface material), and interactively places a sound source by adjustng its position inside the 3D scene. The configuration is sent to the C backend as JSON matching the communication standard defined earlier.
+
+2. **Decode and store** — The C backend returns results in the ATRB binary format. The frontend decodes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instantaneous.
+
+3. **Render and replay** — The decoded frames are visualised as a 3D voxel heat map overlaid on the room model. A typical simulation at `voxelSize = 0.05` on a 5m × 3m × 4m room produces 480,000 voxels, each requiring per-frame position and colour updates at interactive frame rates.
+
+### Initial Challenges
+
+The design was shaped by three challenges that recur throughout this section. First, the performance budget: hundreds of thousands of voxels multiplied by 60 FPS and per-instance matrix and colour updates eliminated most naive rendering approaches. Second, the complexity of 3D software development in a browser, which required working with concepts that have no equivalent in conventional web development: scene graphs, projection matrices, quaternion rotations, raycasting for hit detection, and GPU-instanced rendering. Third, the coupling between backends: the frontend mediates between Appwrite (authentication, database, file storage) and the C ray-tracer (custom HTTP endpoint), and the data layer must sit between both without leaking SDK details into components.
 
 ### A Learning Journey Through the React Ecosystem
 
 This project was the frontend developer's first experience building a fullstack web application within the React ecosystem, and with 3D Web rendering thrown into the mix it was quite a challenge to undertake. Every major technology in the stack (React itself, TypeScript, Zustand, TanStack Query, Three.js, React Three Fiber, Tailwind CSS, Appwrite) was either encountered for the first time during development or a technology the frontend developer had limited experience with. The consequence of this is visible in the project's commit history, which records not just feature additions but a series of architectural refactors, each driven by the discovery of a better approach to a problem that needs to be solved or had already been solved in a less effective way.
 
-The pattern of implementation was quite consistent throughout the development of the project: it would start by attempting to implement a feature with the tools and patterns understood at the time, encounter the limitations of that approach under real conditions/during testing, discover a more appropriate technology or pattern, and refactor. JavaScript gave way to TypeScript when runtime type errors became unmanageable. Manual `useEffect`-based data fetching gave way to TanStack Query when forgotten refetch calls produced stale UI after every mutation. A flat component directory gave way to feature-sliced architecture when cross-feature imports created circular dependencies. Raw CSS gave way to Tailwind when naming collisions appeared across fifteen components.
-
-These refactors in hindsight may look like signs of poor planning, but they were the mechanism through which the architecture improved. Each one required understanding *why* the previous approach failed, not just *that* it failed, and this understanding informed every subsequent decision. The result is an architecture that was not designed upfront but arrived at through iteration, with each decision justified by a concrete problem it solved.
-
-### Core Goals
-
-The frontend has three responsibilities that in the early stages of development the team discussed and outlined but did not know how to tackle, and each issue came with distinct technical demands:
-
-1. **Configure and submit** - The user uploads a `.glb` 3D room model, sets simulation parameters (voxel size, ray count, FPS, surface material), and interactively places a sound source by clicking inside the 3D scene. The configuration is sent to the C backend as JSON.
-
-2. **Decode and store** - The C backend returns simulation results as a custom binary format (`.atrb`). The frontend must decode this into typed arrays, store it in cloud file storage for persistent storage, and cache the parsed result so revisiting a completed simulation is instantaneous.
-
-3. **Render and replay** - The decoded frames must be visualised as a 3D voxel heat map overlaid on the room model, animated at the simulation's original FPS. A typical simulation produces tens of thousands to hundreds of thousands of voxels, each requiring per-frame position and color updates. This must run at interactive frame rates in a browser, with a fully functioning playback system.
-
-### Initial Challenges
-
-The design was shaped by three challenges that recur throughout this section:
-
-- **Performance budget.** - Hundreds of thousands of voxels × 60 FPS × per-instance matrix and colour updates. This challenge eliminated most naive rendering approaches and drove the adoption of `InstancedMesh`.
-- **3D software development complexity.** - Building an interactive 3D application in the browser required working with concepts that have no equivalent in conventional web development: scene graphs, projection matrices, quaternion rotations, axis-aligned bounding boxes, raycasting for hit detection, and GPU-instanced rendering,each concept introduced a substantial learning curve that extended well beyond typical frontend engineering.
-- **Backend coupling.** - The frontend communicates with two backends - Appwrite (a Backend-as-a-Service for authentication, database, and file storage) and the C ray-tracer (a custom HTTP endpoint). The data layer must mediate between both without leaking SDK details into components.
+The pattern of implementation was quite consistent throughout the development of the project. It would start with an attempt to implement a feature with the tools and patterns understood at the time, encounter the limitations of that approach under real conditions during testing, discover a more appropriate technology or pattern, and refactor. These refactors were uncomfortable but correct — each one required understanding *why* the previous approach failed, not just *that* it failed, and this understanding informed every subsequent decision.
 
 ### Technology Decisions
 
@@ -411,19 +403,29 @@ The initial scaffold was plain JavaScript. It quickly became apparent that JavaS
 
 ### CSS → Tailwind CSS
 
-Hand-written CSS files worked fine while the project had five components. Once that count reached fifteen, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behavior, and structure are all visible in a single file.
+Hand-written CSS files worked fine while the project had five components. Once that count reached fifteen, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behavior, and structure are all visible in a single file. Tailwind v4's CSS-native `@theme` directives allowed us to define project-wide design tokens directly in `index.css`.
+
+```css
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: #2d2d39;
+  --color-bg-card: #282833;
+  --color-text-primary: #ffffff;
+  --color-accent: #fbbf24;
+  --color-button-primary: #4f46e5;
+  --color-danger: #f87171;
+  --color-success: #34d399;
+}
+```
 
 ### useState -> Zustand -> Zustand + TanStack Query
 
-State management went through three distinct phases, each driven by the limitations of the previous approach. Initially every piece of state lived in React's built-in `useState` and `useEffect` hooks, voxel size, simulation lists, the currently loaded model, all of it scattered across individual components. This became unmanageable and messy quickly, multiple components needed access to the same state, prop drilling grew out of control, and there was no single source of truth for the 3D scene's configuration. Zustand replaced `useState` for client-side state and solved these problems cleanly — a single flat store with fine-grained selectors meant any component could read or write scene configuration without prop chains. However, Zustand was then also being used for server data (simulation lists, ray results), which required manually calling `loadData()` after every mutation. When one of those calls was forgotten, the UI showed stale data. TanStack Query replaced Zustand for all server state, bringing automatic cache invalidation after mutations, background refetching, and request deduplication. The split was now clear and clean: Zustand owns synchronous, client-only state, while TanStack Query owns anything that touches the network.
-
-#### The Repository Pattern
-
-As the data layer matured alongside the state management migration, a repository class, `SimulationRepository`, was introduced that encapsulates every Appwrite SDK call behind typed methods (`list`, `getById`, `create`, `update`, `delete`, `uploadFile`, `getFileUrl`). This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper.
+State management went through three distinct phases, each driven by the limitations of the previous approach. This evolution is discussed in detail in the State Management section below.
 
 ### Late-stage UI design
 
-Towards the end of the project after the core features of the frontend had been developed and optimized, the need for a polished UI could no longer be ignored; a multitude of UI and UX design decisions were needed. Building these from scratch would have been a significant time investment, which was not available in abundance due to the project deadline. The frontend developer found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. Rather than installing a monolithic library, shadcn/ui provides individual component files that the developer owns and modifies. This approach aligned with the existing Tailwind-based styling and allowed incremental adoption. If this project were to be undertaken again, **Shadcn** would have been seriously leveraged in the development of the components and UI.
+Towards the end of the project, after the core features of the frontend had been developed and optimised, the need for a polished UI could no longer be ignored. Dropdown menus with keyboard navigation, accessible dialogs, and responsive tables were all needed, and building these from scratch would have been a significant time investment that we did not have the luxury of. We found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. Rather than installing a monolithic library, shadcn/ui provides individual component files that we own and modify. This approach aligned with our existing Tailwind-based styling and allowed incremental adoption. If we were to start this project again, we would have leveraged shadcn far earlier in the development process.
 
 ## Architectural Overview
 
@@ -443,7 +445,7 @@ web/src/
 +-- utils/            # Pure helpers
 ```
 
-This codebase structure enforces the concept of **import direction**: feature code may import from `lib/` and `components/`, but never from another feature directly. The `auth` and `simulation` features communicate only through the provider hierarchy and through barrel exports in `api/`. This structure was well thought out and easy to navigate and understand once it was explained to the other team members.
+This codebase structure enforces the concept of **import direction**: feature code may import from `lib/` and `components/`, but never from another feature directly. The `auth` and `simulation` features communicate only through the provider hierarchy and through barrel exports in `api/`. This structure was well thought out and easy to navigate and understand once it was explained to the rest of the team. Similar to our C library's use of `at.h` as the single public interface, each feature exposes its functionality through a controlled set of barrel exports, keeping the internals hidden from the rest of the application.
 
 ### Provider Hierarchy
 
