@@ -17,9 +17,16 @@ Our project 'Acoustic Tracer' is a three-dimensional, acoustic visualiser that a
 
 ## Previous Works
 
-<!-- TODO -->
+Prior to beginning development, we surveyed the existing landscape of acoustic simulation tools to understand what was already available and where gaps lay.
 
-On carrying out research into existing technologies before starting this project, we weren't able to find an exact software to meet our needs.
+**ODEON**[^ref6] is one of the most established tools in room acoustic simulation. It uses a combination of the image-source method and a modified ray-tracing algorithm to predict, illustrate and auralise the acoustics of 3D environments. It is a mature, commercially licensed desktop application used widely by acoustic engineers and architects. However, it is closed-source, expensive, and desktop-only, requiring a hardware dongle for licensing. This made it unsuitable as a reference point for an open, browser-accessible tool.
+
+**CATT-Acoustic**[^ref7] is another commercial desktop application for room acoustics simulation, also using ray-tracing based methods. Like ODEON, it is a proprietary, paid, desktop-only product targeted at professional acoustic consultants.
+
+**I-Simpa**[^ref8] is an open-source GUI developed by Université Gustave Eiffel for hosting 3D numerical acoustic propagation codes. It supports ray-tracing and sound-particle tracing methods and is the closest open-source equivalent to ODEON. However, it is still a desktop application, requires separate numerical code plugins to function as a simulator, and is not designed to be embedded in or accessed via a web interface.
+
+None of the tools we found offered a browser-based interface, real-time 3D visualisation of sound energy propagation as a voxel heat map, or a clean separation between a portable C simulation core and a platform-agnostic frontend. The volumetric, temporal voxel grid approach we implemented, where each voxel independently records a time-binned energy history, does not appear to be a design used by any of the tools above, which typically output room impulse response parameters or auralisation rather than a spatial energy distribution over time.
+
 
 ## Architecture
 
@@ -123,7 +130,7 @@ This is where we used the Möller-Trumbore ray/triangle intersection algorithm[^
 
 Once we were able to get whether a ray intersected with a triangle, the next issue was to handle what actually happens when the ray intersects with the triangle. Initially we implemented a `hit_list` which was given to each ray, that tracked each point on any triangle that the ray intersected with. We must keep track of every single point of intersection, and then only 'handle' the point of intersection closest to the ray origin, as this would be the 'first' intersection, regardless of the order of the triangle checks. This caused problems with memory management, which is important in C. Since we didn't know until runtime, how many times a ray would intersect with any of the triangles, we didn't know how big to make the `hit_list` array. This introduced the concept of the dynamic array, which functions like lists do in Python and JavaScript, where the size of the list increases, if appending an element exceeds the capacity of the list. Once we had computed the closest point of intersection of each ray, we could then initialise a new ray with the origin of the point of intersection and the 'reflected' direction.
 
-To combat the memory management associated with the `hit_list` approach of calculating the closest point of intersection, we pivoted to using a linked list approach for the ray implementation. Each ray would have a `child` ray that is the resultant ray after intersection, scattering, reflection etc. Upon the first intersection of a ray we would initialise a new ray with the computed origin and direction, and only update its direction and origin upon subsequent intersections, only if the distance from that point of intersection was less than the distance from the current rays origin to its child. This greatly simplified the computation, while also introducing an hierarchy among the rays, with a parent/child relationship. We could also easily navigate this ray hierarchy using linked list traversal methods Figure 2 shows a visualisation of the ray bounce tree in action, where each red line represents the `parent` rays and the purple lines represent all of the `child` rays.
+To combat the memory management associated with the `hit_list` approach of calculating the closest point of intersection, we pivoted to using a linked list approach for the ray implementation. Each ray would have a `child` ray that is the resultant ray after intersection, scattering, reflection etc. Upon the first intersection of a ray we would initialise a new ray with the computed origin and direction, and only update its direction and origin upon subsequent intersections, only if the distance from that point of intersection was less than the distance from the current rays origin to its child. This greatly simplified the computation, while also introducing an hierarchy among the rays, with a parent/child relationship. We could also easily navigate this ray hierarchy using linked list traversal methods. Figure 2 shows a visualisation of the ray bounce tree in action, where each red line represents the `parent` rays and the purple lines represent all of the `child` rays.
 
 Another ray phenomena implemented in our project is material absorption. Since this is not a concern of the end user of the library, this is defined in our `at_internal.h` header file where we declare functions, enumerations, and structs, to be used internally. For the absorption (and later scattering) we implemented, we decided to declare a table of materials along with their coefficients:
 
@@ -551,3 +558,9 @@ Before examining code, it is worth naming the five abstractions that the entire 
 [^ref4]: [cJSON library](https://github.com/DaveGamble/cJSON)
 
 [^ref5]: [PBR Book](https://www.pbr-book.org/3ed-2018/Monte_Carlo_Integration/2D_Sampling_with_Multidimensional_Transformations)
+
+[^ref6]: [ODEON Room Acoustics Software](https://odeon.dk/product/what-is-odeon/)
+
+[^ref7]: [CATT-Acoustic](https://www.catt.se/)
+
+[^ref8]: [I-Simpa](https://github.com/Universite-Gustave-Eiffel/I-Simpa)
