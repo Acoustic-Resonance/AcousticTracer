@@ -443,11 +443,11 @@ Before delving into the architectural design and implementation, this subsection
 
 React was chosen as the UI framework because the frontend developer had invested time developing skills with it before and during the early stages of the project, completing Scrimba's introductory course and the majority of the advanced React courses, as well as their TypeScript course. That preparation provided enough fluency with React's component model, hooks, and ecosystem to be productive from the first week.
 
-#### JavaScript -> TypeScript
+#### TypeScript
 
-The initial scaffold was plain JavaScript. It quickly became apparent that JavaScript alone would not be sufficient, the project was hitting runtime crashes caused by misspelled prop names and `undefined` values propagating silently through the component tree, bugs that TypeScript's structural type system catches at compile time. The frontend developer invested time during the first three weeks of development learning TypeScript alongside developing the codebase.
+The initial skeleton was plain JavaScript. It quickly became apparent that JavaScript alone would not be sufficient, the project was hitting runtime crashes caused by misspelled prop names and `undefined` values propagating silently through the component tree, bugs that TypeScript's structural type system catches at compile time. The frontend developer invested time during the first three weeks of development learning TypeScript alongside developing the codebase.
 
-### CSS -> Tailwind CSS
+### Tailwind CSS
 
 Hand-written CSS files worked fine while the project had five components. Once that count reached fifteen, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behavior, and structure are all visible in a single file. Tailwind v4's CSS-native `@theme` directives allowed us to define project-wide design tokens directly in `index.css`.
 
@@ -465,15 +465,15 @@ Hand-written CSS files worked fine while the project had five components. Once t
 }
 ```
 
-### useState -> Zustand -> Zustand + TanStack Query
+### UI Design
+
+Towards the end of the project, after the core features of the frontend had been developed and optimised, the need for a polished UI could no longer be ignored. building these from scratch would have been a significant time investment that we did not have the luxury of. We found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. This approach aligned with our existing Tailwind-based styling and allowed incremental adoption.
+
+### State Mangement
 
 State management went through three distinct phases, each driven by the limitations of the previous approach. These stages are discussed in detail in the State Management section below.
 
-### Late-Stage UI Design
-
-Towards the end of the project, after the core features of the frontend had been developed and optimised, the need for a polished UI could no longer be ignored. Dropdown menus with keyboard navigation, accessible dialogs, and responsive tables were all needed, and building these from scratch would have been a significant time investment that we did not have the luxury of. We found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. Rather than installing a monolithic library, shadcn/ui provides individual component files that we own and modify. This approach aligned with our existing Tailwind-based styling and allowed incremental adoption. If we were to start this project again, we would have leveraged shadcn far earlier in the development process.
-
-## Architectural Overview
+## The Architecture
 
 ### Feature Orientated Architecture
 
@@ -512,63 +512,18 @@ The application's provider stack is composed in `provider.tsx`:
 </ErrorBoundary>
 ```
 
-The ordering is incredibly important and deliberate:
-
 1. **ErrorBoundary** - catches any uncaught exception, including Suspense promise rejections, and renders a recovery UI.
 2. **Suspense** - displays a loading spinner while any descendant component suspends (e.g., during lazy-loaded route fetching).
 3. **QueryClientProvider** - makes the TanStack Query cache available to all descendants.
 4. **UserProvider** - initialises authentication state. On login and logout, it resets the Zustand SceneStore and clears the TanStack Query cache to prevent data leakage between sessions.
 
-### Core Abstractions
-
-Before examining code, it is worth naming the five abstractions that the entire frontend is built around. Every component, hook, and data flow in the application is connected to one or more of these:
-
-+--------------------+----------------------------------------+-------------------------+
-| Abstraction        | Responsibility                         | Implementation          |
-+====================+========================================+=========================+
-| **Simulation**     | The final structure of an acoustic     | `simulation-            |
-|                    | experiment with its results. It        | repository.ts`          |
-|                    | exists in two shapes, a                |                         |
-|                    | `SimulationDocument` (Appwrite's       |                         |
-|                    | snake\_case database row) and a        |                         |
-|                    | `Simulation` (the camelCase object     |                         |
-|                    | the web app uses).                     |                         |
-+--------------------+----------------------------------------+-------------------------+
-| **SceneStore**     | The client-side state container for    | Zustand store in        |
-|                    | everything the 3D scene needs: model   | `scene-store.ts`        |
-|                    | bounds, voxel size, selected source    |                         |
-|                    | position/direction, UI toggles         |                         |
-|                    | (wireframe, grid visibility), the      |                         |
-|                    | pending upload file, and the current   |                         |
-|                    | playback frame index.                  |                         |
-+--------------------+----------------------------------------+-------------------------+
-| **SceneCanvas**    | The rendering surface. A React Three   | `scene-viewer.tsx`      |
-|                    | Fiber `<Canvas>` that bridges React's  |                         |
-|                    | component model to Three.js's scene.   |                         |
-|                    | Manages camera, lighting, model        |                         |
-|                    | loading, and child component           |                         |
-|                    | composition.                           |                         |
-+--------------------+----------------------------------------+-------------------------+
-| **VoxelGrid**      | The GPU-backed instanced voxel         | `voxel-grid.tsx`        |
-|                    | renderer. Given a bounding box, a      |                         |
-|                    | voxel size, and an optional sequence   |                         |
-|                    | of sparse energy frames, it maintains  |                         |
-|                    | a single `InstancedMesh` with direct   |                         |
-|                    | buffer writes for position and colour. |                         |
-+--------------------+----------------------------------------+-------------------------+
-| **Simulation       | The data access layer. Encapsulates    | `simulation-            |
-| Repository**       | every Appwrite SDK call behind typed   | repository.ts`          |
-|                    | methods (`list`, `getById`, `create`,  |                         |
-|                    | `update`, `delete`, `uploadFile`,      |                         |
-|                    | `getFileUrl`). No component ever       |                         |
-|                    | imports Appwrite directly.             |                         |
-+--------------------+----------------------------------------+-------------------------+
-
 ## The Data Layer
 
-### Two Type Systems, One Mapper
+The data layer is the set of abstractions that sit between the frontend's UI components and the two external services, the appwrite backend and the C ray-tracer, HTTP endpoint. Its purpose is to ensure that no component ever interacts with either service directly.
 
-The Appwrite database stores simulation records as flat, snake_case documents (`SimulationDocument` in `contracts.ts`). The frontend consumes them as nested, camelCase domain objects (`Simulation` in `simulation-repository.ts`). Without a clear boundary between these two representations, Appwrite's naming conventions and flat structure would leak into every component that touches simulation data, coupling the entire UI to implementation details of a third-party service. If we ever changed our database provider, or even just renamed a column, the change would ripple across dozens of files. We needed a single translation point where Appwrite's shape goes in and our domain shape comes out, and nothing beyond that point ever sees the raw document. Rather than allowing these two representations to leak across the codebase, we introduced an explicit mapping function to connect them:
+### Type Mapping
+
+The Appwrite database stores simulation records as flat, snake_case documents (`SimulationDocument` in `contracts.ts`). The frontend consumes them as nested, camelCase domain objects (`Simulation` in `simulation-repository.ts`). Without a clear boundary between these two representations, Appwrite's naming conventions and flat structure would leak into every component that touches simulation data.
 
 ```typescript
 function documentToSimulation(doc: SimulationDocument): Simulation {
@@ -598,8 +553,6 @@ function documentToSimulation(doc: SimulationDocument): Simulation {
 }
 ```
 
-The reasoning is the same as our C library's separation of `at.h` and `at_internal.h`: changing the database schema requires updating only the contract type and the mapper, not every component that reads simulation data. A single point of change rather than a scattered one.
-
 ### Repository Pattern
 
 Just as our C library hides all internal implementation behind the public API in `at.h`, we did not want any component in the frontend importing from the Appwrite SDK directly. So we introduced a `SimulationRepository` that encapsulates all Appwrite SDK interactions behind typed methods:
@@ -618,7 +571,7 @@ export const simulationRepo = {
 
 This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper. The repository is accessed exclusively through TanStack Query hooks (`useSimulationsList`, `useSimulationDetail`, `useCreateSimulation`, etc.) that are re-exported through `api/simulations.ts`.
 
-### Query Keys and Caching Strategy
+### Query Keys and Caching
 
 TanStack Query uses structured keys defined in `query-keys.ts` to manage caching and invalidation:
 
@@ -633,42 +586,26 @@ export const simulationKeys = {
 };
 ```
 
-This structure allows for efficient cache invalidation. For example, after creating a simulation, calling `invalidateQueries({ queryKey: simulationKeys.lists() })` refetches the list without disturbing cached detail queries or ray responses. The query client is configured with `staleTime: 5 minutes` and `gcTime: 30 minutes`, which we found to be a good balance between freshness and avoiding unnecessary network requests during a typical session.
+This structure allows for efficient cache invalidation. For example, after creating a simulation, calling `invalidateQueries()`, **refetches** the list without disturbing cached detail queries or ray responses.
 
-### The Binary Protocol (ATRB)
+### The Binary Protocol
 
-**Note on AI assistance:** The binary protocol, both the C server code that writes the ATRB format and the TypeScript parser that reads it was developed with the help of AI tooling. We were aware from the early stages of the project that transitioning from JSON to a compact binary format would eventually be necessary, but by the time we reached this stage the project deadline was very close. The format needed to contain (sparse voxel indices and energies per frame) was defined by us, but the implementation of how those bytes are written on the C side and read on the TypeScript side was AI-assisted. While we relied on AI for this aspect of the project we still made an attempt to understand and incorporate the generated code into our project.
+**Note on AI assistance:** The binary protocol, both the C server code that writes the ATRB format and the TypeScript parser that reads it was developed with the help of AI tooling. We were aware from the early stages of the project that transitioning from JSON to a compact binary format would eventually be necessary, but by the time we reached this stage the project deadline was very close. The format needed to contain sparse voxel indices and energies per frame was defined by us, but the implementation of how those bytes are written on the C side and read on the TypeScript side was AI-assisted. While we relied on AI for this aspect of the project we still made an attempt to understand and incorporate the generated code into our project.
 
-As discussed in the communication standards section, the initial design for the voxel data used JSON. While JSON was easy to understand and parse, the payload sizes for a real simulation (200,000+ voxels with 100,000+ rays) were extremely large. The ATRB binary format replaced it, and on the frontend this binary response is decoded by `parseResultBuffer`.
+As discussed in the communication standards section, the initial design for the voxel data used JSON. While JSON was easy to understand and parse, the payload sizes for a real simulation (200,000+ voxels with 100,000+ rays) were extremely large. The ATRB binary format replaced it, and on the frontend this binary response is decoded by `parseResultBuffer()`.
 
-```typescript
-/** One frame of sparse voxel energy data (zero-copy views). */
-export interface RayFrame {
-  indices: Uint32Array;
-  energies: Float32Array;
-}
+### Simulation Submission
 
-/** Parse an ATRB binary result buffer into frames. */
-export function parseResultBuffer(buffer: ArrayBuffer): RayFrame[] {
-  const view = new DataView(buffer);
-  const numFrames = view.getUint32(4, true);
-  const frames: RayFrame[] = new Array(numFrames);
+When the user submits a simulation, the `useSceneActions` performs the following actions:
 
-  for (let f = 0; f < numFrames; f++) {
-    const tableEntry = 16 + f * 8;
-    const offset = view.getUint32(tableEntry, true);
-    const count = view.getUint32(tableEntry + 4, true);
+1. Upload the `.glb` file.
+2. Create a database record.
+3. Navigates to the dashboard immediately
+4. Runs the ray tracer in the background.
 
-    // Zero-copy views directly into the ArrayBuffer
-    frames[f] = {
-      indices: new Uint32Array(buffer, offset, count),
-      energies: new Float32Array(buffer, offset + count * 4, count),
-    };
-  }
+On success, the binary result is uploaded to Appwrite storage and the parsed `RayFrame[]` is added into the TanStack Query cache so the result is available instantly when the user revisits the simulation.
 
-  return frames;
-}
-```
+The `runRaytracer` function itself is a `fetch` POST to the C backend's `/run` endpoint, sending the configuration as JSON and receiving the binary response.
 
 ## The Rendering Pipeline
 
@@ -676,25 +613,77 @@ export function parseResultBuffer(buffer: ArrayBuffer): RayFrame[] {
 
 The 3D Rendering aspect of the frontend consisted of 3 layers, At the base layer sits **Three.js**. It gives us access to powerful API abstractions, which allows us to translate developer-friendly code into the complex WebGL instructions needed to render 3D graphics. The frontend aspect of this project would not have been possible without this library and we cannot stress enough the important of it. It gave us access to critical methods such as, `InstancedMesh()`, `BufferGeometry()`, `Matrix4()`, `Color()`,and `Box3()`, that were used throughout the development of this project.
 
-On top of the base layer sits **React Three Fiber** (henceforth R3F), it is a custom React renderer that maps JSX elements to three.js objects. What makes R3F so powerful is that it lets us describe a 3D scene using the same declarative, component-based model we use for the rest of the UI. Without R3F, we would have had to manually create objects, add them to the scene, remove them on cleanup, and synchronise state between React and Three.js by hand. R3F eliminates the need to do this entirely, adding a voxel grid to the scene is no different from adding a button to a form, it is a component that mounts, updates when its props change, and unmounts cleanly.
+On top of the base layer sits **React Three Fiber** (henceforth R3F), it is a custom React renderer that maps JSX elements to three.js objects. What makes R3F so powerful is that it lets us describe a 3D scene using the same declarative, component-based model we use for the rest of the UI. Without R3F, we would have had to manually create objects, add them to the scene, remove them on cleanup, and synchronise state between React and Three.js. R3F eliminates the need to do this entirely, adding the voxel grid to the scene is no different from adding a button to a form, it is a component that mounts, updates when its props change, and unmounts cleanly.
 
 The third layer is **Drei**, a companion library of pre-built R3F components and hooks. Drei saved significant development time by providing these components/helpers. To name a few:
 
-   - `OrbitControls` for camera interaction.
-   - `Bounds` for automatic camera framing around the model.
-   - `useGLTF` for loading `.glb` files.
-   - `TransformControls` for the source placement gizmos.
-   - `Environment` for scene lighting,
+- `OrbitControls` - for camera interaction.
+- `Bounds` - for automatic camera framing around the model.
+- `useGLTF` - for loading `.glb` files.
+- `TransformControls` - for the source placement gizmos.
+- `Environment` - for scene lighting,
 
-The abstraction provided by these three libraries was essential to completing this project. Three.js abstracted WebGL code into objects and methods we could deal with, R3F abstracted Three.js into React components we already knew how to compose, and Drei abstracted common 3D patterns into single-line imports. The 3D rendering was by far the most technically demanding aspect of the frontend, and without this layer of abstractions it would not have been possible within the project's timeframe to implement the core features we wanted for the frontend.
+The abstraction provided by these three libraries was essential to completing this project. Three.js abstracted WebGL code into objects and methods we could deal with, R3F abstracted Three.js into React components we already knew how to deal with, and Drei abstracted common 3D patterns into single-line imports. The 3D rendering was by far the most technically demanding aspect of the frontend, and without this layer of abstractions it would not have been possible within the project's timeframe to implement the core features we wanted for the frontend.
 
 ### The Components
 
-Having outlined the rendering stack, the following section walks through the core components that were built on top of it. Each component demonstrates how the three layers described above were combined in practice, how they interacted with client-side state, server-side state, and user input to deliver the frontend's key features.
+Having outlined the rendering stack, the following section walks through the main components that were built on top of it. Each component demonstrates how the three layers described above were combined in actual practice.
 
 #### SceneCanvas
 
-  - data layer
+The `SceneCanvas` composes the scene:
+
+```tsx
+<Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
+  <Suspense fallback={<Loader />}>
+    <Bounds fit clip observe>
+      <Model url={modelUrl} onLoad={handleLoad} />
+    </Bounds>
+  </Suspense>
+  <OrbitControls makeDefault />
+  <Environment preset="apartment" />
+  <GizmoHelper alignment="bottom-right">
+    <GizmoViewport />
+  </GizmoHelper>
+  <AdaptiveDpr pixelated />
+  {bounds && showGrid && !awaitingResults && <VoxelGrid />}
+  {bounds && isStaging && <SourcePlacer />}
+</Canvas>
+```
+
+The `SceneCanvas` component is responsible for the rendering of the 3D Scene. A `<Canvas>` component initialises the WebGL context and camera. Inside it, a `<Suspense>` boundary that wraps the `<Model>` component, showing a loading indicator that keeps track of loaded and pending data. The `Model` component uses Drei's `useGLTF` to load the `.glb` file and computes a `THREE.Box3` bounding box. This bounding box matches the dimensions of the AABB computed by `AT_scene_create()`, ensuring that the voxel indices in the response map to correct world positions, producing a valid heat map. Finally `<Bounds>` automatically frames the camera around the loaded geometry, allowing us to not have to worry about scale and orientation of uploaded models. The additional **Drei** components, (`OrbitControls`, `Environment`, `GizmoHelper`, `AdaptiveDpr`) provide interaction, lighting, an orientation helper, and automatic resolution scaling for performance. The two main components are conditionally rendered: `<VoxelGrid />` renders only when the bounding box is calculated, the grid toggle is enabled, and the simulation is not awaiting results. Similarly `<SourcePlacer />` renders only the bounds are known, with its controlled by the `isStaging` prop. An example figure is given below showing the final result of these components working in tandem.
+
+![Scene Example](../assets/images/SceneExample.png){width=70%}
+
+### VoxelGrid
+
+The `VoxelGrid` component uses an `InstanceMesh` to render the full 3D voxel grid, an `InstanceMesh` is a special **Three.js** class that draws many copies of the same geometry in a single GPU draw call. The `InstanceMesh` has two rendering modes based on if there is a simulation result loaded or not, if there is no ray response every cell in the grid is rendered as a white, low opacity cube. If there is an ray response then only the voxels present in the `currentFrame.indices` are positioned. We then set the colour of the voxel based off the `energy x numRays`, each voxel's energy is an extremely small float, we multiply these values by numRays to rescale is back to a normalised range between zero and one. We then linearly maps the normalised energy values from that range to the specified hue range.
+
+- Hue 0.66 = blue (low energy)
+- Hue 1.0 = red (high energy)
+
+So a voxel with zero energy maps to blue, and a voxel at maximum energy maps to red, as shown below in figure 4.
+
+![Voxels Heatmap](../assets/images/coloredImage.png){width=70%}
+
+#### Grid Dimensions
+
+The grid dimensions `nx`, `ny` and `nz` are derived from the scene's bounding box and the user defined voxel size, The dimensions are calculated identically to the C backend, `ciel((max - min) / voxelsize )`. The `gridIndextToPos` callback then converts each voxels flat index back to the actual world space coordinates, which is then offset by the bounding box minimum plus half the voxel size to centre each cube within its cell.
+
+#### InstanceMesh Optimisation
+
+When we create an `InstancedMesh`,Three.js allocates a GPU buffer large enough for exactly the number of voxels. This buffer size is fixed at creation time. FOr example if frame 1 has 500 active voxels and frame 2 has 12,000, you can't just dynamically grow the buffer instead we have to destroy the mesh and create a new mesh for each frame, which led to visual flickering of the grid and a massive drop in performance. The solution we came up with was to scan every frame in the simulation result and find the frame with the largest amount of active voxels. The mesh is then allocated that buffer size. This solution led to another optimisation that had to be made, if the buffer size was set to accommodate for 12,000 voxels then at frame 1 when there is only 500 active voxels the question arises how do we hide the 11500 unused voxels? For active voxels we render and position them as normal but for unused voxels we transform their cube geometry to a single point (`mesh.setMatrixAt(i, ZERO_MATRIX)`). The GPU still "draws" these instances, but they produce no pixels, reducing the cost of rendering them to essentially zero.
+
+### Source and Direction Markers
+
+The `SourcePlacer` component handles the interactive positioning of the source position and direction markers.
+## State Mangement
+
+##
+
+
+
+  - Architecture
   - rendering
   - storing (state management)
   - replaying
