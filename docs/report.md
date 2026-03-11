@@ -187,6 +187,61 @@ For each voxel the ray crosses, an amount of energy is deposited into that voxel
 
 The current time of the simulation `t` is calculated as `d / v` where `v` is the current simulation speed. Throughout the development of this project, `v` was one of two values. First being 343 m/s, which is the speed of sound, and an arbitrary slower speed that was used while building the visualisation, to make the movement of the sound energy through the heat map easier to observe. The current "bin" index is then calculated with `floor(t / bin_width)`, where `bin_width = 1 / fps`. This is the design decision that makes the output a temporal result rather than a static energy snapshot. Each voxel records how much energy arrived, as well as when it arrived. Each voxel's bin array grows dynamically since at allocation time the duration of the simulation is not yet known. Figure 3 shows the resulting voxel heat map for the same scene, where the colour intensity of each voxel represents the amount of sound energy deposited into it across all time bins.
 
+### Optimisation
+
+In order to get the central workings of our simulation underway,
+we went with the naive approach of determining if a ray intersected with any triangles,
+by checking each ray against all triangles in the scene.
+This approach is incredibly computationally intensive,
+as any real-world model would contain hundreds of thousands,
+if not millions of triangles, and our simulation would require tens of hundreds of thousands of rays,
+which very quickly becomes infeasible for local computation purposes.
+
+As such, once the ray phase of the simulation had been implemented,
+the team began working on a better intersection solution.
+The industry solution to this problem is to break the scene up into a tree that can be traversed,
+exponentially reducing the number of required triangle intersection tests.
+
+Before we can get around to discussing scene tree implementations, we must first,
+talk about how to split a scene, to produce a useful tree.
+In order to create a useful tree from a given scene, we must determine a series of "optimal" splitting points, in order to minimise the size and overlap of resultant boundary boxes.
+
+Unfortunately, as in many areas of computer science, these two criteria cannot both be perfectly optimised at the same time.
+This is where object vs spatial based splits come into play.
+A scene can be split in two ways, using an object-based, or a spatial-based split[^ref12].  
+An object split means splitting a scene based on object boundaries,
+whereas a spatial split, involves splitting based on space alone,
+potentially resulting in a given object being in multiple splits.
+The advantage of an object-based split is the removal of the possibility of objects being "double counted" in splits,
+with the cost of overlapping bounding boxes;
+introducing the need to check multiple bounding boxes to find the nearest triangle.
+On the other hand, spatial splits can result in a more optimal bounding box,
+with the extra cost of double counting objects.
+
+We chose to split our scene using object-based methods,
+as these often involve simpler algorithms, and are best suited for scenes with similarly sized, well-distributed triangles, which fit for the simulation's intended scenes.  
+This meant using a Bounding Volume Hierarchy (BVH) to represent our scene tree.  
+A BVH is a representation of a scene, built through a series of object-based splits,
+resulting in a binary tree, where leaf nodes are objects, and internal nodes are bounding boxes for the aggregation of all it's descending nodes.
+Ray-triangle are then carried out by traversing the tree,
+checking if the ray intersects with a node's bounding box,
+which determines if it's children are checked or discarded.  
+There are a number of decisions involved when building a BVH,
+the first being, how to represent the bounding box of a triangle.
+The most common representations are a sphere or a cuboid (also known as an Axis-Aligned Bounding Box).
+We went with an AABB representation as while the intersection test is more computationally intensive,
+the resultant bounding box is much tighter for most triangles when using an AABB,
+than with a sphere.
+
+Our next decision was what implementation of a BVH would we follow.
+After researching potential implementations, such as, Meister's PLOC[^ref13], or Wald's "binned" approach[^ref14].
+We decided upon a lesser known implementation dubbed "Bonsai"[^ref15].  
+This implementation was chosen for a number of reasons:
+
+1. The implementation was created with the CPU in mind,
+2. The implementation balanced efficient build times, with optimal tree quality, and
+3. The paper kept the implementation vague which allowed us to develop our own algorithm.
+
 ## C Library
 
 As mentioned before, C has no classes or namespaces. Building a library with a clean public interface that hides internals therefore requires deliberate design choices. The following describes the pattern we used to achieve this.
@@ -699,3 +754,11 @@ We were ambitious throughout the duration for this project and had many ideas fo
 [^ref10]: [Reinforcement Learning](https://en.wikipedia.org/wiki/Reinforcement_learning)
 
 [^ref11]: [LiDar](https://en.wikipedia.org/wiki/Lidar)
+
+[^ref12]: [Space Division Algorithms Paper](https://www.cs.ubc.ca/~ksbooth/PUB/docs/JDMacDonald1988.pdf)
+
+[^ref13]: [PLOC Paper](https://meistdan.github.io/publications/ploc/paper.pdf)
+
+[^ref14]: [Binned BVH Paper](https://www.sci.utah.edu/~wald/Publications/2007/ParallelBVHBuild/fastbuild.pdf)
+
+[^ref15]: [Bonsai Paper](https://jcgt.org/published/0004/03/02/paper-lowres.pdf)
