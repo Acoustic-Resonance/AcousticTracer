@@ -469,15 +469,11 @@ Hand-written CSS files worked fine while the project had five components. Once t
 
 Towards the end of the project, after the core features of the frontend had been developed and optimised, the need for a polished UI could no longer be ignored. building these from scratch would have been a significant time investment that we did not have the luxury of. We found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. This approach aligned with our existing Tailwind-based styling and allowed incremental adoption.
 
-### State Mangement
-
-State management went through three distinct phases, each driven by the limitations of the previous approach. These stages are discussed in detail in the State Management section below.
-
 ## The Architecture
 
 ### Feature Orientated Architecture
 
-Roughly two weeks into development, the codebase was restructured from a flat component directory into the **Bulletproof React** pattern, a feature orientated architecture where each major feature is a self-contained directory:
+Roughly two weeks into development, the codebase was restructured from a flat component directory to a feature orientated architecture where each major feature is a self-contained directory:
 
 ```text
 web/src/
@@ -590,9 +586,7 @@ This structure allows for efficient cache invalidation. For example, after creat
 
 ### The Binary Protocol
 
-**Note on AI assistance:** The binary protocol, both the C server code that writes the ATRB format and the TypeScript parser that reads it was developed with the help of AI tooling. We were aware from the early stages of the project that transitioning from JSON to a compact binary format would eventually be necessary, but by the time we reached this stage the project deadline was very close. The format needed to contain sparse voxel indices and energies per frame was defined by us, but the implementation of how those bytes are written on the C side and read on the TypeScript side was AI-assisted. While we relied on AI for this aspect of the project we still made an attempt to understand and incorporate the generated code into our project.
-
-As discussed in the communication standards section, the initial design for the voxel data used JSON. While JSON was easy to understand and parse, the payload sizes for a real simulation (200,000+ voxels with 100,000+ rays) were extremely large. The ATRB binary format replaced it, and on the frontend this binary response is decoded by `parseResultBuffer()`.
+The initial design for the voxel data used JSON. While JSON was easy to understand and parse, the payload sizes for a real simulation (200,000+ voxels with 100,000+ rays) were extremely large. The ATRB binary format replaced it, and on the frontend this binary response is decoded by `parseResultBuffer()`.
 
 ### Simulation Submission
 
@@ -651,7 +645,7 @@ The `SceneCanvas` composes the scene:
 </Canvas>
 ```
 
-The `SceneCanvas` component is responsible for the rendering of the 3D Scene. A `<Canvas>` component initialises the WebGL context and camera. Inside it, a `<Suspense>` boundary that wraps the `<Model>` component, showing a loading indicator that keeps track of loaded and pending data. The `Model` component uses Drei's `useGLTF` to load the `.glb` file and computes a `THREE.Box3` bounding box. This bounding box matches the dimensions of the AABB computed by `AT_scene_create()`, ensuring that the voxel indices in the response map to correct world positions, producing a valid heat map. Finally `<Bounds>` automatically frames the camera around the loaded geometry, allowing us to not have to worry about scale and orientation of uploaded models. The additional **Drei** components, (`OrbitControls`, `Environment`, `GizmoHelper`, `AdaptiveDpr`) provide interaction, lighting, an orientation helper, and automatic resolution scaling for performance. The two main components are conditionally rendered: `<VoxelGrid />` renders only when the bounding box is calculated, the grid toggle is enabled, and the simulation is not awaiting results. Similarly `<SourcePlacer />` renders only the bounds are known, with its controlled by the `isStaging` prop. An example figure is given below showing the final result of these components working in tandem.
+The `SceneCanvas` component is responsible for the rendering of the 3D Scene. A `<Canvas>` component initialises the WebGL context and camera. Inside it, a `<Suspense>` boundary that wraps the `<Model>` component, showing a loading indicator that keeps track of loaded and pending data. The `Model` component uses **Drei's** `useGLTF` to load the `.glb` file and computes a `THREE.Box3` bounding box. This bounding box matches the dimensions of the AABB computed by `AT_scene_create()`, ensuring that the voxel indices in the response map to correct world positions, producing a valid heat map. Finally `<Bounds>` automatically frames the camera around the loaded geometry, allowing us to not have to worry about scale and orientation of uploaded models. The additional **Drei** components, (`OrbitControls`, `Environment`, `GizmoHelper`, `AdaptiveDpr`) provide interaction, lighting, an orientation helper, and automatic resolution scaling for performance. The two main components are conditionally rendered: `<VoxelGrid />` renders only when the bounding box is calculated, the grid toggle is enabled, and the simulation is not awaiting results. Similarly `<SourcePlacer />` renders only the bounds are known, with its controlled by the `isStaging` prop. An example figure is given below showing the final result of these components working in tandem.
 
 ![Scene Example](../assets/images/SceneExample.png){width=70%}
 
@@ -672,23 +666,36 @@ The grid dimensions `nx`, `ny` and `nz` are derived from the scene's bounding bo
 
 #### InstanceMesh Optimisation
 
-When we create an `InstancedMesh`,Three.js allocates a GPU buffer large enough for exactly the number of voxels. This buffer size is fixed at creation time. FOr example if frame 1 has 500 active voxels and frame 2 has 12,000, you can't just dynamically grow the buffer instead we have to destroy the mesh and create a new mesh for each frame, which led to visual flickering of the grid and a massive drop in performance. The solution we came up with was to scan every frame in the simulation result and find the frame with the largest amount of active voxels. The mesh is then allocated that buffer size. This solution led to another optimisation that had to be made, if the buffer size was set to accommodate for 12,000 voxels then at frame 1 when there is only 500 active voxels the question arises how do we hide the 11500 unused voxels? For active voxels we render and position them as normal but for unused voxels we transform their cube geometry to a single point (`mesh.setMatrixAt(i, ZERO_MATRIX)`). The GPU still "draws" these instances, but they produce no pixels, reducing the cost of rendering them to essentially zero.
+When we create an `InstancedMesh`,Three.js allocates a GPU buffer large enough for exactly the number of voxels. This buffer size is fixed at creation time. For example if frame 1 has 500 active voxels and frame 2 has 12,000, you can't just dynamically grow the buffer instead we have to destroy the mesh and create a new mesh for each frame, which led to visual flickering of the grid and a massive drop in performance. The solution we came up with was to scan every frame in the simulation result and find the frame with the largest amount of active voxels. The mesh is then allocated that buffer size. This solution led to another optimisation that had to be made, if the buffer size was set to accommodate for 12,000 voxels then at frame 1 when there is only 500 active voxels the question arises how do we hide the 11500 unused voxels? For active voxels we render and position them as normal but for unused voxels we transform their cube geometry to a single point (`mesh.setMatrixAt(i, ZERO_MATRIX)`). The GPU still "draws" these instances, but they produce no pixels, reducing the cost of rendering them to essentially zero.
 
 ### Source and Direction Markers
 
-The `SourcePlacer` component handles the interactive positioning of the source position and direction markers.
+The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two **Drei** `TransformControls` components to interactively position two markers. A `useFrame` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is commited to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is commited to the store.
+
+
 ## State Mangement
 
-##
+In the early stages of the project all state lived in `useState` and `useEffect` hooks. This worked while the application was small. But as the component tree grew and more components needed access to the same data, we ran into the classic problem of prop drilling: passing state down multiple levels of nested components just so a deeply nested child could read or update it. To prevent prop drilling we switched to using **Zustand**, a lightweight state management library, that provides a store that can be accessed from any component. However we made the mistake of also putting the server data into the Zustand `scene-store`, this meant  for every mutation we made that involved the backend such as creating, deleting or updating a simulation meant we had to manually trigger a refetch and write the fresh data back to the store, which led to UI displaying stale information and numerous bugs. The solution was to use **TanStack Query** to manage all server state and keep **Zustand** for client state.
 
+### Zustand
 
+Zustand retained ownership of everything that is purely local to the browser session such as voxel size, UI toggles, the current playback frame index, and the pending upload file. These values change frequently so a cache-based solution would be unnecessary.
 
-  - Architecture
-  - rendering
-  - storing (state management)
-  - replaying
-  - auth
-  - routing
+### TanStack
+
+TanStack Query manages everything that lives in the Appwrite database or is fetched over the network: the simulation list, individual simulation records, and the parsed ray response binaries. Unlike Zustand's synchronous state, this data can become stale at any moment, another tab could delete a simulation, or the C backend could finish a run while the user is on a different page, TanStack Query is designed to handle exactly this functionability.
+
+## Authentication and Persistent Storage
+
+Authentication and persistent storage are both provided by Appwrite, a Backend-as-a-Service that exposes three clients initialised in `lib/appwrite.ts`.
+
+-`Account` for authentication.
+-`TablesDB` for the simulation database.
+-`Storage` for file uploads.
+
+The `UserProvider` component manages authentication state. It checks for an existing session via `account.get()`. Email/password login, registration, and Google OAuth are exposed through this context. On both login and logout, the provider resets the Zustand SceneStore and clears the TanStack Query cache via `queryClient.clear()` which is then followed by `useSceneStore.getState().reset()` to prevent data from one session leaking to another. Our application of persistent storage serves two purposes, first the user's uploaded `.glb` file is stored in Appwrite storage ready to be reloaded when revisting a saved simulation. Second, the `ATRB` binary result returned by the C backend is uploaded Tanstack Query was then used to fetch and cache the file so on loading a saved simulation the playback would load near instantously.a
+
+All route components are protected by a `ProtectedRoute` layout that checks the current user and redirects to the login page if unauthenticated. The route components are lazily imported so the Scene page, the most peformanceeaviest module, pulling in Three.js, R3F, and Drei is only downloaded when needed.
 
 ## What we would do different
 
