@@ -656,7 +656,7 @@ The frontend has three responsibilities that we discussed and outlined early in 
 
 1. **Configure and submit** — The user uploads a `.glb` room model, sets simulation parameters (voxel size, ray count, FPS, surface material), and interactively places a sound source by adjusting its position inside the 3D scene. The configuration is sent to the C backend as JSON matching the communication standard defined earlier.
 
-2. **Decode and store** — Initially the C backend returned its result in JSON format, but due to performance limitations we had to implement serialization instead.. The frontend de-serializes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instant.
+2. **Decode and store** — Initially the C backend returned its result in JSON format, but due to performance limitations we had to implement serialization instead.The frontend de-serializes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instant.
 
 3. **Render and replay** — The decoded frames are visualised as a 3D voxel heat map overlaid on the room model. Consider a modest room of 8m × 5m × 5m with a voxel size of 0.1m, that produces 80 x 50 x 50 = 200,000 voxels, and a typical simulation might fire 100,000 rays. Each of those 200,000 voxels requires per-frame position and colour updates at the configured frame rate. These are not even worst-case scenario numbers, yet the frontend needed to be able to provide a smooth and interactive experience.
 
@@ -666,29 +666,15 @@ Before delving into the architectural design and implementation, this subsection
 
 #### React
 
-React was chosen as the UI framework because the frontend developer had invested time developing skills with it before and during the early stages of the project, completing Scrimba's introductory course and the majority of the advanced React courses, as well as their TypeScript course. That preparation provided enough fluency with React's component model, hooks, and ecosystem to be productive from the first week.
+React was chosen as the UI framework because a significant amount of time had been invested into developing skills with it before and during the early stages of the project, completing Scrimba's introductory course and the majority of the advanced React course.That preparation provided enough fluency with React's component model, hooks, and ecosystem to be productive from the first week.
 
 #### TypeScript
 
-The initial skeleton was plain JavaScript. It quickly became apparent that JavaScript alone would not be sufficient, the project was hitting runtime crashes caused by misspelled prop names and `undefined` values propagating silently through the component tree, bugs that TypeScript's structural type system catches at compile time. The frontend developer invested time during the first three weeks of development learning TypeScript alongside developing the codebase.
+The initial skeleton was plain JavaScript. It quickly became apparent that JavaScript alone would not be sufficient, the project was hitting runtime crashes caused by misspelled prop names and `undefined` values propagating silently through the component tree, bugs that TypeScript's structural type system catches at compile time. Time was invested during the first three weeks of development learning TypeScript alongside developing the codebase.
 
 ### Tailwind CSS
 
 Hand-written CSS files worked fine while the project had five components. Once that count reached fifteen, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behaviour, and structure are all visible in a single file. Tailwind v4's CSS-native `@theme` directives allowed us to define project-wide design tokens directly in `index.css`.
-
-```css
-@import "tailwindcss";
-
-@theme {
-  --color-bg-primary: #2d2d39;
-  --color-bg-card: #282833;
-  --color-text-primary: #ffffff;
-  --color-accent: #fbbf24;
-  --color-button-primary: #4f46e5;
-  --color-danger: #f87171;
-  --color-success: #34d399;
-}
-```
 
 ### UI Design
 
@@ -698,7 +684,7 @@ Towards the end of the project, after the core features of the frontend had been
 
 ### Feature Orientated Architecture
 
-Roughly two weeks into development, the codebase was restructured from a flat component directory to a feature orientated architecture where each major feature is a self-contained directory:
+Roughly two weeks into development, the codebase was restructured from a flat component directory to a feature orientated architecture[^ref20] where each major feature is a self-contained directory:
 
 ```text
 web/src/
@@ -792,23 +778,6 @@ export const simulationRepo = {
 
 This means the entire Appwrite SDK could be replaced without changing a single component file, and a database schema change requires updating only the contract type and the mapper. The repository is accessed exclusively through TanStack Query hooks (`useSimulationsList`, `useSimulationDetail`, `useCreateSimulation`, etc.) that are re-exported through `api/simulations.ts`.
 
-### Query Keys and Caching
-
-TanStack Query uses structured keys defined in `query-keys.ts` to manage caching and invalidation:
-
-```typescript
-export const simulationKeys = {
-  all:           ["simulations"] as const,
-  lists:         (userID?: string) => [...simulationKeys.all, "list", userID] as const,
-  details:       () => [...simulationKeys.all, "detail"] as const,
-  detail:        (id: string) => [...simulationKeys.details(), id] as const,
-  rayResponses:  () => [...simulationKeys.all, "rayResponse"] as const,
-  rayResponse:   (fileId: string) => [...simulationKeys.rayResponses(), fileId] as const,
-};
-```
-
-This structure allows for efficient cache invalidation. For example, after creating a simulation, calling `invalidateQueries()`, **refetches** the list without disturbing cached detail queries or ray responses.
-
 ### Simulation Submission
 
 When the user submits a simulation, the `useSceneActions` performs the following actions:
@@ -836,9 +805,15 @@ The third layer is **Drei**, a companion library of pre-built R3F components and
 - `Bounds` - for automatic camera framing around the model.
 - `useGLTF` - for loading `.glb` files.
 - `TransformControls` - for the source placement gizmos.
-- `Environment` - for scene lighting,
+- `Environment` - for scene lighting.
 
-The abstraction provided by these three libraries was essential to completing this project. Three.js abstracted WebGL code into objects and methods we could deal with, R3F abstracted Three.js into React components we already knew how to deal with, and Drei abstracted common 3D patterns into single-line imports. The 3D rendering was by far the most technically demanding aspect of the frontend, and without this layer of abstractions it would not have been possible within the project's timeframe to implement the core features we wanted for the frontend.
+The abstraction provided by these three libraries was essential to completing this project.
+
+- Three.js abstracted WebGL code into objects and methods we could deal with.
+- R3F abstracted the Three.js API into React components we were familiar with
+- Drei abstracted common 3D patterns into single-line imports.
+
+The 3D rendering was by far the most technically demanding aspect of the frontend, and without this layer of abstractions it would not have been possible within the project's timeframe to implement the core features we wanted for the frontend.
 
 ### The Components
 
@@ -889,9 +864,23 @@ The grid dimensions `nx`, `ny` and `nz` are derived from the scene's bounding bo
 
 When we create an `InstancedMesh`,Three.js allocates a GPU buffer large enough for exactly the number of voxels. This buffer size is fixed at creation time. For example if frame 1 has 500 active voxels and frame 2 has 12,000, you can't just dynamically grow the buffer instead we have to destroy the mesh and create a new mesh for each frame, which led to visual flickering of the grid and a massive drop in performance. The solution we came up with was to scan every frame in the simulation result and find the frame with the largest amount of active voxels. The mesh is then allocated that buffer size. This solution led to another optimisation that had to be made, if the buffer size was set to accommodate for 12,000 voxels then at frame 1 when there is only 500 active voxels the question arises how do we hide the 11500 unused voxels? For active voxels we render and position them as normal but for unused voxels we transform their cube geometry to a single point (`mesh.setMatrixAt(i, ZERO_MATRIX)`). The GPU still "draws" these instances, but they produce no pixels, reducing the cost of rendering them to essentially zero.
 
-### Source and Direction Markers
+## Source and Direction Markers
 
-The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two **Drei** `TransformControls` components to interactively position two markers. A `useFrame` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is commited to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is commited to the store.
+The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two **Drei** `TransformControls` components to interactively position two markers. A `useFrame` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is committed to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is commited to the store.
+
+## Config Panel
+
+The `ConfigPanel` is the primary interface through which the user configures the simulation before submitting it. It reads from and writes to the Zustand `SceneStore`, meaning that every change the user makes is immediately reflected in the `SceneCanvas`. For example: when the user adjusts the voxel size slider, the `VoxelGrid` re-renders with the new resolution in real time; when they select a different material, the value is written to the store and later included in the JSON payload sent to the C backend.
+
+The panel exposes five controls during the staging phase:
+
+- Voxel size.
+- Surface material.
+- Number of rays.
+- FPS.
+- Ability to replace the loaded model.
+
+The voxel size slider is worth noting in particular. Rather than allowing the user to drag to any arbitrary floating point value, the panel pre-computes the set of discrete voxel sizes at which the grid dimensions actually change. This prevents the user from dragging through a range of values that all produce the same grid, which would be confusing. The panel also displays the resulting voxel count in real time, warning the user if the count exceeds 500,000 — a threshold beyond which performance may degrade. Additionally, three visual toggles: grid visibility, texture, and wireframe, allowing the user to control how the model is displayed, making it easier to inspect the geometry and verify source placement before committing to a run. When viewing a completed simulation these staging controls are hidden, and the panel displays the read-only configuration and visual toggles.
 
 ## State Mangement
 
@@ -905,15 +894,40 @@ Zustand retained ownership of everything that is purely local to the browser ses
 
 TanStack Query manages everything that lives in the Appwrite database or is fetched over the network: the simulation list, individual simulation records, and the parsed ray response binaries. Unlike Zustand's synchronous state, this data can become stale at any moment, another tab could delete a simulation, or the C backend could finish a run while the user is on a different page, TanStack Query is designed to handle exactly this functionability.
 
-## Authentication and Persistent Storage
+### Query Keys and Caching
 
-Authentication and persistent storage are both provided by Appwrite, a Backend-as-a-Service that exposes three clients initialised in `lib/appwrite.ts`.
+TanStack Query identifies every piece of cached data by a structured key. Rather than using flat strings, we defined a key structure in `query-keys.ts` that builds nested arrays:
+
+```typescript
+export const simulationKeys = {
+  all:           ["simulations"] as const,
+  lists:         (userID?: string) => [...simulationKeys.all, "list", userID] as const,
+  details:       () => [...simulationKeys.all, "detail"] as const,
+  detail:        (id: string) => [...simulationKeys.details(), id] as const,
+  rayResponses:  () => [...simulationKeys.all, "rayResponse"] as const,
+  rayResponse:   (fileId: string) => [...simulationKeys.rayResponses(), fileId] as const,
+};
+```
+
+The hierarchy is the key design decision here. Every key begins with the root `["simulations"]`, then branches into more specific paths. After creating a new simulation, calling `invalidateQueries()` marks every simulation-related cache entry as stale, triggering a background refetch for whichever queries are currently cached. It is worth noting that ray responses receive special treatment. A completed simulation's binary result never changes, so the `useRayResponse` hook is configured with `staleTime: Infinity`, meaning once parsed, the data is retrieved from memory on every subsequent visit without a refetch from the backend. This is what makes revisiting a saved simulation feel instantaneous.
+
+## Appwrite
+
+### Authentication
+
+Authentication is provided by Appwrite, we use three clients provided by appwrite that are initialised in `lib/appwrite.ts`:
 
 - `Account` for authentication.
 - `TablesDB` for the simulation database.
 - `Storage` for file uploads.
 
-The `UserProvider` component manages authentication state. It checks for an existing session via `account.get()`. All route components are protected by a `ProtectedRoute` layout that checks the current user and redirects to the login page if unauthenticated. Email/password login, registration, and Google OAuth are exposed through this context. On both login and logout, the provider resets the Zustand SceneStore and clears the TanStack Query cache via `queryClient.clear()` which is then followed by `useSceneStore.getState().reset()` to prevent data from one session leaking to another. Our application of persistent storage serves two purposes, first the user's uploaded `.glb` file is stored in Appwrite storage ready to be reloaded when revisting a saved simulation. Second, the `ATRB` binary result returned by the C backend is uploaded Tanstack Query was then used to fetch and cache the file so on loading a saved simulation the playback would load near instantously.
+The `UserProvider` component manages authentication state. It checks for an existing session via `account.get()`. All route components are protected by a `ProtectedRoute` layout that checks the current user and redirects to the login page if unauthenticated. Email/password login, registration, and Google OAuth are exposed through this context. On both login and logout, the provider resets the Zustand SceneStore and clears the TanStack Query cache via `queryClient.clear()` which is then followed by `useSceneStore.getState().reset()` to prevent data from one session leaking to another.
+
+### Persistent Storage
+
+Our application of persistent storage serves two purposes, first the user's uploaded `.glb` file is stored in Appwrite storage ready to be reloaded when revisting a saved simulation. Second, the `ATRB` binary result returned by the C backend is uploaded to the same bucket as the `.glb` file. The database record that corrosponds to a simulation links both files by their IDs (`inputFileId` and `resultFileId`), allowing for efficient retrieval and deletion of simulations from the storage bucket and database.
+
+## Conclusion
 
 ## What we would do different
 
@@ -1002,3 +1016,5 @@ We were ambitious throughout the duration for this project and had many ideas fo
 [^ref18]: [Quake III fast inverse square root](https://en.wikipedia.org/wiki/Fast_inverse_square_root)
 
 [^ref19]: [Amanatides and Woo DDA Visualisation](https://m4xc.dev/articles/amanatides-and-woo/)
+
+[^ref20]: [Bulletproof React](https://github.com/alan2207/bulletproof-react)
