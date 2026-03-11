@@ -1,4 +1,4 @@
-report.pdf: report.md header.yaml
+default: report.md header.yaml
 	pandoc header.yaml report.md -o report.pdf --pdf-engine=pdflatex
 
 numbered: report.pdf header.yaml
