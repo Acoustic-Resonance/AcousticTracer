@@ -21,11 +21,10 @@ if [[ ! -x "$(command -v npm)" ]]; then
     exit 1
 fi
 
-# run web server
-cd web
-(npm i && npm run dev) &
-
 # run raytracer endpoint
-cd ../build
-cmake .. -DDEV_FILE=test_net.c -DUSE_DEBUG_RAYLIB=ON && make && ./at
+cd build
+cmake .. -DDEV_FILE=test_net.c -DUSE_DEBUG_RAYLIB=ON && make && ./at &
 
+# run web server
+cd ../web
+npm i && npm run dev
