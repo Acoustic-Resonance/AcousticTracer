@@ -261,9 +261,9 @@ This implementation was chosen for a number of reasons:
 
 Our implementation of the Bonsai algorithm is not a one-to-one replica,
 as no official pseudo-code could be found.
-As such we relied on the paper's technical description along with previous BVH knowledge from reading other implementation pseudo-code.
+Therefore, we relied on the paper's technical description along with previous BVH knowledge from reading other implementation pseudo-code.
 
-The _original_ Bonsai algorithm is composed of 5 steps:
+The _original_ Bonsai algorithm is composed of the following 5 steps:
 
 1. Compute the midpoint of each triangle,
 2. Split the triangles into smaller groups based on their midpoints,
@@ -272,7 +272,7 @@ The _original_ Bonsai algorithm is composed of 5 steps:
 5. Merge all mini trees into a singular BVH entity.
 
 Our implementation closely follows the first three steps, but diverges from there;
-as such, we will briefly discuss each step, but only go further into detail on the relevant steps.
+we will briefly discuss each step, but only go further into detail on the relevant steps.
 
 ## C Library
 
