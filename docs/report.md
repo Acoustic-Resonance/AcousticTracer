@@ -690,9 +690,17 @@ The `SourcePlacer` component handles the interactive positioning of the source p
   - auth
   - routing
 
-- What we would do different (ODEON)
-- Lessons learned
-- Future Feature Plans
+## What we would do different
+
+If we were to begin this project again, there are a number of design decisions we would revisit.
+
+**Beam Tracing**. Our ray tracing implementation is stochastic, meaning that early specular reflections may be missed or under-sampled at lower ray counts. Beam tracing addresses this by expanding each ray into a volumetric beam covering a solid angle of space, guaranteeing that all specular reflection paths within that angle are found exactly rather than approximated. A hybrid approach, beam tracing for the first few orders of specular reflection, then stochastic ray tracing for the diffuse late reverberation, is the architecture used by tools like ODEON [^ref6] and is identified by Savioja and Svensson as the dominant pattern in modern room acoustic simulation [^ref16]. Incorporating this would have produced more reliable results at lower ray counts, directly reducing computation time.
+ 
+## Lessons learned
+
+
+
+## Future Feature Plans
 
 We were ambitious throughout the duration for this project and had many ideas for features we wished to implement along the way. However, due to the time constraint of the project we were not able to finish every feature we had set our eyes on. We will continue to work on this project after the deadline as it is something we are each proud of and passionate about. Some features we wished to add include:
 
@@ -753,3 +761,5 @@ We were ambitious throughout the duration for this project and had many ideas fo
 [^ref14]: [Binned BVH Paper](https://www.sci.utah.edu/~wald/Publications/2007/ParallelBVHBuild/fastbuild.pdf)
 
 [^ref15]: [Bonsai Paper](https://jcgt.org/published/0004/03/02/paper-lowres.pdf)
+
+[^ref16]: [Overview of geometrical room acoustic modeling technique](https://pubs.aip.org/asa/jasa/article/138/2/708/917382/Overview-of-geometrical-room-acoustic-modeling)
