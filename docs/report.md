@@ -683,7 +683,6 @@ When we create an `InstancedMesh`,Three.js allocates a GPU buffer large enough f
 
 The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two **Drei** `TransformControls` components to interactively position two markers. A `useFrame` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is commited to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is commited to the store.
 
-
 ## State Mangement
 
 In the early stages of the project all state lived in `useState` and `useEffect` hooks. This worked while the application was small. But as the component tree grew and more components needed access to the same data, we ran into the classic problem of prop drilling: passing state down multiple levels of nested components just so a deeply nested child could read or update it. To prevent prop drilling we switched to using **Zustand**, a lightweight state management library, that provides a store that can be accessed from any component. However we made the mistake of also putting the server data into the Zustand `scene-store`, this meant  for every mutation we made that involved the backend such as creating, deleting or updating a simulation meant we had to manually trigger a refetch and write the fresh data back to the store, which led to UI displaying stale information and numerous bugs. The solution was to use **TanStack Query** to manage all server state and keep **Zustand** for client state.
@@ -705,7 +704,6 @@ Authentication and persistent storage are both provided by Appwrite, a Backend-a
 -`Storage` for file uploads.
 
 The `UserProvider` component manages authentication state. It checks for an existing session via `account.get()`. All route components are protected by a `ProtectedRoute` layout that checks the current user and redirects to the login page if unauthenticated. Email/password login, registration, and Google OAuth are exposed through this context. On both login and logout, the provider resets the Zustand SceneStore and clears the TanStack Query cache via `queryClient.clear()` which is then followed by `useSceneStore.getState().reset()` to prevent data from one session leaking to another. Our application of persistent storage serves two purposes, first the user's uploaded `.glb` file is stored in Appwrite storage ready to be reloaded when revisting a saved simulation. Second, the `ATRB` binary result returned by the C backend is uploaded Tanstack Query was then used to fetch and cache the file so on loading a saved simulation the playback would load near instantously.
-
 
 ## What we would do different
 
