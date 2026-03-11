@@ -244,6 +244,21 @@ This implementation was chosen for a number of reasons:
 2. The implementation balanced efficient build times, with optimal tree quality, and
 3. The paper kept the implementation vague which allowed us to develop our own algorithm.
 
+Our implementation of the Bonsai algorithm is not a one-to-one replica,
+as no official pseudo-code could be found.
+As such we relied on the paper's technical description along with previous BVH knowledge from reading other implementation pseudo-code.
+
+The _original_ Bonsai algorithm is composed of 5 steps:
+
+1. Compute the midpoint of each triangle,
+2. Split the triangles into smaller groups based on their midpoints,
+3. Generate mini BVH trees based on triangle groups,
+4. Prune mini trees to find better optimised subtrees,
+5. Merge all mini trees into a singular BVH entity.
+
+Our implementation closely follows the first three steps, but diverges from there;
+as such, we will briefly discuss each step, but only go further into detail on the relevant steps.
+
 ## C Library
 
 As mentioned before, C has no classes or namespaces. Building a library with a clean public interface that hides internals therefore requires deliberate design choices. The following describes the pattern we used to achieve this.
