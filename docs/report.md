@@ -695,14 +695,10 @@ The `SourcePlacer` component handles the interactive positioning of the source p
 If we were to begin this project again, there are a number of design decisions we would revisit.
 
 **Beam Tracing**. Our ray tracing implementation is stochastic, meaning that early specular reflections may be missed or under-sampled at lower ray counts. Beam tracing addresses this by expanding each ray into a volumetric beam covering a solid angle of space, guaranteeing that all specular reflection paths within that angle are found exactly rather than approximated. A hybrid approach, beam tracing for the first few orders of specular reflection, then stochastic ray tracing for the diffuse late reverberation, is the architecture used by tools like ODEON [^ref6] and is identified by Savioja and Svensson as the dominant pattern in modern room acoustic simulation [^ref16]. Incorporating this would have produced more reliable results at lower ray counts, directly reducing computation time.
- 
-## Lessons learned
 
+## Conclusion and Future Plans
 
-
-## Future Feature Plans
-
-We were ambitious throughout the duration for this project and had many ideas for features we wished to implement along the way. However, due to the time constraint of the project we were not able to finish every feature we had set our eyes on. We will continue to work on this project after the deadline as it is something we are each proud of and passionate about. Some features we wished to add include:
+Some features we wished to add include:
 
 **Multiple Source Selection on the Front-End Web Application** We have included support for multiple sources in our core library, with the user able to specify an arbitrary number of sources and pass them as an array into the scene configuration. However, due to the time constraint we were unable to implement this functionality in the front-end application. This would have been quite the spectacle in the final demonstration.
 
@@ -710,27 +706,7 @@ We were ambitious throughout the duration for this project and had many ideas fo
 
 **LiDar Scanning for 3D Environment [^ref11]** Similar to the genetic algorithm for Machine Learning, we wished to include a hardware inspired element for our project. We thought of using a LiDar scanner (a detection system which works on the principle of radar, but uses light from a laser), sometimes found in modern smartphone devices, to allow a user to scan their environment, then upload to our software. However this approach came with many caveats for its implementation. Firstly, high quality LiDar scanners are extremely expensive, and were not readily available to us during this project. The LiDar scanner in select mobile phones (most recent Pro and Pro Max models of the iPhone), is not exposed heavily to the end user, and is used internally. Additionally its quality is inferior to the more expensive devices, which causes the environment scanned during its use to be much more 'noisy' and would require a high level of post-processing or smoothing to turn into a usable model. Methods to expose the LiDar functionality do exist, but require a payment subscription or limited free-tier usage. We decided that this method was infeasible to us, along with the end user, and thus decided to go with the 3D modelling approach, which is much more user friendly and accessible.
 
-- Conclusions
-- references
-
-### C
-
-- Implementation
-  - Two phase simulation:
-    - Rays
-      - Moller-Trumbmore alg, linked list/tree structure of rays, absorption...
-    - Voxels
-      - DDA, energy bins design, voxel grid, attenuation...
-- Design choices (c library)
-  - at.h, opaque API, at_internal.h, returning AT_Result...
-- Optimisation
-
-- API comms (both, potent split into two sections)
-  - bins
-
-## References
-
-<!-- TODO: auto add citations using bibtex and citeproc -->
+We were ambitious throughout the duration for this project and had many ideas for features we wished to implement along the way. However, due to the time constraint of the project we were not able to finish every feature we had set our eyes on. We will continue to work on this project after the deadline as it is something we are each proud of and passionate about. We believe we have demonstrated a unique view on an intriguing area of research.
 
 [^ref1]: [Möller-Trumbore Intersection Algorithm](https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm)
 
