@@ -431,7 +431,7 @@ The frontend has three responsibilities that we discussed and outlined early in 
 
 1. **Configure and submit** — The user uploads a `.glb` room model, sets simulation parameters (voxel size, ray count, FPS, surface material), and interactively places a sound source by adjusting its position inside the 3D scene. The configuration is sent to the C backend as JSON matching the communication standard defined earlier.
 
-2. **Decode and store** — Initially the C backend returns results in JSON format but due to performance limitations we had incorporate a custom `ATRB` (Acoustic Tracer Result Binary) binary format. The frontend decodes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instant.
+2. **Decode and store** — Initially the C backend returned its result in JSON format, but due to performance limitations we had to implement serialization instead.. The frontend de-serializes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instant.
 
 3. **Render and replay** — The decoded frames are visualised as a 3D voxel heat map overlaid on the room model. Consider a modest room of 8m × 5m × 5m with a voxel size of 0.1m, that produces 80 x 50 x 50 = 200,000 voxels, and a typical simulation might fire 100,000 rays. Each of those 200,000 voxels requires per-frame position and colour updates at the configured frame rate. These are not even worst-case scenario numbers, yet the frontend needed to be able to provide a smooth and interactive experience.
 
@@ -449,7 +449,7 @@ The initial skeleton was plain JavaScript. It quickly became apparent that JavaS
 
 ### Tailwind CSS
 
-Hand-written CSS files worked fine while the project had five components. Once that count reached fifteen, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behavior, and structure are all visible in a single file. Tailwind v4's CSS-native `@theme` directives allowed us to define project-wide design tokens directly in `index.css`.
+Hand-written CSS files worked fine while the project had five components. Once that count reached fifteen, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behaviour, and structure are all visible in a single file. Tailwind v4's CSS-native `@theme` directives allowed us to define project-wide design tokens directly in `index.css`.
 
 ```css
 @import "tailwindcss";
@@ -583,10 +583,6 @@ export const simulationKeys = {
 ```
 
 This structure allows for efficient cache invalidation. For example, after creating a simulation, calling `invalidateQueries()`, **refetches** the list without disturbing cached detail queries or ray responses.
-
-### The Binary Protocol
-
-The initial design for the voxel data used JSON. While JSON was easy to understand and parse, the payload sizes for a real simulation (200,000+ voxels with 100,000+ rays) were extremely large. The ATRB binary format replaced it, and on the frontend this binary response is decoded by `parseResultBuffer()`.
 
 ### Simulation Submission
 
