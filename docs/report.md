@@ -233,7 +233,22 @@ the first being, how to represent the bounding box of a triangle.
 The most common representations are a sphere or a cuboid (also known as an Axis-Aligned Bounding Box).
 We went with an AABB representation as while the intersection test is more computationally intensive,
 the resultant bounding box is much tighter for most triangles when using an AABB,
-than with a sphere.
+than with a sphere.  
+We kept the definition of an AABB simple:
+
+```C
+typedef struct {
+    AT_Vec3 min, max;
+    AT_Vec3 midpoint;
+    float SA;
+} AT_AABB;
+```
+
+It features two three-dimensional vectors to represent the minimum value for the objects `x`, `y`, and `z` points,
+and vice versa for the `max` field.
+The AABB also features a third vector, and a float,
+representing the midpoint, and the surface area of the AABB, respectively.
+These later two fields will be used in the BVH algorithm and so will be explained later.
 
 Our next decision was what implementation of a BVH would we follow.
 After researching potential implementations, such as, Meister's PLOC[^ref13], or Wald's "binned" approach[^ref14].
