@@ -274,6 +274,64 @@ The _original_ Bonsai algorithm is composed of the following 5 steps:
 Our implementation closely follows the first three steps, but diverges from there;
 we will briefly discuss each step, but only go further into detail on the relevant steps.
 
+#### Triangle arrays
+
+Before the implementation can be discussed,
+our representation of a scene's list of triangles must be made clear.
+
+```C
+typedef unsigned int *AT_TriArray;
+
+typedef struct {
+    AT_Triangle *triangles_db;
+    AT_TriArray *arrs;
+} AT_TriangleArrays;
+```
+
+These two definitions are crucial in the implementation of our BVH.
+The type `AT_TriArray` is simply a pointer to an `unsigned int`,
+which is being used as the start of an array of `unsigned int`,
+representing indices of triangles.[^foot1]
+
+[^foot1]: Initially, each triangle group, and mini tree held an `AT_Triangle` pointer,
+which represented that grouping's start in the global array of triangles.
+This quickly introduced memory issues and so was later changed to arrays of indices.
+
+The `AT_TriangleArrays` struct was implemented as a way to group the original array of triangles,
+and the four arrays of triangle indices, these arrays being:
+
+1. The triangles sorted on the `x` axis,
+2. The triangles sorted on the `y` axis,
+3. The triangles sorted on the `z` axis,
+4. The triangles in the order they were read from the scene.
+
+**N.B.** Each array contains the same indices,
+with only the ordering they are found in differing.
+This allows the same "window" into all array to be defined by only a start index and the number of triangles.
+This concept is integral to the implementation of our triangle groups and later BVH tree.
+
+The $i^{th}$ index in a given array is the index of a triangle in the array of triangles,
+where the resultant triangle is the $i^{th}$ triangle when sorted based on the relevant predicate.
+This caused significant verbosity when trying to access a given triangle,
+and so a macro was developed to reduce complexity without increasing stack calls.
+
+The final piece in the implementation for triangle arrays is what is meant by partitioning an `AT_TriArray`.  
+Our initial approach was to use a stable partitioning scheme;
+based on the given partition point and number of items to the left,
+move all triangles left or the point to the start of the array,
+and all right to the right starting at the index `num_left`.
+<!-- TODO: potentially remove this O(n) sentence -->
+This was an $O(n)$ approach which was beneficial as arrays are partitioned hundreds of thousands of times in a real-world scene.  
+Unfortunately, this approach was flawed in that, if multiple triangles equalled the splitting point,
+the order in which they would be placed on the left and right was based on the original array's order,
+which resulted in array windows "de-syncing" from each other, and memory being overwritten.
+
+The partitioning scheme was replaced by a simple marking algorithm.
+We iterate through the axis being split upon, marking any triangles that should be on the left;
+then the other three arrays are iterated through moving triangles left and right based on markings.  
+In theory, this slowed down our $O(n)$ solution as we now had to iterate through 4 arrays as opposed to only the 3 being partitioned,
+but thankfully this wasn't a substantial performance decrease in practice.
+
 ## C Library
 
 As mentioned before, C has no classes or namespaces. Building a library with a clean public interface that hides internals therefore requires deliberate design choices. The following describes the pattern we used to achieve this.
