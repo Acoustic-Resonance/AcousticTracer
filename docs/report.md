@@ -1004,6 +1004,21 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | Persistent Storage                                                          |
 |             | Dashboard                                                                   |
 |             | Playback Controls                                                           |
+| \hline      |                                                                             |
+| Eoghan      | C Library Documentation                                                     |
+|             | Model Test Scenes                                                           |
+|             | C API Communication Standard                                                |
+|             | Ray Reflection                                                              |
+|             | AABB Implementation                                                         |
+|             | Triangle Arrays Implementation                                              |
+|             | Scene Splitting                                                             |
+|             | Triangle Groups Design and Implementation                                   |
+|             | Triangle Array Sorting and Partitioning Algorithms                          |
+|             | BVH Struct and Implementation Design                                        |
+|             | SAH Implementation                                                          |
+|             | Mini Tree Implementation                                                    |
+|             | AABB, Triangle Groups, & BVH Tests                                          |
+
 
 [^ref1]: [Möller-Trumbore Intersection Algorithm](https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm)
 
