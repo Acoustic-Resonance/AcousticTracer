@@ -935,10 +935,11 @@ Some features we wished to add include:
 We were ambitious throughout the duration for this project and had many ideas for features we wished to implement along the way. However, due to the time constraint of the project we were not able to finish every feature we had set our eyes on. We will continue to work on this project after the deadline as it is something we are each proud of and passionate about. We believe we have demonstrated a unique view on an intriguing area of research.
 
 ## Contributors Table
+
 | Contributor | Task                                                                        |
 | ----------- | --------------------------------------------------------------------------- |
 | Alex        | C Library Design and Specification                                          |
-|             | Model Creation and Parsing using `cgltf` Library                              |
+|             | Model Creation and Parsing using `cgltf` Library                            |
 |             | Error Handling                                                              |
 |             | Ray Tree Design, Traversal, and Implementation                              |
 |             | Ray Model Intersection                                                      |
@@ -949,25 +950,23 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | User Flow & User Experience                                                 |
 |             | Visualisation Replay Feature                                                |
 |             | Ray and Voxel Data Optimization                                             |
-|             | Ray, Model, & Networking Tests                                                |
+|             | Ray, Model, & Networking Tests                                              |
 
-
-| | |
+|             |                                                                             |
 | Patryk      | C Library Design and Specification                                          |
 |             | Scene and Simulation struct design and implementation                       |
 |             | Ray struct design and private ray functions                                 |
 |             | Ray-triangle intersection algorithm                                         |
 |             | Voxel struct design                                                         |
-|             | DDA (Digital Differential Analyser) 3D voxel traversal                     |
+|             | DDA (Digital Differential Analyser) 3D voxel traversal                      |
 |             | Distance attenuation (inverse square law)                                   |
-|             | Sound energy distribution per voxel segment length                         |
-|             | Utility functions                                |
-|             | Ray termination logic                                      |
+|             | Sound energy distribution per voxel segment length                          |
+|             | Utility functions                                                           |
+|             | Ray termination logic                                                       |
 |             | Material scattering (cosine hemisphere sampling)                            |
 |             | Air absorption modelling                                                    |
 |             | Vector and math helper functions                                            |
 |             | Simulation and voxel unit tests                                             |                                      |
-
 
 [^ref1]: [Möller-Trumbore Intersection Algorithm](https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm)
 
