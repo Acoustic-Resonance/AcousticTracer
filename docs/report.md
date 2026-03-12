@@ -684,7 +684,7 @@ Towards the end of the project, after the core features of the frontend had been
 
 ### Feature Orientated Architecture
 
-Roughly two weeks into development, the codebase was restructured from a flat component directory to a feature orientated architecture[^ref20] where each major feature is a self-contained directory:
+The codebase was restructured from a flat component directory to a feature orientated architecture[^ref20] where each major feature is a self-contained directory:
 
 ```text
 web/src/
@@ -723,6 +723,10 @@ The application's provider stack is composed in `provider.tsx`:
 2. **Suspense** - displays a loading spinner while any descendant component suspends (e.g., during lazy-loaded route fetching).
 3. **QueryClientProvider** - makes the TanStack Query cache available to all descendants.
 4. **UserProvider** - initialises authentication state. On login and logout, it resets the Zustand SceneStore and clears the TanStack Query cache to prevent data leakage between sessions.
+
+### Routing and Protected Routes
+
+Client-side routing is handled by **React Router**, using `createBrowserRouter` to define the full route tree. Every route component is lazy-loaded so the browser only downloads the JavaScript for a page when the user first navigates to it. Each route is also wrapped in its own `ErrorBoundary` so that a crash on one page does not affect the entire application. The home page is public but renders differently depending on whether the user is logged in. The authentication, `/login` and `/register` are also public and accessible without a session. A catch-all route renders a 404 page with a link back to the home page. The protected routes, the `/dashboard`, `/scene`, and `/settings`are nested under a `ProtectedRoute` layout component. This component reads the current user from the `UserProvider` context. If no session exists, the user is redirected to the home page, only when an authenticated session is confirmed does the component render its child routes.
 
 ## The Data Layer
 
@@ -866,6 +870,8 @@ When we create an `InstancedMesh`,Three.js allocates a GPU buffer large enough f
 
 The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two **Drei** `TransformControls` components to interactively position two markers. A `useFrame` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is committed to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is commited to the store.
 
+### Addiontal Key Components
+
 ## Config Panel
 
 The `ConfigPanel` is the primary interface through which the user configures the simulation before submitting it. It reads from and writes to the Zustand `SceneStore`, meaning that every change the user makes is immediately reflected in the `SceneCanvas`. For example: when the user adjusts the voxel size slider, the `VoxelGrid` re-renders with the new resolution in real time; when they select a different material, the value is written to the store and later included in the JSON payload sent to the C backend.
@@ -879,6 +885,14 @@ The panel exposes five controls during the staging phase:
 - Ability to replace the loaded model.
 
 The voxel size slider is worth noting in particular. Rather than allowing the user to drag to any arbitrary floating point value, the panel pre-computes the set of discrete voxel sizes at which the grid dimensions actually change. This prevents the user from dragging through a range of values that all produce the same grid, which would be confusing. The panel also displays the resulting voxel count in real time, warning the user if the count exceeds 500,000 — a threshold beyond which performance may degrade. Additionally, three visual toggles: grid visibility, texture, and wireframe, allowing the user to control how the model is displayed, making it easier to inspect the geometry and verify source placement before committing to a run. When viewing a completed simulation these staging controls are hidden, and the panel displays the read-only configuration and visual toggles.
+
+## Dashboard
+
+The `Dashboard` is the central hub for managing all of the user's simulations. It presents every simulation the user has created in a tabular layout. Clicking any row navigates directly to that simulation's scene view. Each simulation row displays a colour-coded status badge: green for completed, red for failed, and yellow for pending (currently running on the C backend). These badges provide an at-a-glance overview of the user's simulation history. The dashboard also handles three distinct empty states. While data is loading, a spinner is displayed. If the fetch fails, an error message with a retry button is shown. If the user has no simulations, a prompt with a "New Simulation" button encourages them to create their first one. This same button is also available in the page header at all times.
+
+## Playback Controls
+
+Once a simulation has completed and its binary result has been parsed, the playback controls appear as a floating toolbar at the bottom of the scene canvas. These controls allow the user to step through the voxel heat map frame by frame, replaying how sound energy propagated through the environment over time. The interval reads the current frame index directly from the Zustand store, avoiding a re-render on every frame tick. The frame slider is a standard range input spanning from frame zero to the final frame. Dragging the slider manually updates the frame index and pauses any active playback, giving the user direct control over the timeline. The frame counter beside it displays the current index and total frame count.
 
 ## State Mangement
 
@@ -966,7 +980,25 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | Material scattering (cosine hemisphere sampling)                            |
 |             | Air absorption modelling                                                    |
 |             | Vector and math helper functions                                            |
-|             | Simulation and voxel unit tests                                             |                                      |
+|             | Simulation and voxel unit tests                                             |
+| | |
+| Michael     | Frontend Architecture                                                       |
+|             | UI Design                                                                   |
+|             | TanStack Query Integration                                                  |
+|             | Zustand State Management                                                    |
+|             | Appwrite Integration                                                        |
+|             | Authentication and Session Mangement                                        |
+|             | Frontend Voxel Data Rendering and Visualisation                             |
+|             | Handling Frontend Simulation Settings and Scene Configuration Communication |
+|             | C Server/Endpoint for Web Application, Frontend Raytracer API               |
+|             | User Flow & User Experience                                                 |
+|             | Visualisation Replay Feature                                                |
+|             | Ray and Voxel Data Optimization                                             |
+|             | InstancedMesh Optimisation                                                  |
+|             | Discrete Voxel Size Slider                                                  |
+|             | Persistent Storage                                                          |
+|             | Dashboard                                                                   |
+|             | Playback Controls                                                           |
 
 [^ref1]: [Möller-Trumbore Intersection Algorithm](https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm)
 
