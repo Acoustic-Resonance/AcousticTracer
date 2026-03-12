@@ -651,14 +651,6 @@ With this communication standard, we avoid sending unnecessary data to the clien
 
 ## Frontend
 
-### Introduction to Frontend
-
-The AcousticTracer project, pairs a C simulation engine (the core) with a browser-based frontend, which configures, stores, and visualises the simulation. Although the team member's role on this project was frontend engineer, the nature of the work bore little resemblance to conventional frontend development. The typical concerns of a UI/UX-focused role were secondary throughout. The primary challenges were technical: writing per-frame transform matrices directly into GPU-backed buffers, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline spanning two independent backends.
-
-The focus on these technical aspects was not a deliberate de-prioritization but was an accurate reflection of where the complexity lay. The frontend's contributions to the project was not measured in how visually appealing the frontend looked but in its ability to bridge the gap between a C simulation engine and a browser-based 3D visualisation.
-
-### Goals
-
 The frontend has three responsibilities that we discussed and outlined early in development but did not yet know how to tackle, and each came with distinct technical demands:
 
 1. Configure and submit — The user uploads a `.glb` room model, sets simulation parameters (voxel size, ray count, FPS, surface material), and interactively places a sound source by adjusting its position inside the 3D scene. The configuration is sent to the C backend as JSON matching the communication standard defined earlier.
@@ -666,6 +658,8 @@ The frontend has three responsibilities that we discussed and outlined early in 
 2. Decode and store — Initially the C backend returned its result in JSON format, but in the interest of optimisation, we implemented it using serialization.  The frontend de-serializes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instant.
 
 3. Render and replay — The decoded frames are visualised as a 3D voxel heat map overlaid on the room model. Consider a modest room of 8m × 5m × 5m with a voxel size of 0.1m, that produces 80 x 50 x 50 = 200,000 voxels, and a typical simulation might contain 100,000 rays. Each of those 200,000 voxels requires per-frame position and colour updates at the configured frame rate. These are not even worst-case scenario numbers, yet the frontend needed to be able to provide a smooth and interactive experience.
+
+Additional challenges included writing per-frame transform matrices directly into GPU-backed buffers, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline spanning two independent backends.
 
 ### Technology Decisions
 
