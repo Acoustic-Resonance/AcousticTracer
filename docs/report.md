@@ -465,7 +465,7 @@ and the direction the resulting ray bounces in.
 
 \begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{../assets/images/bvh_graph.png}
+    \includegraphics[width=0.70\textwidth]{../assets/images/bvh_graph.png}
     \captionof{figure}{Graph comparing ray performance with and without BVH}
     \label{fig:bvh-graph}
 \end{figure}
