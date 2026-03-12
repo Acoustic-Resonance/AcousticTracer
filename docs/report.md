@@ -8,7 +8,7 @@ Team Members:
 
 - Alex Wright - Simulation Core / Front-end
 - Patryk Mrozek - Simulation Core
-- Eoghan Murphy - Simulation Core / Optimization
+- Eoghan Murphy - Simulation Core / Optimisation
 - Michael McCarthy - Front-end
 
 ## Introduction
@@ -153,7 +153,7 @@ child->energy = ray->energy * (1.0f - triangle_material.absorption_coefficient);
 
 This accurately uses the absorption coefficient for each material to alter the resultant energy of the `child` ray, created from the intersection.
 
-The initial direction of each ray is also not arbitrary. Rather than emitting rays uniformly in all directions, we used cosine-weighted hemisphere sampling, implemented in `AT_sample_cosine_hemisphere()` in `at_utils.h`, with reference to the sampling method described in the PBR Book [^ref5]. The function constructs an orthonormal basis from the source's direction vector, and samples a direction in the hemisphere above that surface using two uniform random floats. The polar angle is derived as `acos(sqrt(1 - u))` rather than `acos(u)`, and it is this square root that produces the cosine weighting as a consequence of the geometry of the sphere, biasing rays towards the forward direction of the source and away from grazing angles. The same function is also used when a ray scatters diffusely off a surface.
+The initial direction of each ray is also not arbitrary. Rather than emitting rays uniformly in all directions, we used cosine-weighted hemisphere sampling, implemented in `AT_sample_cosine_hemisphere()` in `at_utils.h`, with reference to the sampling method described in the PBR (Physically Based Rendering) Book [^ref5]. The function constructs an orthonormal basis from the source's direction vector, and samples a direction in the hemisphere above that surface using two uniform random floats. The polar angle is derived as `acos(sqrt(1 - u))` rather than `acos(u)`, and it is this square root that produces the cosine weighting as a consequence of the geometry of the sphere, biasing rays towards the forward direction of the source and away from grazing angles. The same function is also used when a ray scatters diffusely off a surface.
 
 ### Voxels
 
@@ -420,7 +420,7 @@ where $n$ is the number of items, and $d$ is the number of "digits" in the large
 The problem with using Radix Sort is that it only works with positive integers,
 while our triangles were made up of three-dimensional vectors represented using three  `floats`.  
 We sort the array's based on the midpoint of the triangles,
-so we needed an invertible function that mapped $[-FLT\_MAX, FLT\_MAX]$ to a positive integer while maintaining relative ordering.  
+so we needed an revertible function that mapped $[-FLT\_MAX, FLT\_MAX]$ to a positive integer while maintaining relative ordering.  
 We came up with the following mapping,
 for negative floats we flip all bits,
 whereas for positive floats we only flip the sign bit.
@@ -663,7 +663,7 @@ The frontend has three responsibilities that we discussed and outlined early in 
 
 1. Configure and submit — The user uploads a `.glb` room model, sets simulation parameters (voxel size, ray count, FPS, surface material), and interactively places a sound source by adjusting its position inside the 3D scene. The configuration is sent to the C backend as JSON matching the communication standard defined earlier.
 
-2. Decode and store — Initially the C backend returned its result in JSON format, but in the interest of optimization, we implemented it using serialization.  The frontend de-serializes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instant.
+2. Decode and store — Initially the C backend returned its result in JSON format, but in the interest of optimisation, we implemented it using serialization.  The frontend de-serializes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instant.
 
 3. Render and replay — The decoded frames are visualised as a 3D voxel heat map overlaid on the room model. Consider a modest room of 8m × 5m × 5m with a voxel size of 0.1m, that produces 80 x 50 x 50 = 200,000 voxels, and a typical simulation might contain 100,000 rays. Each of those 200,000 voxels requires per-frame position and colour updates at the configured frame rate. These are not even worst-case scenario numbers, yet the frontend needed to be able to provide a smooth and interactive experience.
 
@@ -854,7 +854,7 @@ The `SceneCanvas` component is responsible for the rendering of the 3D Scene. A 
 
 ### VoxelGrid
 
-The `VoxelGrid` component uses an `InstanceMesh` to render the full 3D voxel grid, an `InstanceMesh` is a special **Three.js** class that draws many copies of the same geometry in a single GPU draw call. The `InstanceMesh` has two rendering modes based on if there is a simulation result loaded or not, if there is no ray response every cell in the grid is rendered as a white, low opacity cube. If there is an ray response then only the voxels present in the `currentFrame.indices` are positioned. We then set the colour of the voxel based off the `energy x numRays`, each voxel's energy is an extremely small float, we multiply these values by numRays to rescale is back to a normalised range between zero and one, as inside the simulation, the speaker's intensity (1) is divided equally among each of its emitted rays. We then linearly map the normalised energy values from that range to the specified hue range.
+The `VoxelGrid` component uses an `InstanceMesh` to render the full 3D voxel grid, an `InstanceMesh` is a special **Three.js** class that draws many copies of the same geometry in a single GPU draw call. The `InstanceMesh` has two rendering modes based on if there is a simulation result loaded or not, if there is no ray response every cell in the grid is rendered as a white, low opacity cube. If there is an ray response then only the voxels present in the `currentFrame.indices` are positioned. We then set the colour of the voxel based off the `energy x numRays`, each voxel's energy is an extremely small float, we multiply these values by numRays to re-scale is back to a normalised range between zero and one, as inside the simulation, the speaker's intensity (1) is divided equally among each of its emitted rays. We then linearly map the normalised energy values from that range to the specified hue range.
 
 - Hue 0.66 = blue (low energy)
 - Hue 1.0 = red (high energy)
@@ -939,7 +939,7 @@ If we were to begin this project again, there are a number of design decisions w
 
 **Beam Tracing**. Our ray tracing implementation is stochastic, meaning that early specular reflections may be missed or under-sampled at lower ray counts. Beam tracing addresses this by expanding each ray into a volumetric beam covering a solid angle of space, guaranteeing that all specular reflection paths within that angle are found exactly rather than approximated. A hybrid approach, beam tracing for the first few orders of specular reflection, then stochastic ray tracing for the diffuse late reverberation, is the architecture used by tools like ODEON [^ref6] and is identified by Savioja and Svensson as the dominant pattern in modern room acoustic simulation [^ref16]. Incorporating this would have produced more reliable results at lower ray counts, directly reducing computation time.
 
-**Libraries** The main challenge that came with developing the frontend aspect of this project was the overwhelming size of the React ecosystem itself. For virtually every problem we encountered, whether it was routing, state management, data fetching, UI components, or table rendering, there existed a multitude of competing solutions. Deciding which library to adopt, and hoping that it suited the needs of the project, was one of the hardest hurdles to overcome during development. Libraries that seemed like the right choice early on sometimes proved to be suboptimal as requirements became clearer and/or changed. If we were to start again, the experience we have gained would allow us to make these decisions with far greater confidence. Had we known about the capabilities of some of the libraries such as TanStack and `shadcn` from the outset, it would have significantly reduced the workload. Starting with this foundation would have freed up development time that could have been redirected towards the more technically demanding aspects of the project, or future ideas we did not get the chance to implement.
+**Libraries** The main challenge that came with developing the frontend aspect of this project was the overwhelming size of the React ecosystem itself. For virtually every problem we encountered, whether it was routing, state management, data fetching, UI components, or table rendering, there existed a multitude of competing solutions. Deciding which library to adopt, and hoping that it suited the needs of the project, was one of the hardest hurdles to overcome during development. Libraries that seemed like the right choice early on sometimes proved to be sub-optimal as requirements became clearer and/or changed. If we were to start again, the experience we have gained would allow us to make these decisions with far greater confidence. Had we known about the capabilities of some of the libraries such as TanStack and `shadcn` from the outset, it would have significantly reduced the workload. Starting with this foundation would have freed up development time that could have been redirected towards the more technically demanding aspects of the project, or future ideas we did not get the chance to implement.
 
 ## Conclusion and Future Plans
 
@@ -969,7 +969,7 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | Handling Frontend Simulation Settings and Scene Configuration Communication |
 |             | User Flow & User Experience                                                 |
 |             | Visualisation Replay Feature                                                |
-|             | Ray and Voxel Data Optimization                                             |
+|             | Ray and Voxel Data Optimisation                                             |
 |             | Ray, Model, & Networking Tests                                              |
 | \hline      |                                                                             |
 | Patryk      | C Library Design and Specification                                          |
@@ -998,7 +998,7 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | C Server/Endpoint for Web Application, Frontend Raytracer API               |
 |             | User Flow & User Experience                                                 |
 |             | Visualisation Replay Feature                                                |
-|             | Ray and Voxel Data Optimization                                             |
+|             | Ray and Voxel Data Optimisation                                             |
 |             | InstancedMesh Optimisation                                                  |
 |             | Discrete Voxel Size Slider                                                  |
 |             | Persistent Storage                                                          |
