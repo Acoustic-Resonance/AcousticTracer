@@ -920,7 +920,9 @@ Authentication is provided by Appwrite, we use three clients provided by Appwrit
 - `TablesDB` for the simulation database.
 - `Storage` for file uploads.
 
-The `UserProvider` component manages authentication state. It checks for an existing session via `account.get()`. All route components are protected by a `ProtectedRoute` layout that checks the current user and redirects to the login page if unauthenticated. Email/password login, registration, and Google OAuth are exposed through this context. On both login and logout, the provider resets the Zustand SceneStore and clears the TanStack Query cache via `queryClient.clear()` which is then followed by `useSceneStore.getState().reset()` to prevent data from one session leaking to another.
+The web app supports two authentication methods: email/password and Google OAuth 2.0. The login page presents an email and password form alongside a "Continue with Google" button. On submission, Appwrite's `createEmailPasswordSession` is called, and on success the user is redirected to the home page. The registration page adds a name field and enforces client-side validation before calling Appwrite's registration endpoint, which automatically creates a session so the user is logged in immediately after signing up. Alternativly Google OAuth follows a redirect flow, with Appwrite opening the Google consent screen. Once signed up, the user is redirected back to the web app and the `secret` and `userId` parameters in the URL are detected and exchanged for an Appwrite session token, logging the user in.
+
+The forgot password page accepts an email address, validates it, and calls `account.createRecovery` to send a recovery email. The page then transitions from the form view to a confirmation screen prompting the user to check their inbox, with a "try again" option if the email does not arrive. The reset password page reads the `userId` and `secret` from the recovery link's URL parameters and presents a new password form. On a succesful reset, the user is redirected back to the login page.
 
 ### Persistent Storage
 
