@@ -331,7 +331,7 @@ and so a macro was developed to reduce complexity without increasing stack calls
 The final piece in the implementation for triangle arrays is what is meant by partitioning an `AT_TriArray`.  
 Our initial approach was to use a stable partitioning scheme;
 based on the given partition point and number of items to the left,
-move all triangles left or the point to the start of the array,
+move all triangles left of the split point to the start of the array,
 and all right to the right starting at the index `num_left`.
 This was an $O(n)$ approach which was beneficial as arrays are partitioned hundreds of thousands of times in a real-world scene.  
 Unfortunately, this approach was flawed in that, if multiple triangles equalled the splitting point,
