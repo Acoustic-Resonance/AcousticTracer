@@ -114,7 +114,9 @@ typedef struct {
   AT_MaterialType material;
   const AT_Model *environment;
 } AT_SceneConfig;
+```
 
+```C
 typedef struct {
     AT_Vec3 position;
     AT_Vec3 direction;
@@ -248,6 +250,7 @@ The most common representations are a sphere or a cuboid (also known as an Axis-
 We went with an AABB representation as while the intersection test is more computationally intensive,
 the resultant bounding box is much tighter for triangles when using an AABB,
 than with a sphere.  
+\newpage
 We kept the definition of an AABB simple:
 
 ```C
@@ -842,9 +845,14 @@ The `SceneCanvas` composes the scene:
 </Canvas>
 ```
 
-The `SceneCanvas` component is responsible for the rendering of the 3D Scene. A `<Canvas>` component initialises the WebGL context and camera. Inside it, a `<Suspense>` boundary that wraps the `<Model>` component, showing a loading indicator that keeps track of loaded and pending data. The `Model` component uses **Drei's** `useGLTF` to load the `.glb` file and computes a `THREE.Box3` bounding box. This bounding box matches the dimensions of the AABB computed by `AT_scene_create()`, ensuring that the voxel indices in the response map to correct world positions, producing a valid heat map. Finally `<Bounds>` automatically frames the camera around the loaded geometry, allowing us to not have to worry about scale and orientation of uploaded models. The additional **Drei** components, (`OrbitControls`, `Environment`, `GizmoHelper`, `AdaptiveDpr`) provide interaction, lighting, an orientation helper, and automatic resolution scaling for performance. The two main components are conditionally rendered: `<VoxelGrid />` renders only when the bounding box is calculated, the grid toggle is enabled, and the simulation is not awaiting results. Similarly `<SourcePlacer />` renders only the bounds are known, with its controlled by the `isStaging` prop. An example figure is given below showing the final result of these components working in tandem.
+The `SceneCanvas` component is responsible for the rendering of the 3D Scene. A `<Canvas>` component initialises the WebGL context and camera. Inside it, a `<Suspense>` boundary that wraps the `<Model>` component, showing a loading indicator that keeps track of loaded and pending data. The `Model` component uses **Drei's** `useGLTF` to load the `.glb` file and computes a `THREE.Box3` bounding box. This bounding box matches the dimensions of the AABB computed by `AT_scene_create()`, ensuring that the voxel indices in the response map to correct world positions, producing a valid heat map. Finally `<Bounds>` automatically frames the camera around the loaded geometry, allowing us to not have to worry about scale and orientation of uploaded models. The additional **Drei** components, (`OrbitControls`, `Environment`, `GizmoHelper`, `AdaptiveDpr`) provide interaction, lighting, an orientation helper, and automatic resolution scaling for performance. The two main components are conditionally rendered: `<VoxelGrid />` renders only when the bounding box is calculated, the grid toggle is enabled, and the simulation is not awaiting results. Similarly `<SourcePlacer />` renders only the bounds are known, with its controlled by the `isStaging` prop. Figure \ref{fig:scene} shows the final result of these components working in tandem.
 
-![Scene Example](../assets/images/SceneExample.png){width=70%}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.70\textwidth]{../assets/images/SceneExample.png}
+    \captionof{figure}{Scene example}
+    \label{fig:scene}
+\end{figure}
 
 ### VoxelGrid
 
@@ -853,9 +861,14 @@ The `VoxelGrid` component uses an `InstanceMesh` to render the full 3D voxel gri
 - Hue 0.66 = blue (low energy)
 - Hue 1.0 = red (high energy)
 
-So a voxel with zero energy maps towards blue, and a voxel at maximum energy maps towards red, as shown below in figure 4.
+So a voxel with zero energy maps towards blue, and a voxel at maximum energy maps towards red, as shown below in Figure \ref{fig:voxel-heatmap}.
 
-![Voxel Heatmap](../assets/images/coloredImage.png){width=70%}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.70\textwidth]{../assets/images/coloredImage.png}
+    \captionof{figure}{Voxel Heatmap}
+    \label{fig:voxel-heatmap}
+\end{figure}
 
 ### Grid Dimensions
 
@@ -948,6 +961,8 @@ Some features we wished to add include:
 We were ambitious throughout the duration for this project and had many ideas for features we wished to implement along the way. However, due to the time constraint of the project we were not able to finish every feature we had set our eyes on. We will continue to work on this project after the deadline as it is something we are each proud of and passionate about. We believe we have demonstrated a unique view on an intriguing area of research.
 
 ## Contributors Table
+
+\footnotesize
 
 | Contributor | Task                                                                        |
 | ----------- | --------------------------------------------------------------------------- |
