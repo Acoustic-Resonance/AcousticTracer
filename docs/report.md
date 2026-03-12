@@ -271,7 +271,7 @@ The _original_ Bonsai algorithm is composed of the following 5 steps:
 4. Prune mini trees to find better optimised subtrees,
 5. Merge all mini trees into a singular BVH entity.
 
-Our implementation closely follows the first three steps, but diverges from there;
+Our implementation closely follows the first three steps, ignoring the final two;
 we will briefly discuss each step, but only go further into detail on the relevant steps.
 
 #### Triangle Arrays
