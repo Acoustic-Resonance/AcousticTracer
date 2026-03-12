@@ -353,7 +353,7 @@ This is a simple calculation carried out by iterating through the triangle's thr
 if a point is found that is greater than the AABB's `max` point,
 then it is set to the `max`, and the reverse for the AABB's `min` point.  
 The AABB's `midpoint` is easily found by summing the `max` and `min` vectors and
-getting their halfway the resultant's halfway point.
+getting the result's halfway point.
 
 The next step was the first point of difficulty in the BVH algorithm.  
 We take the list of all triangles in the scene and split based on their respective midpoints.
