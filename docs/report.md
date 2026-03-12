@@ -157,6 +157,20 @@ The initial direction of each ray is also not arbitrary. Rather than emitting ra
 
 ### Voxels
 
+\begin{figure}
+\centering
+\includegraphics[width=0.24\textwidth]{../assets/images/dda_step1.png}
+\hfill
+\includegraphics[width=0.24\textwidth]{../assets/images/dda_step2.png}
+\hfill
+\includegraphics[width=0.24\textwidth]{../assets/images/dda_step3.png}
+\hfill
+\includegraphics[width=0.24\textwidth]{../assets/images/dda_step4.png}
+
+\caption{DDA algorithm stepping through voxels. Each step advances the axis with the smallest \texttt{t\_max}.}
+\label{fig:dda}
+\end{figure}
+
 The second phase of the simulation is the DDA voxel sweep. A voxel is a volumetric pixel, and in our case, a voxel is a dynamic array defined as follows:
 
 ```C
@@ -183,7 +197,7 @@ typedef struct {
 
 This approach required knowing the total simulation duration upfront in order to allocate the correct number of bins, though in practice this was not always possible. The total duration of a simulation depends on how far the rays travel before their energy drops below the termination threshold, which in turn depends on the geometry of the scene and the configuration of the source. The amount of times a ray bounces and how it loses energy throughout the environment is not something we can know until the simulation is run. We therefore moved to the dynamic array approach described above, where each voxel's bin array grows dynamically as energy is deposited into new time frames.
 
-Every ray generated in the first phase of the simulation is then traversed using the Digital Differential Analyzer (DDA) algorithm, implemented with reference to Amanatides and Woo's _A Fast Voxel Traversal Algorithm for Ray Tracing_ algorithm[^ref2]. A naive approach to this problem might sample points along a ray at fixed intervals, but this risks skipping voxels entirely if they are only grazed by a ray, and also opens up the possibility for a voxel to be visited multiple times. The DDA algorithm allows us to track how far along a ray segment we need to travel to cross the next voxel boundary per axis, which is tracked by the variable `t_max`. At each step, the axis with the smallest `t_max` is advanced. This guarantees that every voxel the ray segment passes through is visited exactly once, regardless of the ray's direction or the size of the voxels.
+Every ray generated in the first phase of the simulation is then traversed using the Digital Differential Analyzer (DDA) algorithm, implemented with reference to Amanatides and Woo's _A Fast Voxel Traversal Algorithm for Ray Tracing_ algorithm[^ref2]. A naive approach to this problem might sample points along a ray at fixed intervals, but this risks skipping voxels entirely if they are only grazed by a ray, and also opens up the possibility for a voxel to be visited multiple times. The DDA algorithm allows us to track how far along a ray segment we need to travel to cross the next voxel boundary per axis, which is tracked by the variable `t_max`. At each step, the axis with the smallest `t_max` is advanced. This guarantees that every voxel the ray segment passes through is visited exactly once, regardless of the ray's direction or the size of the voxels. Figure \ref{fig:dda}  illustrates this process step by step, showing how the algorithm advances one voxel boundary at a time along the axis with the smallest t_max
 
 For each voxel the ray crosses, an amount of energy is deposited into that voxel. This energy deposit is weighted by three physical factors. First, the length of the ray segment inside the voxel, a ray travelling a longer path through a voxel contributes more energy to it. Second, inverse square attenuation with total distance `d` from the source, modelling how sound naturally loses intensity over distance. Third, air absorption, modelled as `exp(-k * d)`, where `k` is the air coefficient, which accounts for energy lost to the medium itself as the 'wave' propagates. The result of these three factors combined is a single float value that is added to the voxel's current bin.
 
