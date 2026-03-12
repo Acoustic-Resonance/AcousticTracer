@@ -967,7 +967,7 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | Visualisation Replay Feature                                                |
 |             | Ray and Voxel Data Optimization                                             |
 |             | Ray, Model, & Networking Tests                                              |
-|             |                                                                             |
+| \hline      |                                                                             |
 | Patryk      | C Library Design and Specification                                          |
 |             | Scene and Simulation struct design and implementation                       |
 |             | Ray struct design and private ray functions                                 |
@@ -982,7 +982,7 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | Air absorption modelling                                                    |
 |             | Vector and math helper functions                                            |
 |             | Simulation and voxel unit tests                                             |
-| | |
+| \hline      |                                                                             |
 | Michael     | Frontend Architecture                                                       |
 |             | UI Design                                                                   |
 |             | TanStack Query Integration                                                  |
