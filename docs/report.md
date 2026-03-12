@@ -559,10 +559,12 @@ The full definitions are as follows:
 struct AT_Scene {
     AT_Source *sources;
     AT_AABB world_AABB;
+    AT_TriangleArrays *triangle_arrs;
+    AT_MiniTree **mini_trees;
+    uint32_t num_trees;
     uint32_t num_sources;
     AT_MaterialType material;
     const AT_Model *environment;
-    //...
 };
 
 struct AT_Simulation {
