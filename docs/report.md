@@ -29,11 +29,9 @@ None of the tools we found offered a browser-based interface, real-time 3D visua
 
 ## Architecture
 
-<!-- TODO: rename section? -->
+Upon starting the project our first task was to set up the shared GitHub repository where our code was to be hosted. This was an involved process with the whole team, as we wanted to ensure a proper workflow with professional version control standards. We set up an organisation, as to not have a single person hosting the repository. We then created the repository `AcousticTracer` where we each forked it, giving ourselves a personal 'copy' of the repository to serve as our `origin`. We then connected the organisation's repository as the remote `upstream` where we could merge changes from our personal forks to the organisation. This allowed us to each work independently on features in parallel and then push these changes into a shared repository. We configured approval rules to ensure that members could not approve their own pull requests, and that each pull request required at least one approval before merging into the main branch. Finally, we implemented 'issues' that each member could view and mark as completed once implemented. This allowed us to keep a 'to-do' list, that we could delegate tasks for, and link specific commits to once finished.
 
-Upon starting the project our first task was to set up the shared GitHub repository where our code was to be hosted. This was an involved process with the whole team, as we wanted to ensure a proper workflow with professional version control standards. We set up an organisation, as to not have a single person hosting the repository. We then created the repository `AcousticTracer` where we each forked it, giving ourselves a personal 'copy' of the repository to serve as our `origin`. We then added a remote `upstream` where we could merge changes from our personal forks to the original repository located in the organisation. This allowed us to each work independently on features in parallel and then push these changes into a shared repository. We configured approval rules to ensure that members could not approve their own pull requests, and that each pull request required at least one approval before merging into the main branch. Finally, we implemented 'issues' that each member could view and mark as completed once implemented. This allowed us to keep a 'to-do' list, that we could delegate tasks for, and link specific commits to once finished.
-
-Once the GitHub had been configured the next step was to work on the C library specification, since that is the core essence of the project. The C Library will henceforth be referred to as the 'core' of the project. The members working on the core of the project began at the 'top' of the core, creating the specification and outline of the public API presented by the core to the end user. Our initial scope of the project included a 'command buffer' that the output would be written to. The idea behind the command buffer was that the output of the simulation would be instructions for any graphics engine (OpenGL, Vulkan, etc.), on how to draw our heat map. This was in the hopes to create a truly independent, graphics library agnostic implementation, but this was later scrapped due to the complexity. We decided on creating a consistent communication standard instead, that could be parsed by any frontend, or visualisation tool. This communication standard will be discussed at a later stage.
+Once the GitHub had been configured the next step was to work on the C library specification, since that is the core aspect of the project. The C Library will henceforth be referred to as the 'core' of the project. The members working on the core of the project began at the 'top' of the core, creating the specification and outline of the public API presented by the core to the end user. Our initial scope of the project included a 'command buffer' that the output would be written to. The idea behind the command buffer was that the output of the simulation would be instructions for any graphics engine (OpenGL, Vulkan, etc.), on how to draw our heat map. This was in the hopes to create a truly independent, graphics library agnostic implementation, but this was later scrapped due to the complexity. We decided on creating a consistent communication standard instead, that could be parsed by any frontend, or visualisation tool. This communication standard will be discussed at a later stage.
 
 The architecture / workflow we envisioned for the user was as follows:
 
@@ -43,7 +41,7 @@ The core of the project was written in C, over other languages, for a few key re
 
 The specification of the project involved the design of the following structures and data-types (each prefixed with `AT_` as part of our core library (Acoustic Tracer)):
 
-The frontend, as mentioned is our method of creating a universal visualiser for the heat map of the model, while remaining platform agnostic (i.e. usable on MacOS, Linux, Windows, iOS, Android, etc.). Initially, during the project specification phase, we designed a communication standard which we stuck with throughout the duration of the project, and it worked well. However, while the structure of the data remained the same, the data type had to change, which will be discussed later. We decided to create a server in C, that exposed an endpoint `/run` to the user, where they can send the scene and simulation configuration, and receive the heat map data as the server response. The frontend, could then make a HTTP request to the server which is easily performed on any language.
+The frontend, as mentioned is our method of creating a universal visualiser for the heat map of the model, while remaining platform agnostic (i.e. usable on MacOS, Linux, Windows, iOS, Android, etc.). Initially, during the project specification phase, we designed a communication standard which we stuck with throughout the duration of the project, and it worked well. We decided to create a server in C, that exposed an endpoint `/run` to the user, where they can send the scene and simulation configuration, and receive the heat map data as the server response. The frontend, could then make a HTTP request to the server which is easily performed on any language, creating a multi-platform solution.
 
 ## Simulation
 
@@ -62,16 +60,16 @@ struct AT_Model {
 };
 ```
 
-This creation of the `AT_Model` struct was possible with the library `cgltf`[^ref3], which is a single-file/stb-style C glTF loader and writer. This library gives us the ability to parse the `.glb` file the user provides, resulting in access to the vertices, nodes, indices, and transformation matrices for each of the vertices rotation, scale, and quaternion. Each of these matrices encode data describing each node in relation to the world. The rotational matrix stores information about how to rotate a node, the scalar matrix shows how to scale a node, and finally the quaternion matrix encodes information about an axis-angle rotation around an arbitrary axis. Initially the `AT_model_create()` function only extracted the raw vertex data, which worked in the beginning. But as the need for more complex models arose, we had to alter our approach to make the use of `cgltf_node` attributes with the vertex data, combined with the parent and world transformation matrices, to give the vertex position and state in relation to the world.
+This creation of the `AT_Model` struct was possible with the library `cgltf`[^ref3], which is a single-file/stb-style C glTF loader and writer. This library gives us the ability to parse the `.glb` file the user provides, resulting in access to the vertices, nodes, indices, and transformation matrices for each of the vertices rotation, scale, and quaternion. Each of these matrices encode data describing each node in relation to the world. The rotational matrix stores information about how to rotate a node, the scalar matrix shows how to scale a node, and finally the quaternion matrix encodes information about an axis-angle rotation around an arbitrary axis. Initially the `AT_model_create()` function only extracted the raw vertex data, which worked in the early stages of development. But as the need for more complex models arose, we had to alter our approach to make the use of `cgltf_node` attributes with the vertex data, combined with the parent and world transformation matrices, to give the vertex position and state in relation to the world.
 
-Instead of naively extracting the raw vertex, index and normal data from the `.glb`, we must apply the parent and world rotation, scale, and quaternion matrices to each node. This is achieved by 'walking' up the node hierarchy, and multiplying each of the three matrices, until we arrive at the desired node. In this way, the three matrices accumulate across the parents, giving us an exact state of the node in relation to the 'world'.
+Instead of naively extracting the raw vertex, index and normal data from the `.glb`, we must apply the parent and world rotation, scale, and quaternion matrices to each node. This is achieved by 'walking' up the node hierarchy, and multiplying together each of the three matrices, until we arrive at the desired node. In this way, the three matrices accumulate across the parent nodes, giving us an exact state of the node in relation to the 'world'.
 
 A model is a struct, composed of each of the following members:
 
 - An array of vertices, each with an `x`, a `y`, and a `z` component, which represents a point in 3D space.
 - An array of normals, which is the direction that the triangle 'faces'. Represented as a three-dimensional vector.
 - An array of indices, which outlines the order into which to draw lines from each vertex, creating the triangles of the model.
-- An array of materials for each of the triangles, where the array is `index_count / 3` in length and the entry at `triangle_materials[t]` is the material for the triangle at `t`.
+- An array of materials for each of the triangles, where the array is `index_count / 3` (number of triangles) in length and the entry at `triangle_materials[t]` is the material for the $t^{th}$ triangle.
 - A number representing the total amount of vertices in the model
 - A number representing the total amount of indices in the model
 
@@ -123,17 +121,17 @@ typedef struct {
 } AT_Source;
 ```
 
-Where the `environment` is the `struct` of the 3D model the user specifies, and the source is composed of a position and direction (similar to the vector). We initialise rays using `AT_ray_init()` at the position of the source, setting their initial direction and position to those of the source they come from. Since we then want to create a realistic simulation of how these rays interact (bounce, scatter, and absorb) throughout the environment, we must implement each phenomena associated with these 'sound rays'.
+Where the `environment` is the `struct` of the 3D model the user specifies, and the source is composed of a position and direction (similar to the ray `struct`). We initialise rays using `AT_ray_init()` at the position of the source, setting their initial direction and position to those of the source they come from. Since we then want to create a realistic simulation of how these rays interact (bounce, scatter, and absorb) throughout the environment, we must implement each phenomena associated with these 'sound rays'.
 
-The first phenomena of the rays we implemented was reflection. This is where a ray 'bounces' off a surface, creating a new ray with an origin of the point of intersection of the surface, and a 'reflected' direction. Before we implemented reflection, we first had to implement the intersection between a ray and a triangle. Since our model is composed of entirely triangles, it is important to define what it means for a ray to intersect with a triangle.
+The first ray phenomenon we implemented was reflection. This is where a ray 'bounces' off a surface, creating a new ray with an origin of the point of intersection of the surface, and a 'reflected' direction. Before we implemented reflection, we first had to implement the intersection between a ray and a triangle. Since our model is composed of entirely triangles, it is important to define what it means for a ray to intersect with a triangle.
 
-This is where we used the Möller-Trumbore ray/triangle intersection algorithm[^ref1]. This allows us to compute whether a ray intersects with a triangle without having to pre-compute the plane equation of the plane containing the triangle.
+This is where we implemented the Möller-Trumbore ray/triangle intersection algorithm[^ref1]. This allows us to compute whether a ray intersects with a triangle without having to pre-compute the plane equation of the plane containing the triangle.
 
-Once we were able to get whether a ray intersected with a triangle, the next issue was to handle what actually happens when the ray intersects with the triangle. Initially we implemented a `hit_list` which was given to each ray, that tracked each point on any triangle that the ray intersected with. We must keep track of every single point of intersection, and then only 'handle' the point of intersection closest to the ray origin, as this would be the 'first' intersection, regardless of the order of the triangle checks. This caused problems with memory management, which is important in C. Since we didn't know until runtime, how many times a ray would intersect with any of the triangles, we didn't know how big to make the `hit_list` array. This introduced the concept of the dynamic array, which functions like lists do in Python and JavaScript, where the size of the list increases, if appending an element exceeds the capacity of the list. Once we had computed the closest point of intersection of each ray, we could then initialise a new ray with the origin of the point of intersection and the 'reflected' direction.
+Once we were able to get whether a ray intersected with a triangle, the next issue was to handle what actually happens when the ray intersects with the triangle. Originally we implemented a `hit_list` which was given to each ray, that tracked each point on any triangle that the ray intersected with. Due to the nature of ray-tracing, we must keep track of every single point of intersection, and then only 'handle' the point of intersection closest to the ray origin, as this would be the ray's 'first' intersection, regardless of the order of the triangle checks. This approach caused issues with memory management. Since we didn't know until runtime, how many times a ray would intersect with any of the triangles, we didn't know how big to make the `hit_list` array. This introduced the concept of the dynamic array, which functions like lists do in Python and JavaScript, where the size of the list must increase, if appending an element exceeds the capacity of the list. Once we had computed the closest point of intersection of each ray, we could then initialise a new ray with the origin of the point of intersection and the 'reflected' direction.
 
-To combat the memory management associated with the `hit_list` approach of calculating the closest point of intersection, we pivoted to using a linked list approach for the ray implementation. Each ray would have a `child` ray that is the resultant ray after intersection, scattering, reflection etc. Upon the first intersection of a ray we would initialise a new ray with the computed origin and direction, and only update its direction and origin upon subsequent intersections, only if the distance from that point of intersection was less than the distance from the current rays origin to its child. This greatly simplified the computation, while also introducing an hierarchy among the rays, with a parent/child relationship. We could also easily navigate this ray hierarchy using linked list traversal methods. Figure \ref{fig:ray} shows a visualisation of the ray bounce tree in action, where each red line represents the `parent` rays and the purple lines represent all of the `child` rays.
+To combat the memory management associated with the `hit_list` approach of calculating the closest point of intersection, we pivoted to using a linked list approach for the ray implementation. Each ray would have a `child` ray that is the resultant ray after intersection, scattering, reflection etc. Upon the first intersection of a ray we would initialise a new ray with the first computed hit position and reflected direction, and only update its direction and origin upon subsequent intersections, if the distance from that point of intersection was less than the distance from the current rays origin to its child. This greatly simplified the computation, while also introducing an hierarchy among the rays, with a parent/child relationship. We could also easily navigate this ray hierarchy using linked list traversal methods. Figure \ref{fig:ray} shows a visualisation of the ray bounce tree in action, where each red line represents the initial rays from the source, and the purple lines represent all of the subsequent `child` rays.
 
-Another ray phenomena implemented in our project is material absorption. Since this is not a concern of the end user of the library, this is defined in our `at_internal.h` header file where we declare functions, enumerations, and structs, to be used internally. For the absorption (and later scattering) we implemented, we decided to declare a table of materials along with their coefficients:
+Another ray phenomenon implemented in our project is material absorption. Since any of these ray phenomena are not a concern of the end user of the library, they are defined in our `at_internal.h` header file where we declare functions, enumerations, and structs, to be used internally. For the absorption (and later scattering) we implemented, we decided to declare a table of materials along with their coefficients:
 
 ```C
 static const AT_Material AT_MATERIAL_TABLE[AT_MATERIAL_COUNT] = {
@@ -143,7 +141,9 @@ static const AT_Material AT_MATERIAL_TABLE[AT_MATERIAL_COUNT] = {
 };
 ```
 
-The scattering coefficient determines the probability that a ray, upon hitting a surface, is redirected diffusely in a random direction within the hemisphere above the surface normal, rather than following the angle of perfect specular reflection. A rough concrete wall scatters more than a smooth plastic surface, which is reflected in the coefficients above.
+This leaves room to include more materials, such should the necessity arise.
+
+The scattering coefficient determines the probability that a ray, upon hitting a surface, is redirected diffusely in a random direction within the hemisphere above the surface normal, rather than following the angle of perfect specular reflection. I.e. A rough concrete wall scatters more than a smooth plastic surface, which is reflected in the coefficients above.
 
 Upon intersecting with a triangle, (whose material has been decided during `AT_scene_create()` as stated above), we can calculate the rays resultant energy modelled with the formula:
 
@@ -181,9 +181,9 @@ typedef struct {
 } AT_Voxel;
 ```
 
-This structure allows us to use our general purpose dynamic array functionality defined in `at_utils.h`. `items` is a pointer to an array of floats, which we call "bins". The concept of a bin is essential to the temporal aspect of the simulation. Each bin stores the total amount of sound energy that arrived in the voxel during a specific time interval. Think of each voxel as having a timeline, where each slot on the timeline records how much sound energy passes through the voxel within that window. During the replay, the bins are revealed sequentially.
+This structure allows us to use our general purpose dynamic array functionality defined in `at_utils.h`. `items` is a pointer to an array of floats, which we call "bins". The concept of a bin is essential to the temporal aspect of the simulation. Each bin stores the total amount of sound energy that arrived in the voxel during a specific time interval. Think of each voxel as having a timeline, where each slot on the timeline records how much sound energy passes through the voxel within that window. During the replay, the bins are revealed sequentially to produce a smooth and linear transition through the 'frames' of the resulting animation.
 
-In this phase, a voxel grid stores the spatial distribution of sound energy across the scene. The size of the voxels is user-specified, this size determines the resolution of the simulation. Smaller voxels produce a more detailed heat map but require significantly more memory and computation. The world dimensions of the voxel grid are calculated by subtracting the max and min value of the scenes AABB, which is the smallest possible box that encapsulates the entire model. These world dimensions are then used to calculate the grid dimensions by dividing the world dimensions by the user-specified voxel size, which gives `grid_x`, `grid_y` and `grid_z`.
+In this phase, a voxel grid stores the spatial distribution of sound energy across the scene. The size of the voxels is user-specified, this size determines the resolution of the simulation. Smaller voxels produce a more detailed heat map but require significantly more memory and computation. The world dimensions of the voxel grid are calculated by subtracting the maximum and minimum values of the scenes AABB, which is the smallest possible box that encapsulates the entire model. These world dimensions are then used to calculate the grid dimensions by dividing the world dimensions by the user-specified voxel size, which gives us `grid_x`, `grid_y` and `grid_z`.
 
 Rather than allocating a 3-dimensional matrix, the voxel grid is stored in a 1-dimensional array of `AT_Voxel` types. A voxel at position (x, y, z) in the grid can be accessed using the formula `z * grid_y * grid_x + y * grid_x + x`. A contiguous block of memory is more efficient to allocate and iterate over than nested pointers.
 
@@ -201,12 +201,12 @@ Every ray generated in the first phase of the simulation is then traversed using
 
 For each voxel the ray crosses, an amount of energy is deposited into that voxel. This energy deposit is weighted by three physical factors. First, the length of the ray segment inside the voxel, a ray travelling a longer path through a voxel contributes more energy to it. Second, inverse square attenuation with total distance `d` from the source, modelling how sound naturally loses intensity over distance. Third, air absorption, modelled as `exp(-k * d)`, where `k` is the air coefficient, which accounts for energy lost to the medium itself as the 'wave' propagates. The result of these three factors combined is a single float value that is added to the voxel's current bin.
 
-The current time of the simulation `t` is calculated as `d / v` where `v` is the current simulation speed. Throughout the development of this project, `v` was one of two values. First being 343 m/s, which is the speed of sound, and an arbitrary slower speed that was used while building the visualisation, to make the movement of the sound energy through the heat map easier to observe. The current "bin" index is then calculated with `floor(t / bin_width)`, where `bin_width = 1 / fps`. This is the design decision that makes the output a temporal result rather than a static energy snapshot. Each voxel records how much energy arrived, as well as when it arrived. Each voxel's bin array grows dynamically since at allocation time the duration of the simulation is not yet known. Figure \ref{fig:voxel} shows the resulting voxel heat map for the same scene, where the colour intensity of each voxel represents the amount of sound energy deposited into it across all time bins.
+The current time of the simulation `t` is calculated as `d / v` where `v` is the current simulation speed. Throughout the development of this project, `v` was one of two values. First being 343 m/s, which is the speed of sound, and an arbitrary slower speed that was used while building the visualisation, to make the movement of the sound energy through the heat map easier to observe. The current "bin" index is then calculated with `floor(t / bin_width)`, where `bin_width = 1 / fps`. This is the design decision that makes the output a temporal result rather than a static energy snapshot. Each voxel records how much energy arrived, as well as when it arrived. Each voxel's bin array grows dynamically since at allocation time the duration of the simulation is not yet known. Figure \ref{fig:voxel} shows the resulting voxel heat map for the same scene, where the opacity of each voxel represents the amount of sound energy deposited into it across all time bins.
 
 ### Optimisation
 
 In order to get the central workings of our simulation underway,
-we went with the naive approach of determining if a ray intersected with any triangles,
+we initially went with the naive approach of determining if a ray intersected with any triangles,
 by checking each ray against all triangles in the scene.
 This approach is incredibly computationally intensive,
 as any real-world model would contain hundreds of thousands,
@@ -228,7 +228,7 @@ A scene can be split in two ways, using an object-based, or a spatial-based spli
 An object split means splitting a scene based on object boundaries,
 whereas a spatial split, involves splitting based on space alone,
 potentially resulting in a given object being in multiple splits.
-The advantage of an object-based split is the removal of the possibility of objects being "double counted" in splits,
+The advantage of an object-based split is removing the possibility of objects being "double counted" in splits,
 with the cost of overlapping bounding boxes;
 introducing the need to check multiple bounding boxes to find the nearest triangle.
 On the other hand, spatial splits can result in a more optimal bounding box,
@@ -241,7 +241,7 @@ A BVH is a representation of a scene, built through a series of object-based spl
 resulting in a binary tree, where leaf nodes are objects, and internal nodes are bounding boxes for the aggregation of all it's descending nodes.
 Ray-triangle intersections are then carried out by traversing the tree,
 checking if the ray intersects with a node's bounding box,
-before running the more expensive ray-triangle intersection test.
+before then running the more expensive ray-triangle intersection test.
 There are a number of decisions involved when building a BVH,
 the first being, how to represent the bounding box of a triangle.
 The most common representations are a sphere or a cuboid (also known as an Axis-Aligned Bounding Box).
@@ -259,7 +259,7 @@ typedef struct {
 ```
 
 It features two three-dimensional vectors to represent the minimum value for the objects `x`, `y`, and `z` points,
-and vice versa for the `max` field.
+and similarly the maximum values for the `max` field.
 The AABB also features a third vector, and a float,
 representing the midpoint, and the surface area of the AABB, respectively.
 These later two fields will be used in the BVH algorithm and so will be explained later.
@@ -269,21 +269,21 @@ After researching potential implementations, such as, Meister's PLOC[^ref13], or
 We decided upon a lesser known implementation dubbed "Bonsai"[^ref15].  
 This implementation was chosen for a number of reasons:
 
-1. The implementation was created with the CPU in mind,
-2. The implementation balanced efficient build times, with optimal tree quality, and
+1. The implementation was created with the CPU in mind
+2. The implementation balanced efficient build times, with optimal tree quality
 3. The paper kept the implementation vague which allowed us to develop our own algorithm.
 
 Our implementation of the Bonsai algorithm is not a one-to-one replica,
 as no official pseudo-code could be found.
-Therefore, we relied on the paper's technical description along with previous BVH knowledge from reading other implementations' pseudo-code.
+Therefore, we relied on the paper's technical description along with previous BVH knowledge from reading the pseudo-code from other implementations.
 
 The _original_ Bonsai algorithm is composed of the following 5 steps:
 
-1. Compute the midpoint of each triangle,
-2. Split the triangles into smaller groups based on their midpoints,
-3. Generate mini BVH trees based on triangle groups,
-4. Prune mini trees to find better optimised subtrees,
-5. Merge all mini trees into a singular BVH entity.
+1. Compute the midpoint of each triangle
+2. Split the triangles into smaller groups based on their midpoints
+3. Generate mini BVH-trees based on triangle groups
+4. Prune mini trees to find better optimised sub-trees
+5. Merge all mini trees into a singular BVH entity
 
 Our implementation closely follows the first three steps, ignoring the final two;
 we will briefly discuss each step, but only go further into detail on the relevant steps.
@@ -303,8 +303,7 @@ typedef struct {
 ```
 
 These two definitions are crucial in the implementation of our BVH.
-The type `AT_TriArray` is simply a pointer to an `unsigned int`,
-which is being used as the "entrance" of an array of `unsigned int`,
+The type `AT_TriArray` is simply a pointer to the beginning of an array of `unsigned int`,
 representing indices of triangles.[^foot1]
 
 [^foot1]: Initially, each triangle group, and mini tree held an `AT_Triangle` pointer,
@@ -314,10 +313,10 @@ This quickly introduced memory issues and so was later changed to arrays of indi
 The `AT_TriangleArrays` struct was implemented as a way to group the original array of triangles,
 and the four arrays of triangle indices, these arrays being:
 
-1. The triangles sorted on the `x` axis,
-2. The triangles sorted on the `y` axis,
-3. The triangles sorted on the `z` axis,
-4. The triangles in the order they were read from the scene.
+1. The triangles sorted on the `x` axis
+2. The triangles sorted on the `y` axis
+3. The triangles sorted on the `z` axis
+4. The triangles in the order they were read from the scene
 
 **N.B.** Each array contains the same indices,
 with only the ordering they are found in differing.
@@ -334,7 +333,6 @@ Our initial approach was to use a stable partitioning scheme;
 based on the given partition point and number of items to the left,
 move all triangles left or the point to the start of the array,
 and all right to the right starting at the index `num_left`.
-<!-- TODO: potentially remove this O(n) sentence -->
 This was an $O(n)$ approach which was beneficial as arrays are partitioned hundreds of thousands of times in a real-world scene.  
 Unfortunately, this approach was flawed in that, if multiple triangles equalled the splitting point,
 the order in which they would be placed on the left and right was based on the original array's order,
@@ -344,7 +342,7 @@ The partitioning scheme was replaced by a simple marking algorithm.
 We iterate through the axis being split upon, marking any triangles that should be on the left;
 then the other three arrays are iterated through moving triangles left and right based on markings.  
 In theory, this slowed down our $O(n)$ solution as we now had to iterate through 4 arrays as opposed to only the 3 being partitioned,
-but thankfully this wasn't a substantial performance decrease in practice.
+but fortunately this did not result in a substantial performance decrease in practice.
 
 #### Generating Triangle Groups
 
@@ -352,9 +350,9 @@ The first two steps are closely related to one another,
 as they both work toward generating subgroups of the scene's triangles.  
 These steps begin with calculating the AABB of each triangle in the scene.
 This is a simple calculation carried out by iterating through the triangle's three vertices,
-if a point is found that is greater than the AABB's max point,
-then it is set to the max, and the reverse for the AABB's min point.  
-The AABB's midpoint is easily found by summing the max and min vectors and
+if a point is found that is greater than the AABB's `max` point,
+then it is set to the `max`, and the reverse for the AABB's `min` point.  
+The AABB's `midpoint` is easily found by summing the `max` and `min` vectors and
 getting their halfway the resultant's halfway point.
 
 The next step was the first point of difficulty in the BVH algorithm.  
@@ -369,7 +367,7 @@ so all 4 windows represent the same subsection.
 This step is applied recursively, using a stack to maintain the left and right splits,
 until each triangle group, or split, is of size `N`,
 or a group's triangles are packed tightly and a split would be unfavourable.  
-This variable `N` is provided in the BVH config allowing for a variable sized triangle group,
+This variable `N` is provided in the specified BVH configuration allowing for a variable sized triangle group,
 depending on the scene's triangle count.
 We found a size of about `100 - 1000` for a scene of size `50,000 - 200,000` (average range of test scene triangle counts) to be beneficial;
 this range favoured the higher performant operation, triangle groups generation,
@@ -391,7 +389,7 @@ and the function $SA$ represents the surface area of a node's AABB.
 This approach is a top-down algorithm, meaning it starts from a group of triangles,
 and recursively splits until a certain condition is met, usually when each leaf node contains ~1 object (in our case, triangles).  
 A brief overview of the algorithm is as follows.  
-The array of triangles is iterated (swept) through, calculating the result of a given formula if a split was to occur at the current index.
+The array of triangles is iterated through, calculating the result of a given formula if a split was to occur at the current index.
 In this algorithm, the formula is the SAH of the resultant tree.[^foot2]
 The group is then split on the index that provided the lowest SAH,
 and the process is repeated on each split.
@@ -425,7 +423,7 @@ We sort the array's based on the midpoint of the triangles,
 so we needed an invertible function that mapped $[-FLT\_MAX, FLT\_MAX]$ to a positive integer while maintaining relative ordering.  
 We came up with the following mapping,
 for negative floats we flip all bits,
-whereas for positive floats we only flip the sign.
+whereas for positive floats we only flip the sign bit.
 This solved our mapping but they were still floats;
 that was solved using a trick the Quake III developers used to calculate inverse square roots[^ref18]:
   `*(int *)&num`  
@@ -438,7 +436,7 @@ Then convert the integer back to a float in the same way.
 
 Radix Sort could then be carried out on the integer representations,
 without altering the underlying number.
-We decided to use a single byte to represent a "digit" in our implementation of counting sort, as this kept the value of $d$ down and so our final complexity was $O(4n)$.
+We decided to use a single byte to represent a "digit" in our implementation of counting sort, as this kept the value of $d$ down and so our final complexity was '$O(4n)$', and hence $O(n)$.
 A byte is captured from an integer using simple bit-masking:
 
 ```C
@@ -509,9 +507,10 @@ The `AT_` prefix was a deliberate decision made during the planning phase of thi
 A typical usage of the library follows a consistent create, use, destroy cycle:
 
 ```C
+AT_Result result = {0};
 AT_Model *model = NULL;
-if (AT_model_create(&model, "room.glb") != AT_OK) {
-    fprintf(stderr, "Failed to load model\n");
+if ((result = AT_model_create(&model, "room.glb")) != AT_OK) {
+    AT_handle_result(result, "Error creating the model\n");
     return 1;
 }
 
@@ -528,8 +527,8 @@ AT_SceneConfig config = {
 };
 
 AT_Scene *scene = NULL;
-if (AT_scene_create(&scene, &config) != AT_OK) {
-    fprintf(stderr, "Failed to create scene\n");
+if ((result = AT_scene_create(&scene, &config)) != AT_OK) {
+    AT_handle_result(result, "Error creating the scene\n");
     return 1;
 }
 
@@ -540,12 +539,15 @@ AT_Settings settings = {
 };
 
 AT_Simulation *sim = NULL;
-if (AT_simulation_create(&sim, scene, &settings) != AT_OK) {
-    fprintf(stderr, "Failed to create simulation\n");
+if ((result = AT_simulation_create(&sim, scene, &settings)) != AT_OK) {
+    AT_handle_result(result, "Error creating the simulation\n");
     return 1;
 }
 
-AT_simulation_run(sim);
+if ((result = AT_simulation_run(sim)) != AT_OK) {
+    AT_handle_result(result, "Error running the simulation\n");
+    return 1;
+}
 
 AT_simulation_destroy(sim);
 AT_scene_destroy(scene);
@@ -587,7 +589,7 @@ struct AT_Simulation {
 };
 ```
 
-The chain of ownership can be seen directly in the struct definitions. `AT_Simulation` holds a `const AT_Scene *` and `AT_Scene` holds a `const AT_Model *`. The const keyword here signals that these are borrowed references, and that the struct is not responsible for freeing them. In contrast, `AT_Voxel *voxel_grid` inside `AT_Simulation` carries no `const`, meaning the simulation owns that data outright, and `AT_simulation_destroy` is responsible for freeing it. This is also why destroy calls must be made in reverse order of creation. `AT_Simulation` must be freed before `AT_Scene`, because freeing the scene while the simulation still holds a pointer to it would leave the simulation with a dangling reference.
+The chain of ownership can be seen directly in the struct definitions. `AT_Simulation` holds a `const AT_Scene *` and `AT_Scene` holds a `const AT_Model *`. The `const` keyword here signals that these are borrowed references, and that the struct is not responsible for freeing them. In contrast, `AT_Voxel *voxel_grid` inside `AT_Simulation` carries no `const`, meaning the simulation owns that data outright, and `AT_simulation_destroy` is responsible for freeing it. This is also why destroy calls must be made in reverse order of creation. `AT_Simulation` must be freed before `AT_Scene`, because freeing the scene while the simulation still holds a pointer to it would leave the simulation with a dangling reference.
 
 ### Error Handling `(AT_Result)`
 
@@ -604,7 +606,7 @@ typedef enum {
 
 To combat the fact that C can't throw exceptions, the convention is to return an error code that the caller must explicitly check. This is particularly important for our library since the simulation involves a large number of heap allocations, any of which could fail. Detecting these failures early produces a clear error message, rather than a segmentation fault.
 
-`at_result.h` also provides a small helper function `AT_handle_result()` which prints the error type and a custom message to `stderr`, used throughout development to quickly surface allocation ad argument errors without having to write a switch case every time.
+`at_result.h` also provides a small helper function `AT_handle_result()` which prints the error type and a custom message to `stderr`, used throughout development to quickly surface allocation and argument errors without having to write a switch case statement every time.
 
 ### Communication between the Core and the Front-End
 
@@ -626,7 +628,7 @@ With our exemplar frontend web application, the workflow consists of the fronten
 
 Since this JSON is quite minimal, it is acceptable to send as-is.
 
-The backend for our application is centred around a C server whose implementation is defined in `backend/at_net.c`. This involves setting up a TCP socket (which essentially behaves like an API endpoint in the eye of the user). It listens for incoming connections, accepts only `POST /run` requests, parses the incoming configuration and settings, runs the ray-tracer, converts the frame data (voxel bins) to binary, and finally writes the binary stream as the response to the client. The frontend receives this stream, parses the result, and constructs the visualisation of the heat-map on the client-side.
+The backend for our application is centered around a C server, whose implementation is defined in `backend/at_net.c`. This involves setting up a TCP socket (which for our application, behaves like an API endpoint). It listens for incoming connections, accepts only `POST /run` requests, parses the incoming configuration and settings, runs the ray-tracer, converts the frame data (voxel bins) to binary, and finally writes the binary stream as the response to the client. The frontend receives this stream, parses the result, and constructs the visualisation of the heat-map on the client-side.
 
 During our initial design phase, we outlined the communication standard for the voxel data (bins) as shown:
 
@@ -659,11 +661,11 @@ The focus on these technical aspects was not a deliberate de-prioritization but 
 
 The frontend has three responsibilities that we discussed and outlined early in development but did not yet know how to tackle, and each came with distinct technical demands:
 
-1. **Configure and submit** — The user uploads a `.glb` room model, sets simulation parameters (voxel size, ray count, FPS, surface material), and interactively places a sound source by adjusting its position inside the 3D scene. The configuration is sent to the C backend as JSON matching the communication standard defined earlier.
+1. Configure and submit — The user uploads a `.glb` room model, sets simulation parameters (voxel size, ray count, FPS, surface material), and interactively places a sound source by adjusting its position inside the 3D scene. The configuration is sent to the C backend as JSON matching the communication standard defined earlier.
 
-2. **Decode and store** — Initially the C backend returned its result in JSON format, but due to performance limitations we had to implement serialization instead. The frontend de-serializes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instant.
+2. Decode and store — Initially the C backend returned its result in JSON format, but in the interest of optimization, we implemented it using serialization.  The frontend de-serializes this into typed arrays, uploads it to Appwrite file storage, and caches the parsed result so revisiting a completed simulation is instant.
 
-3. **Render and replay** — The decoded frames are visualised as a 3D voxel heat map overlaid on the room model. Consider a modest room of 8m × 5m × 5m with a voxel size of 0.1m, that produces 80 x 50 x 50 = 200,000 voxels, and a typical simulation might fire 100,000 rays. Each of those 200,000 voxels requires per-frame position and colour updates at the configured frame rate. These are not even worst-case scenario numbers, yet the frontend needed to be able to provide a smooth and interactive experience.
+3. Render and replay — The decoded frames are visualised as a 3D voxel heat map overlaid on the room model. Consider a modest room of 8m × 5m × 5m with a voxel size of 0.1m, that produces 80 x 50 x 50 = 200,000 voxels, and a typical simulation might contain 100,000 rays. Each of those 200,000 voxels requires per-frame position and colour updates at the configured frame rate. These are not even worst-case scenario numbers, yet the frontend needed to be able to provide a smooth and interactive experience.
 
 ### Technology Decisions
 
@@ -671,19 +673,19 @@ Before delving into the architectural design and implementation, this subsection
 
 #### React
 
-React was chosen as the UI framework because a significant amount of time had been invested into developing skills with it before and during the early stages of the project, completing Scrimba's introductory course and the majority of the advanced React course.That preparation provided enough fluency with React's component model, hooks, and ecosystem to be productive from the first week.
+React was chosen as the UI framework because a significant amount of time had been invested into developing skills with it before and during the early stages of the project, completing Scrimba's introductory course and the majority of the advanced React course. That preparation provided enough fluency with React's component model, hooks, and ecosystem to be productive from the first week.
 
 #### TypeScript
 
-The initial skeleton was plain JavaScript. It quickly became apparent that JavaScript alone would not be sufficient, the project was hitting runtime crashes caused by misspelled prop names and `undefined` values propagating silently through the component tree, bugs that TypeScript's structural type system catches at compile time. Time was invested during the first three weeks of development learning TypeScript alongside developing the codebase.
+The initial skeleton was plain JavaScript. It quickly became apparent that JavaScript alone would not be sufficient, the project was hitting runtime crashes caused by misspelled `prop` names and `undefined` values propagating silently through the component tree, bugs that TypeScript's structural type system catches at compile time. Time was invested during the first three weeks of development learning TypeScript alongside developing the codebase.
 
-### Tailwind CSS
+#### Tailwind CSS
 
-Hand-written CSS files worked fine while the project had five components. Once that count reached fifteen, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behaviour, and structure are all visible in a single file. Tailwind v4's CSS-native `@theme` directives allowed us to define project-wide design tokens directly in `index.css`.
+Hand-written CSS files worked adequately while the project had few components. Once that count increased, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behaviour, and structure are all visible in a single file. Tailwind v4's CSS-native `@theme` directives allowed us to define project-wide design tokens directly in `index.css`.
 
 ### UI Design
 
-Towards the end of the project, after the core features of the frontend had been developed and optimised, the need for a polished UI could no longer be ignored. building these from scratch would have been a significant time investment that we did not have the luxury of. We found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. This approach aligned with our existing Tailwind-based styling and allowed incremental adoption.
+Towards the end of the project, after the core features of the frontend had been developed and optimised, the need for a polished UI could no longer be postponed. Building these from scratch would have been a significant time investment that we did not have the luxury of. We found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. This approach aligned with our existing Tailwind-based styling and allowed incremental adoption.
 
 ## The Architecture
 
@@ -700,14 +702,14 @@ web/src/
 |   +-- auth/         # Login, Register, Settings, OAuth, UserProvider
 |   +-- simulation/   # Everything acoustic: API, components, hooks, routes, store
 +-- lib/              # Infrastructure: Appwrite client, QueryClient, utils
-+-- utils/            # Pure helpers
++-- utils/            # Helpers
 ```
 
-This codebase structure enforces the concept of **import direction**: feature code may import from `lib/` and `components/`, but never from another feature directly. The `auth` and `simulation` features communicate only through the provider hierarchy and through barrel exports in `api/`. This structure was well thought out and easy to navigate and understand once it was explained to the rest of the team. Similar to our C library's use of `at.h` as the single public interface, each feature exposes its functionality through a controlled set of barrel exports, keeping the internals hidden from the rest of the application.
+This codebase structure enforces the concept of import direction: feature code may import from `lib/` and `components/`, but never from another feature directly. The `auth` and `simulation` features communicate only through the provider hierarchy and through barrel exports in `api/`. This structure was well thought out and easy to navigate and understand once it was explained to the rest of the team. Similar to our C library's use of `at.h` as the single public interface, each feature exposes its functionality through a controlled set of barrel exports, keeping the internals hidden from the rest of the application.
 
 ### Provider Hierarchy
 
-In React, a **provider** is a component that makes shared data or services available to every component nested inside it, without having to pass that data down manually through props at each level of the component tree. Providers were used to compose the application's global infrastructure (error handling, loading states, data caching, authentication) into a single wrapper so that every page and component has access to these services automatically.
+In React, a provider is a component that makes shared data or services available to every component nested inside it, without having to pass that data down manually through props at each level of the component tree. Providers were used to compose the application's global infrastructure (error handling, loading states, data caching, authentication) into a single wrapper so that every page and component has access to these services automatically.
 
 The application's provider stack is composed in `provider.tsx`:
 
@@ -724,18 +726,18 @@ The application's provider stack is composed in `provider.tsx`:
 </ErrorBoundary>
 ```
 
-1. **ErrorBoundary** - catches any uncaught exception, including Suspense promise rejections, and renders a recovery UI.
-2. **Suspense** - displays a loading spinner while any descendant component suspends (e.g., during lazy-loaded route fetching).
-3. **QueryClientProvider** - makes the TanStack Query cache available to all descendants.
-4. **UserProvider** - initialises authentication state. On login and logout, it resets the Zustand SceneStore and clears the TanStack Query cache to prevent data leakage between sessions.
+1. `ErrorBoundary` - catches any uncaught exception, including Suspense promise rejections, and renders a recovery UI.
+2. `Suspense` - displays a loading spinner while any descendant component suspends (e.g., during lazy-loaded route fetching).
+3. `QueryClientProvider` - makes the TanStack Query cache available to all descendants.
+4. `UserProvider` - initialises authentication state. On login and logout, it resets the Zustand SceneStore and clears the TanStack Query cache to prevent data leakage between sessions.
 
 ### Routing and Protected Routes
 
-Client-side routing is handled by **React Router**, using `createBrowserRouter` to define the full route tree. Every route component is lazy-loaded so the browser only downloads the JavaScript for a page when the user first navigates to it. Each route is also wrapped in its own `ErrorBoundary` so that a crash on one page does not affect the entire application. The home page is public but renders differently depending on whether the user is logged in. The authentication, `/login` and `/register` are also public and accessible without a session. A catch-all route renders a 404 page with a link back to the home page. The `/dashboard`, `/scene`, and `/settings`are nested under a `ProtectedRoute` layout component. This component reads the current user from the `UserProvider` context. If no session exists, the user is redirected to the home page, only when an authenticated session is confirmed does the component render its child routes.
+Client-side routing is handled by the React Router, using `createBrowserRouter` to define the full route tree. Every route component is lazy-loaded so the browser only downloads the JavaScript for a page when the user first navigates to it. Each route is also wrapped in its own `ErrorBoundary` so that a crash on one page does not affect the entire application. The home page is public but renders differently depending on whether the user is logged in. The authentication, `/login` and `/register` are also public and accessible without a session. A catch-all route renders a 404 page with a link back to the home page. The `/dashboard`, `/scene`, and `/settings`are nested under a `ProtectedRoute` layout component. This component reads the current user from the `UserProvider` context. If no session exists, the user is redirected to the home page, only when an authenticated session is confirmed does the component render its child routes.
 
 ## The Data Layer
 
-The data layer is the set of abstractions that sit between the frontend's UI components and the two external services, the appwrite backend and the C ray-tracer, HTTP endpoint. Its purpose is to ensure that no component ever interacts with either service directly.
+The data layer is the set of abstractions that sit between the frontend's UI components and the two external services, the Appwrite backend and the C ray-tracer endpoint. Its purpose is to ensure that no component ever interacts with either service directly.
 
 ### Type Mapping
 
@@ -800,9 +802,9 @@ The `runRaytracer` function itself is a `fetch` POST to the C backend's `/run` e
 
 ### Three.js, React Three Fiber, and Drei
 
-The 3D Rendering aspect of the frontend consisted of 3 layers, At the base layer sits **Three.js**. It gives us access to powerful API abstractions, which allows us to translate developer-friendly code into the complex WebGL instructions needed to render 3D graphics. The frontend aspect of this project would not have been possible without this library and we cannot stress enough the important of it. It gave us access to critical methods such as, `InstancedMesh()`, `BufferGeometry()`, `Matrix4()`, `Color()`,and `Box3()`, that were used throughout the development of this project.
+The 3D Rendering aspect of the frontend consisted of 3 layers, At the base layer sits **Three.js**. It gives us access to powerful API abstractions, which allows us to translate developer-friendly code into the complex WebGL instructions needed to render 3D graphics. The frontend of this project would not have been possible without this library. It gave us access to critical methods such as, `InstancedMesh()`, `BufferGeometry()`, `Matrix4()`, `Color()`,and `Box3()`, that were used throughout the development of this project.
 
-On top of the base layer sits **React Three Fiber** (henceforth R3F), it is a custom React renderer that maps JSX elements to three.js objects. What makes R3F so powerful is that it lets us describe a 3D scene using the same declarative, component-based model we use for the rest of the UI. Without R3F, we would have had to manually create objects, add them to the scene, remove them on cleanup, and synchronise state between React and Three.js. R3F eliminates the need to do this entirely, adding the voxel grid to the scene is no different from adding a button to a form, it is a component that mounts, updates when its props change, and unmounts cleanly.
+On top of the base layer sits **React Three Fiber** (henceforth R3F), it is a custom React renderer that maps JSX elements to three.js objects. R3F lets us describe a 3D scene using the same declarative, component-based model we use for the rest of the UI. Without it, we would have had to manually create objects, add them to the scene, remove them on clean-up, and synchronise state between React and Three.js. R3F eliminates the need to do this entirely, adding the voxel grid to the scene is no different from adding a button to a form, it is a component that mounts, updates when its props change, and unmounts cleanly.
 
 The third layer is **Drei**, a companion library of pre-built R3F components and hooks. Drei saved significant development time by providing these components/helpers. To name a few:
 
@@ -818,7 +820,7 @@ The abstraction provided by these three libraries was essential to completing th
 - R3F abstracted the Three.js API into React components we were familiar with
 - Drei abstracted common 3D patterns into single-line imports.
 
-The 3D rendering was by far the most technically demanding aspect of the frontend, and without this layer of abstractions it would not have been possible within the project's timeframe to implement the core features we wanted for the frontend.
+The 3D rendering was by far the most technically demanding aspect of the frontend, and without these layers of abstractions, it would not have been possible within the project's timeframe to implement the core features we wanted for the frontend.
 
 ### The Components
 
@@ -852,22 +854,22 @@ The `SceneCanvas` component is responsible for the rendering of the 3D Scene. A 
 
 ### VoxelGrid
 
-The `VoxelGrid` component uses an `InstanceMesh` to render the full 3D voxel grid, an `InstanceMesh` is a special **Three.js** class that draws many copies of the same geometry in a single GPU draw call. The `InstanceMesh` has two rendering modes based on if there is a simulation result loaded or not, if there is no ray response every cell in the grid is rendered as a white, low opacity cube. If there is an ray response then only the voxels present in the `currentFrame.indices` are positioned. We then set the colour of the voxel based off the `energy x numRays`, each voxel's energy is an extremely small float, we multiply these values by numRays to rescale is back to a normalised range between zero and one. We then linearly maps the normalised energy values from that range to the specified hue range.
+The `VoxelGrid` component uses an `InstanceMesh` to render the full 3D voxel grid, an `InstanceMesh` is a special **Three.js** class that draws many copies of the same geometry in a single GPU draw call. The `InstanceMesh` has two rendering modes based on if there is a simulation result loaded or not, if there is no ray response every cell in the grid is rendered as a white, low opacity cube. If there is an ray response then only the voxels present in the `currentFrame.indices` are positioned. We then set the colour of the voxel based off the `energy x numRays`, each voxel's energy is an extremely small float, we multiply these values by numRays to rescale is back to a normalised range between zero and one, as inside the simulation, the speaker's intensity (1) is divided equally among each of its emitted rays. We then linearly map the normalised energy values from that range to the specified hue range.
 
 - Hue 0.66 = blue (low energy)
 - Hue 1.0 = red (high energy)
 
-So a voxel with zero energy maps to blue, and a voxel at maximum energy maps to red, as shown below in figure 4.
+So a voxel with zero energy maps towards blue, and a voxel at maximum energy maps towards red, as shown below in figure 4.
 
 ![Voxels Heatmap](../assets/images/coloredImage.png){width=70%}
 
 #### Grid Dimensions
 
-The grid dimensions `nx`, `ny` and `nz` are derived from the scene's bounding box and the user defined voxel size, The dimensions are calculated identically to the C backend, `ciel((max - min) / voxelsize )`. The `gridIndextToPos` callback then converts each voxels flat index back to the actual world space coordinates, which is then offset by the bounding box minimum plus half the voxel size to centre each cube within its cell.
+The grid dimensions `nx`, `ny` and `nz` are derived from the scene's bounding box and the user defined voxel size, The dimensions are calculated identically to the C backend, `ciel((max - min) / voxelsize )`. The `gridIndexToPos` callback then converts each voxels flat index back to the actual world space coordinates, which is then offset by the bounding box minimum plus half the voxel size to centre each cube within its cell.
 
 #### InstanceMesh Optimisation
 
-When we create an `InstancedMesh`,Three.js allocates a GPU buffer large enough for exactly the number of voxels. This buffer size is fixed at creation time. For example if frame 1 has 500 active voxels and frame 2 has 12,000, you can't just dynamically grow the buffer instead we have to destroy the mesh and create a new mesh for each frame, which led to visual flickering of the grid and a massive drop in performance. The solution we came up with was to scan every frame in the simulation result and find the frame with the largest amount of active voxels. The mesh is then allocated that buffer size. This solution led to another optimisation that had to be made, if the buffer size was set to accommodate for 12,000 voxels then at frame 1 when there is only 500 active voxels the question arises how do we hide the 11500 unused voxels? For active voxels we render and position them as normal but for unused voxels we transform their cube geometry to a single point (`mesh.setMatrixAt(i, ZERO_MATRIX)`). The GPU still "draws" these instances, but they produce no pixels, reducing the cost of rendering them to essentially zero.
+When we create an `InstancedMesh`, Three.js allocates a GPU buffer large enough for exactly the number of voxels. This buffer size is fixed at creation time. For example if frame 1 has 500 active voxels and frame 2 has 12,000, we're unable to dynamically grow the buffer, instead we must to destroy the mesh and create a new mesh for each frame. This led to visual flickering of the grid and a substantial drop in performance. The solution we came up with was to scan every frame in the simulation result and find the frame with the largest amount of active voxels. The mesh is then allocated that buffer size. This solution led to another optimisation that had to be made; if the buffer size was set to accommodate for 12,000 voxels then at frame 1 when there is only 500 active voxels, how do we handle the remaining 11,500 voxels? For active voxels we render and position them as normal but for unused voxels we transform their cube geometry to a single point (`mesh.setMatrixAt(i, ZERO_MATRIX)`). The GPU still "draws" these instances, but they produce no pixels, reducing the cost of rendering them to essentially zero.
 
 ## Source and Direction Markers
 
@@ -887,7 +889,7 @@ The panel exposes five controls during the staging phase:
 - FPS.
 - Ability to replace the loaded model.
 
-The voxel size slider is worth noting in particular. Rather than allowing the user to drag to any arbitrary floating point value, the panel pre-computes the set of discrete voxel sizes at which the grid dimensions actually change. This prevents the user from dragging through a range of values that all produce the same grid, which would be confusing. The panel also displays the resulting voxel count in real time, warning the user if the count exceeds 500,000 — a threshold beyond which performance may degrade. Additionally, three visual toggles: grid visibility, texture, and wireframe, allowing the user to control how the model is displayed, making it easier to inspect the geometry and verify source placement before committing to a run. When viewing a completed simulation these staging controls are hidden, and the panel displays the read-only configuration and visual toggles.
+The voxel size slider is worth noting in particular. Rather than allowing the user to drag to any arbitrary floating point value, the panel pre-computes the set of discrete voxel sizes at which the grid dimensions actually change. This prevents the user from dragging through a range of values that all produce the same grid, which would be confusing, and would disrupt the user experience. The panel also displays the resulting voxel count in real time, warning the user if the count exceeds 500,000 — a threshold beyond which performance may degrade. Additionally, three visual toggles: grid visibility, texture, and wireframe, allowing the user to control how the model is displayed, making it easier to inspect the geometry and verify source placement before committing to running the simulation. When viewing a completed simulation these staging controls are hidden, and the panel displays the read-only configuration and visual toggles.
 
 ## Dashboard
 
@@ -899,7 +901,7 @@ Once a simulation has completed and its binary result has been parsed, the playb
 
 ## State Mangement
 
-In the early stages of the project all state lived in `useState` and `useEffect` hooks. This worked while the application was small. But as the component tree grew and more components needed access to the same data, we ran into the classic problem of prop drilling: passing state down multiple levels of nested components just so a deeply nested child could read or update it. To prevent prop drilling we switched to using **Zustand**, a lightweight state management library, that provides a store that can be accessed from any component. However we made the mistake of also putting the server data into the Zustand `scene-store`, this meant for every mutation we made that involved the backend such as creating, deleting or updating a simulation meant we had to manually trigger a refetch and write the fresh data back to the store, which led to UI displaying stale information and numerous bugs. The solution was to use **TanStack Query** to manage all server state and keep **Zustand** for client state.
+In the early stages of the project, all state lived in `useState` and `useEffect` hooks. This worked while the application was small. But as the component tree grew and more components needed access to the same data, we ran into the classic problem of prop drilling: passing state down multiple levels of nested components just so a deeply nested child could read or update it. To prevent prop drilling we switched to using **Zustand**, a lightweight state management library, that provides a store that can be accessed from any component. However we made the mistake of also putting the server data into the Zustand `scene-store`, this meant for every mutation we made that involved the backend such as creating, deleting or updating a simulation meant we had to manually trigger a refetch and write the fresh data back to the store, which led to UI displaying stale information and numerous bugs. The solution was to use **TanStack Query** to manage all server state and keep **Zustand** for client state management.
 
 ### Zustand
 
@@ -907,11 +909,11 @@ Zustand retains ownership of everything that is purely local to the browser sess
 
 ### TanStack
 
-TanStack Query manages everything that lives in the Appwrite database or is fetched over the network: the simulation list, individual simulation records, and the parsed ray response binaries. Unlike Zustand's synchronous state, this data can become stale at any moment, another tab could delete a simulation, or the C backend could finish a run while the user is on a different page, TanStack Query is designed to handle exactly this functionability.
+TanStack Query manages everything that lives in the Appwrite database or is fetched over the network: the simulation list, individual simulation records, and the parsed ray response binaries. Unlike Zustand's synchronous state, this data can become stale at any moment, another tab could delete a simulation, or the C backend could finish a run while the user is on a different page, TanStack Query is designed to handle exactly this functionality.
 
 ### Query Keys and Caching
 
-TanStack Query identifies every piece of cached data by a structured key. Rather than using flat strings, we defined a key structure in `query-keys.ts` that builds nested arrays. Every key begins with the root `["simulations"]`, then branches into more specific paths. After creating a new simulation, calling `invalidateQueries()` marks every simulation related cache entry as stale, triggering a background refetch for whichever queries are currently cached. It is worth noting that ray responses receive special treatment. A completed simulation's binary result never changes, so the `useRayResponse` hook is configured with `staleTime: Infinity`, meaning once parsed, the data is retrieved from memory on every subsequent visit without a refetch from the backend. This is what makes revisiting a saved simulation feel instantaneous.
+TanStack Query identifies every piece of cached data by a structured key. Rather than using flat strings, we defined a key structure in `query-keys.ts` that builds nested arrays. Every key begins with the root `["simulations"]`, then branches into more specific paths. After creating a new simulation, calling `invalidateQueries()` marks every simulation related cache entry as stale, triggering a background refetch for whichever queries are currently cached. It is worth noting that ray responses receive special treatment. A completed simulation's binary result never changes, so the `useRayResponse` hook is configured with `staleTime: Infinity`, meaning once parsed, the data is retrieved from memory on every subsequent visit without a refetch from the backend. This is what makes revisiting a saved simulation instantaneous.
 
 ## Appwrite
 
@@ -929,9 +931,7 @@ The forgot password page accepts an email address, validates it, and calls `acco
 
 ### Persistent Storage
 
-Our application of persistent storage serves two purposes, first the user's uploaded `.glb` file is stored in Appwrite storage ready to be reloaded when revisting a saved simulation. Second, the `ATRB` binary result returned by the C backend is uploaded to the same bucket as the `.glb` file. The database record that corrosponds to a simulation links both files by their IDs (`inputFileId` and `resultFileId`), allowing for efficient retrieval and deletion of simulations from the storage bucket and database.
-
-## Conclusion
+Our application of persistent storage serves two purposes, first the user's uploaded `.glb` file is stored in Appwrite storage ready to be reloaded when revisiting a saved simulation. Second, the binary result returned by the C backend is uploaded to the same bucket as the `.glb` file. The database record that corresponds to a simulation links both files by their IDs (`inputFileId` and `resultFileId`), allowing for efficient retrieval and deletion of simulations from the storage bucket and database.
 
 ## What we would do different
 
@@ -939,7 +939,7 @@ If we were to begin this project again, there are a number of design decisions w
 
 **Beam Tracing**. Our ray tracing implementation is stochastic, meaning that early specular reflections may be missed or under-sampled at lower ray counts. Beam tracing addresses this by expanding each ray into a volumetric beam covering a solid angle of space, guaranteeing that all specular reflection paths within that angle are found exactly rather than approximated. A hybrid approach, beam tracing for the first few orders of specular reflection, then stochastic ray tracing for the diffuse late reverberation, is the architecture used by tools like ODEON [^ref6] and is identified by Savioja and Svensson as the dominant pattern in modern room acoustic simulation [^ref16]. Incorporating this would have produced more reliable results at lower ray counts, directly reducing computation time.
 
-**Libaries** The main challenge that came with developing the frontend aspect of this project was the overwhelming size of the React ecosystem itself. For virtually every problem we encountered, whether it was routing, state management, data fetching, UI components, or table rendering, there existed a multitude of competing solutions. Deciding which library to adopt, and hoping that it suited the needs of the project, was one of the hardest hurdles to overcome during development. Libraries that seemed like the right choice early on sometimes proved to be suboptimal as requirements became clearer and/or changed. If we were to start again, the experience we have gained would allow us to make these decisions with far greater confidence. Had we known about the capabilities of some of the libraries such as TanStack and Shadcn from the outset, it would have significantly reduced the workload. Starting with this foundation would have freed up development time that could have been redirected towards the more technically demanding aspects of the project.
+**Libraries** The main challenge that came with developing the frontend aspect of this project was the overwhelming size of the React ecosystem itself. For virtually every problem we encountered, whether it was routing, state management, data fetching, UI components, or table rendering, there existed a multitude of competing solutions. Deciding which library to adopt, and hoping that it suited the needs of the project, was one of the hardest hurdles to overcome during development. Libraries that seemed like the right choice early on sometimes proved to be suboptimal as requirements became clearer and/or changed. If we were to start again, the experience we have gained would allow us to make these decisions with far greater confidence. Had we known about the capabilities of some of the libraries such as TanStack and `shadcn` from the outset, it would have significantly reduced the workload. Starting with this foundation would have freed up development time that could have been redirected towards the more technically demanding aspects of the project, or future ideas we did not get the chance to implement.
 
 ## Conclusion and Future Plans
 
@@ -1018,7 +1018,6 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | SAH Implementation                                                          |
 |             | Mini Tree Implementation                                                    |
 |             | AABB, Triangle Groups, & BVH Tests                                          |
-
 
 [^ref1]: [Möller-Trumbore Intersection Algorithm](https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm)
 
