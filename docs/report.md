@@ -435,6 +435,24 @@ unsigned char get_nth_byte(float num, int byte)
 }
 ```
 
+#### Final Touches
+
+The final two steps of the Bonsai implementation are for optimisation purposes and as we were running short on time for the project, we decided to ignore them and keep our scene broken up into mini trees.
+
+This meant our final ray workflow was slightly different,
+for each mini tree in the scene, we check the root AABB for an intersection.
+If there is an intersection we traverse the tree,
+maintaining a stack of nodes that the ray intersects with.
+When a leaf node is reached we check all triangles in the node for an intersection,
+using the Möller-Trumbore ray/triangle intersection algorithm.
+Once all mini trees and their relevant nodes have been searched,
+we are left with the closest position of intersection, if any,
+the triangle with which it intersected,
+and the direction the resulting ray bounces in.
+
+<!-- TODO: add flowchart maybe -->
+<!-- TODO: add pictures and graph -->
+
 ## C Library
 
 As mentioned before, C has no classes or namespaces. Building a library with a clean public interface that hides internals therefore requires deliberate design choices. The following describes the pattern we used to achieve this.
