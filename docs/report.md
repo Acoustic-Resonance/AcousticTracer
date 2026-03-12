@@ -962,7 +962,8 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | Ray Tree Design, Traversal, and Implementation                              |
 |             | Ray Model Intersection                                                      |
 |             | Simulation to Voxel Data                                                    |
-|             | C Server/Endpoint for Web Application, Frontend Raytracer API               |
+|             | Acoustic Raytracer C Server                                                 |
+|             | Frontend Raytracer API Endpoint                                             |
 |             | Frontend Voxel Data Rendering and Visualisation                             |
 |             | Handling Frontend Simulation Settings and Scene Configuration Communication |
 |             | User Flow & User Experience                                                 |
