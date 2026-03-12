@@ -784,10 +784,8 @@ When the user submits a simulation, the `useSceneActions` performs the following
 
 1. Upload the `.glb` file.
 2. Create a database record.
-3. Navigates to the dashboard immediately
+3. Navigates to the dashboard immediately.
 4. Runs the ray tracer in the background.
-
-On success, the binary result is uploaded to Appwrite storage and the parsed `RayFrame[]` is added into the TanStack Query cache so the result is available instantly when the user revisits the simulation.
 
 The `runRaytracer` function itself is a `fetch` POST to the C backend's `/run` endpoint, sending the configuration as JSON and receiving the binary response.
 
@@ -888,7 +886,7 @@ In the early stages of the project all state lived in `useState` and `useEffect`
 
 ### Zustand
 
-Zustand retained ownership of everything that is purely local to the browser session such as voxel size, UI toggles, the current playback frame index, and the pending upload file. These values change frequently so a cache-based solution would be unnecessary.
+Zustand retains ownership of everything that is purely local to the browser session such as voxel size, UI toggles, the current playback frame index, and the pending upload file. These values change frequently so a cache-based solution would be unnecessary.
 
 ### TanStack
 
@@ -896,26 +894,13 @@ TanStack Query manages everything that lives in the Appwrite database or is fetc
 
 ### Query Keys and Caching
 
-TanStack Query identifies every piece of cached data by a structured key. Rather than using flat strings, we defined a key structure in `query-keys.ts` that builds nested arrays:
-
-```typescript
-export const simulationKeys = {
-  all:           ["simulations"] as const,
-  lists:         (userID?: string) => [...simulationKeys.all, "list", userID] as const,
-  details:       () => [...simulationKeys.all, "detail"] as const,
-  detail:        (id: string) => [...simulationKeys.details(), id] as const,
-  rayResponses:  () => [...simulationKeys.all, "rayResponse"] as const,
-  rayResponse:   (fileId: string) => [...simulationKeys.rayResponses(), fileId] as const,
-};
-```
-
-The hierarchy is the key design decision here. Every key begins with the root `["simulations"]`, then branches into more specific paths. After creating a new simulation, calling `invalidateQueries()` marks every simulation-related cache entry as stale, triggering a background refetch for whichever queries are currently cached. It is worth noting that ray responses receive special treatment. A completed simulation's binary result never changes, so the `useRayResponse` hook is configured with `staleTime: Infinity`, meaning once parsed, the data is retrieved from memory on every subsequent visit without a refetch from the backend. This is what makes revisiting a saved simulation feel instantaneous.
+TanStack Query identifies every piece of cached data by a structured key. Rather than using flat strings, we defined a key structure in `query-keys.ts` that builds nested arrays. Every key begins with the root `["simulations"]`, then branches into more specific paths. After creating a new simulation, calling `invalidateQueries()` marks every simulation related cache entry as stale, triggering a background refetch for whichever queries are currently cached. It is worth noting that ray responses receive special treatment. A completed simulation's binary result never changes, so the `useRayResponse` hook is configured with `staleTime: Infinity`, meaning once parsed, the data is retrieved from memory on every subsequent visit without a refetch from the backend. This is what makes revisiting a saved simulation feel instantaneous.
 
 ## Appwrite
 
 ### Authentication
 
-Authentication is provided by Appwrite, we use three clients provided by appwrite that are initialised in `lib/appwrite.ts`:
+Authentication is provided by Appwrite, we use three clients provided by Appwrite that are initialised in `lib/appwrite.ts`:
 
 - `Account` for authentication.
 - `TablesDB` for the simulation database.
@@ -934,6 +919,8 @@ Our application of persistent storage serves two purposes, first the user's uplo
 If we were to begin this project again, there are a number of design decisions we would revisit.
 
 **Beam Tracing**. Our ray tracing implementation is stochastic, meaning that early specular reflections may be missed or under-sampled at lower ray counts. Beam tracing addresses this by expanding each ray into a volumetric beam covering a solid angle of space, guaranteeing that all specular reflection paths within that angle are found exactly rather than approximated. A hybrid approach, beam tracing for the first few orders of specular reflection, then stochastic ray tracing for the diffuse late reverberation, is the architecture used by tools like ODEON [^ref6] and is identified by Savioja and Svensson as the dominant pattern in modern room acoustic simulation [^ref16]. Incorporating this would have produced more reliable results at lower ray counts, directly reducing computation time.
+
+**Libaries** The main challenge that came with developing the frontend aspect of this project was the overwhelming size of the React ecosystem itself. For virtually every problem we encountered, whether it was routing, state management, data fetching, UI components, or table rendering, there existed a multitude of competing solutions. Deciding which library to adopt, and hoping that it suited the needs of the project, was one of the hardest hurdles to overcome during development. Libraries that seemed like the right choice early on sometimes proved to be suboptimal as requirements became clearer and/or changed. If we were to start again, the experience we have gained would allow us to make these decisions with far greater confidence. Had we known about the capabilities of some of the libraries such as TanStack and Shadcn from the outset, it would have significantly reduced the workload. Starting with this foundation would have freed up development time that could have been redirected towards the more technically demanding aspects of the project.
 
 ## Conclusion and Future Plans
 
