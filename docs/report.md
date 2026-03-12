@@ -452,6 +452,7 @@ unsigned char get_nth_byte(float num, int byte)
 #### Final Touches
 
 The final two steps of the Bonsai implementation are for optimisation purposes and as we were running short on time for the project, we decided to ignore them and keep our scene broken up into mini trees.
+As a result our scene tree provides a constant performance increase but not an exponential increase. The performance difference can be seen in Figure \ref{fig:bvh-graph}
 
 This meant our final ray workflow was slightly different,
 for each mini tree in the scene, we check the root AABB for an intersection.
@@ -464,10 +465,12 @@ we are left with the closest position of intersection, if any,
 the triangle with which it intersected,
 and the direction the resulting ray bounces in.
 
-![Performance graph comparing with and without BVH](../assets/images/bvh_graph.png)
-
-<!-- TODO: add flowchart maybe -->
-<!-- TODO: add pictures and graph -->
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{../assets/images/bvh_graph.png}
+    \captionof{figure}{Graph comparing ray performance with and without BVH}
+    \label{fig:bvh-graph}
+\end{figure}
 
 ## C Library
 
@@ -751,9 +754,7 @@ function documentToSimulation(doc: SimulationDocument): Simulation {
     resultFileId: doc.result_file_id,
     computeTimeMs: doc.compute_time_ms,
     numVoxels: doc.num_voxels,
-    fileName: doc.file_name,
-    config: {
-      voxelSize: doc.voxel_size,
+    fileName: doc. scene tree results in a       voxelSize: doc.voxel_size,
       fps: doc.fps,
       numRays: doc.num_rays,
       material: doc.material,
