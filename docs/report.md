@@ -875,7 +875,7 @@ When we create an `InstancedMesh`, Three.js allocates a GPU buffer large enough 
 
 The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two **Drei** `TransformControls` components to interactively position two markers. A `useFrame` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is committed to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is commited to the store.
 
-### Addiontal Key Components
+### Additional Key Components
 
 ## Config Panel
 
@@ -933,7 +933,7 @@ The forgot password page accepts an email address, validates it, and calls `acco
 
 Our application of persistent storage serves two purposes, first the user's uploaded `.glb` file is stored in Appwrite storage ready to be reloaded when revisiting a saved simulation. Second, the binary result returned by the C backend is uploaded to the same bucket as the `.glb` file. The database record that corresponds to a simulation links both files by their IDs (`inputFileId` and `resultFileId`), allowing for efficient retrieval and deletion of simulations from the storage bucket and database.
 
-## What we would do different
+## What Would be done Differently
 
 If we were to begin this project again, there are a number of design decisions we would revisit.
 
