@@ -464,6 +464,8 @@ we are left with the closest position of intersection, if any,
 the triangle with which it intersected,
 and the direction the resulting ray bounces in.
 
+![Performance graph comparing with and without BVH](../assets/images/bvh_graph.png)
+
 <!-- TODO: add flowchart maybe -->
 <!-- TODO: add pictures and graph -->
 
