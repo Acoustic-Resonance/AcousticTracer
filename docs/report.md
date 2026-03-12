@@ -865,7 +865,7 @@ So a voxel with zero energy maps towards blue, and a voxel at maximum energy map
 
 #### Grid Dimensions
 
-The grid dimensions `nx`, `ny` and `nz` are derived from the scene's bounding box and the user defined voxel size, The dimensions are calculated identically to the C backend, `ciel((max - min) / voxelsize )`. The `gridIndexToPos` callback then converts each voxels flat index back to the actual world space coordinates, which is then offset by the bounding box minimum plus half the voxel size to centre each cube within its cell.
+The grid dimensions `nx`, `ny` and `nz` are derived from the scene's bounding box and the user defined voxel size, The dimensions are calculated identically to the C backend, `ceil((max - min) / voxelsize )`. The `gridIndexToPos` callback then converts each voxels flat index back to the actual world space coordinates, which is then offset by the bounding box minimum plus half the voxel size to centre each cube within its cell.
 
 #### InstanceMesh Optimisation
 
@@ -873,7 +873,7 @@ When we create an `InstancedMesh`, Three.js allocates a GPU buffer large enough 
 
 ## Source and Direction Markers
 
-The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two **Drei** `TransformControls` components to interactively position two markers. A `useFrame` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is committed to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is commited to the store.
+The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two **Drei** `TransformControls` components to interactively position two markers. A `useFrame` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is committed to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is committed to the store.
 
 ### Additional Key Components
 
@@ -992,7 +992,7 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | TanStack Query Integration                                                  |
 |             | Zustand State Management                                                    |
 |             | Appwrite Integration                                                        |
-|             | Authentication and Session Mangement                                        |
+|             | Authentication and Session Management                                       |
 |             | Frontend Voxel Data Rendering and Visualisation                             |
 |             | Handling Frontend Simulation Settings and Scene Configuration Communication |
 |             | C Server/Endpoint for Web Application, Frontend Raytracer API               |
