@@ -218,7 +218,7 @@ the team began working on a better intersection solution.
 The industry solution to this problem is to break the scene up into a tree that can be traversed,
 exponentially reducing the number of required triangle intersection tests.
 
-Before we can get around to discussing scene tree implementations, we must first,
+Before we can get around to discussing scene tree implementations, we must first
 talk about how to split a scene, to produce a useful tree.
 In order to create a useful tree from a given scene, we must determine a series of "optimal" splitting points, in order to minimise the size and overlap of resultant bounding boxes.
 Unfortunately, as in many areas of computer science, these two criteria cannot both be perfectly optimised at the same time.
