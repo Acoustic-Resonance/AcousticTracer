@@ -332,6 +332,35 @@ then the other three arrays are iterated through moving triangles left and right
 In theory, this slowed down our $O(n)$ solution as we now had to iterate through 4 arrays as opposed to only the 3 being partitioned,
 but thankfully this wasn't a substantial performance decrease in practice.
 
+#### Generating Triangle Groups
+
+The first two steps are closely related to one another,
+as they both work toward generating subgroups of the scene's triangles.  
+These steps begins with calculating the AABB of each triangle in the scene.
+This is a simple calculation carried out by iterating through the triangle's three vertices,
+if a point is found that is greater than the AABB's max point,
+then it is set to the max, and the reverse for the AABB's min point.  
+The AABB's midpoint is easily found by summing the max and min vectors and
+getting their halfway the resultant's halfway point.
+
+The next step was the first point of difficulty in the BVH algorithm.  
+We take the list of all triangles in the scene and split based on their respective midpoints.
+We first calculate the length of each axis for the group's AABB (initially the scene's AABB),
+keeping track of the longest axis.
+The halfway index into the array of triangles is found,
+and the triangles to the left of this index, when ordered by the longest axis, are marked,
+keeping track of the number of marked triangles.  
+The marked triangles and the number of such, is then used to partition the other 3 arrays,
+so all 4 windows represent the same subsection.  
+This step is applied recursively, using a stack to maintain the left and right splits,
+until each triangle group, or split, is of size `N`,
+or a group's triangles are packed tightly and a split would be unfavourable.  
+This variable `N` is provided in the BVH config allowing for a variable sized triangle group,
+depending on the scene's triangle count.
+We found a size of about `100 - 1000` for a scene of size `50,000 - 200,000` (average range of test scene triangle counts) to be beneficial;
+this range favoured the higher performant operation, triangle groups generation,
+whilst splitting our scene into a manageable number of groupings, reducing `malloc` calls.
+
 ## C Library
 
 As mentioned before, C has no classes or namespaces. Building a library with a clean public interface that hides internals therefore requires deliberate design choices. The following describes the pattern we used to achieve this.
