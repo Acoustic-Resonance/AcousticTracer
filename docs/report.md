@@ -221,9 +221,9 @@ exponentially reducing the number of required triangle intersection tests.
 Before we can get around to discussing scene tree implementations, we must first,
 talk about how to split a scene, to produce a useful tree.
 In order to create a useful tree from a given scene, we must determine a series of "optimal" splitting points, in order to minimise the size and overlap of resultant bounding boxes.
-
 Unfortunately, as in many areas of computer science, these two criteria cannot both be perfectly optimised at the same time.
 This is where object vs spatial based splits come into play.
+
 A scene can be split in two ways, using an object-based, or a spatial-based split[^ref12].  
 An object split means splitting a scene based on object boundaries,
 whereas a spatial split, involves splitting based on space alone,
@@ -232,21 +232,21 @@ The advantage of an object-based split is the removal of the possibility of obje
 with the cost of overlapping bounding boxes;
 introducing the need to check multiple bounding boxes to find the nearest triangle.
 On the other hand, spatial splits can result in a more optimal bounding box,
-with the extra cost of double counting objects.
+with the added cost of double counting objects.
 
 We chose to split our scene using object-based methods,
 as these often involve simpler algorithms, and are best suited for scenes with similarly sized, well-distributed triangles, which fit for the simulation's intended scenes.  
 This meant using a Bounding Volume Hierarchy (BVH) to represent our scene tree.  
 A BVH is a representation of a scene, built through a series of object-based splits,
 resulting in a binary tree, where leaf nodes are objects, and internal nodes are bounding boxes for the aggregation of all it's descending nodes.
-Ray-triangle are then carried out by traversing the tree,
+Ray-triangle intersections are then carried out by traversing the tree,
 checking if the ray intersects with a node's bounding box,
-which determines if it's children are checked or discarded.  
+before running the more expensive ray-triangle intersection test.
 There are a number of decisions involved when building a BVH,
 the first being, how to represent the bounding box of a triangle.
 The most common representations are a sphere or a cuboid (also known as an Axis-Aligned Bounding Box).
 We went with an AABB representation as while the intersection test is more computationally intensive,
-the resultant bounding box is much tighter for most triangles when using an AABB,
+the resultant bounding box is much tighter for triangles when using an AABB,
 than with a sphere.  
 We kept the definition of an AABB simple:
 
@@ -275,7 +275,7 @@ This implementation was chosen for a number of reasons:
 
 Our implementation of the Bonsai algorithm is not a one-to-one replica,
 as no official pseudo-code could be found.
-Therefore, we relied on the paper's technical description along with previous BVH knowledge from reading other implementation pseudo-code.
+Therefore, we relied on the paper's technical description along with previous BVH knowledge from reading other implementations' pseudo-code.
 
 The _original_ Bonsai algorithm is composed of the following 5 steps:
 
@@ -304,7 +304,7 @@ typedef struct {
 
 These two definitions are crucial in the implementation of our BVH.
 The type `AT_TriArray` is simply a pointer to an `unsigned int`,
-which is being used as the start of an array of `unsigned int`,
+which is being used as the "entrance" of an array of `unsigned int`,
 representing indices of triangles.[^foot1]
 
 [^foot1]: Initially, each triangle group, and mini tree held an `AT_Triangle` pointer,
@@ -321,8 +321,8 @@ and the four arrays of triangle indices, these arrays being:
 
 **N.B.** Each array contains the same indices,
 with only the ordering they are found in differing.
-This allows the same "window" into all array to be defined by only a start index and the number of triangles.
-This concept is integral to the implementation of our triangle groups and later BVH tree.
+This allows the same "window" into all arrays to be defined by only a start index and the number of triangles.
+This concept is integral to the implementation of our triangle groups and later, BVH tree.
 
 The $i^{th}$ index in a given array is the index of a triangle in the array of triangles,
 where the resultant triangle is the $i^{th}$ triangle when sorted based on the relevant predicate.
@@ -350,7 +350,7 @@ but thankfully this wasn't a substantial performance decrease in practice.
 
 The first two steps are closely related to one another,
 as they both work toward generating subgroups of the scene's triangles.  
-These steps begins with calculating the AABB of each triangle in the scene.
+These steps begin with calculating the AABB of each triangle in the scene.
 This is a simple calculation carried out by iterating through the triangle's three vertices,
 if a point is found that is greater than the AABB's max point,
 then it is set to the max, and the reverse for the AABB's min point.  
