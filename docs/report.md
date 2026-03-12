@@ -965,7 +965,6 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | Visualisation Replay Feature                                                |
 |             | Ray and Voxel Data Optimization                                             |
 |             | Ray, Model, & Networking Tests                                              |
-
 |             |                                                                             |
 | Patryk      | C Library Design and Specification                                          |
 |             | Scene and Simulation struct design and implementation                       |
