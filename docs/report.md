@@ -733,7 +733,7 @@ The application's provider stack is composed in `provider.tsx`:
 
 ### Routing and Protected Routes
 
-Client-side routing is handled by the React Router, using `createBrowserRouter` to define the full route tree. Every route component is lazy-loaded so the browser only downloads the JavaScript for a page when the user first navigates to it. Each route is also wrapped in its own `ErrorBoundary` so that a crash on one page does not affect the entire application. The home page is public but renders differently depending on whether the user is logged in. The authentication, `/login` and `/register` are also public and accessible without a session. A catch-all route renders a 404 page with a link back to the home page. The `/dashboard`, `/scene`, and `/settings`are nested under a `ProtectedRoute` layout component. This component reads the current user from the `UserProvider` context. If no session exists, the user is redirected to the home page, only when an authenticated session is confirmed does the component render its child routes.
+Client-side routing is handled by the React Router, using `createBrowserRouter` to define the full route tree. Every route component is lazy-loaded so the browser only downloads the JavaScript for a page when the user first navigates to it. Each route is also wrapped in its own `ErrorBoundary` so that a crash on one page does not affect the entire application. The home page is public but renders differently depending on whether the user is logged in. The authentication, `/login` and `/register` are also public and accessible without a session. A catch-all route renders a 404 page with a link back to the home page. The `/dashboard`, `/scene`, and `/settings` are nested under a `ProtectedRoute` layout component. This component reads the current user from the `UserProvider` context. If no session exists, the user is redirected to the home page, only when an authenticated session is confirmed does the component render its child routes.
 
 ## The Data Layer
 
@@ -802,7 +802,7 @@ The `runRaytracer` function itself is a `fetch` POST to the C backend's `/run` e
 
 ### Three.js, React Three Fiber, and Drei
 
-The 3D Rendering aspect of the frontend consisted of 3 layers, At the base layer sits **Three.js**. It gives us access to powerful API abstractions, which allows us to translate developer-friendly code into the complex WebGL instructions needed to render 3D graphics. The frontend of this project would not have been possible without this library. It gave us access to critical methods such as, `InstancedMesh()`, `BufferGeometry()`, `Matrix4()`, `Color()`,and `Box3()`, that were used throughout the development of this project.
+The 3D Rendering aspect of the frontend consisted of 3 layers, At the base layer sits **Three.js**. It gives us access to powerful API abstractions, which allows us to translate developer-friendly code into the complex WebGL instructions needed to render 3D graphics. The frontend of this project would not have been possible without this library. It gave us access to critical methods such as, `InstancedMesh()`, `BufferGeometry()`, `Matrix4()`, `Color()`,and `Box3()`, that were used throughout the development process.
 
 On top of the base layer sits **React Three Fiber** (henceforth R3F), it is a custom React renderer that maps JSX elements to three.js objects. R3F lets us describe a 3D scene using the same declarative, component-based model we use for the rest of the UI. Without it, we would have had to manually create objects, add them to the scene, remove them on clean-up, and synchronise state between React and Three.js. R3F eliminates the need to do this entirely, adding the voxel grid to the scene is no different from adding a button to a form, it is a component that mounts, updates when its props change, and unmounts cleanly.
 
@@ -814,10 +814,10 @@ The third layer is **Drei**, a companion library of pre-built R3F components and
 - `TransformControls` - for the source placement gizmos.
 - `Environment` - for scene lighting.
 
-The abstraction provided by these three libraries was essential to completing this project.
+The abstraction provided by these three libraries was essential to completing this project:
 
 - Three.js abstracted WebGL code into objects and methods we could deal with.
-- R3F abstracted the Three.js API into React components we were familiar with
+- R3F abstracted the Three.js API into React components we were familiar with.
 - Drei abstracted common 3D patterns into single-line imports.
 
 The 3D rendering was by far the most technically demanding aspect of the frontend, and without these layers of abstractions, it would not have been possible within the project's timeframe to implement the core features we wanted for the frontend.
@@ -861,7 +861,7 @@ The `VoxelGrid` component uses an `InstanceMesh` to render the full 3D voxel gri
 
 So a voxel with zero energy maps towards blue, and a voxel at maximum energy maps towards red, as shown below in figure 4.
 
-![Voxels Heatmap](../assets/images/coloredImage.png){width=70%}
+![Voxel Heatmap](../assets/images/coloredImage.png){width=70%}
 
 #### Grid Dimensions
 
@@ -873,7 +873,7 @@ When we create an `InstancedMesh`, Three.js allocates a GPU buffer large enough 
 
 ## Source and Direction Markers
 
-The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two **Drei** `TransformControls` components to interactively position two markers. A `useFrame` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is committed to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is committed to the store.
+The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two Drei `TransformControls` components to interactively position two markers. A `useFrame()` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is committed to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is commited to the store.
 
 ### Additional Key Components
 
@@ -889,7 +889,7 @@ The panel exposes five controls during the staging phase:
 - FPS.
 - Ability to replace the loaded model.
 
-The voxel size slider is worth noting in particular. Rather than allowing the user to drag to any arbitrary floating point value, the panel pre-computes the set of discrete voxel sizes at which the grid dimensions actually change. This prevents the user from dragging through a range of values that all produce the same grid, which would be confusing, and would disrupt the user experience. The panel also displays the resulting voxel count in real time, warning the user if the count exceeds 500,000 — a threshold beyond which performance may degrade. Additionally, three visual toggles: grid visibility, texture, and wireframe, allowing the user to control how the model is displayed, making it easier to inspect the geometry and verify source placement before committing to running the simulation. When viewing a completed simulation these staging controls are hidden, and the panel displays the read-only configuration and visual toggles.
+The voxel size slider is worth noting in particular. Rather than allowing the user to drag to any arbitrary floating point value, the panel pre-computes the set of discrete voxel sizes at which the grid dimensions actually change. This prevents the user from dragging through a range of values that all produce the same grid, which would be confusing, and would disrupt the user experience. The panel also displays the resulting voxel count in real time, warning the user if the count exceeds 500,000 — a threshold beyond which performance may degrade. Additionally, there are three visual toggles: grid visibility, texture, and wireframe, allowing the user to control how the model is displayed, making it easier to inspect the geometry and verify source placement before committing to running the simulation. When viewing a completed simulation these staging controls are hidden, and the panel displays the read-only configuration and visual toggles.
 
 ## Dashboard
 
@@ -913,7 +913,7 @@ TanStack Query manages everything that lives in the Appwrite database or is fetc
 
 ### Query Keys and Caching
 
-TanStack Query identifies every piece of cached data by a structured key. Rather than using flat strings, we defined a key structure in `query-keys.ts` that builds nested arrays. Every key begins with the root `["simulations"]`, then branches into more specific paths. After creating a new simulation, calling `invalidateQueries()` marks every simulation related cache entry as stale, triggering a background refetch for whichever queries are currently cached. It is worth noting that ray responses receive special treatment. A completed simulation's binary result never changes, so the `useRayResponse` hook is configured with `staleTime: Infinity`, meaning once parsed, the data is retrieved from memory on every subsequent visit without a refetch from the backend. This is what makes revisiting a saved simulation instantaneous.
+TanStack Query identifies every piece of cached data by a structured key. Rather than using flat strings, we defined a key structure in `query-keys.ts` that builds nested arrays. Every key begins with the root `["simulations"]`, then branches into more specific paths. After creating a new simulation, calling `invalidateQueries()` marks every simulation related cache entry as stale, triggering a background refetch for whichever queries are currently cached. It is worth noting that ray responses receive special treatment. A completed simulation's binary result never changes, so the `useRayResponse` hook is configured with `staleTime: Infinity`, meaning once parsed, the data is retrieved from memory on every subsequent visit without a refetch from the backend. This is what makes revisiting a saved simulation near instantaneous.
 
 ## Appwrite
 
@@ -925,13 +925,13 @@ Authentication is provided by Appwrite, we use three clients provided by Appwrit
 - `TablesDB` for the simulation database.
 - `Storage` for file uploads.
 
-The web app supports two authentication methods: email/password and Google OAuth 2.0. The login page presents an email and password form alongside a "Continue with Google" button. On submission, Appwrite's `createEmailPasswordSession` is called, and on success the user is redirected to the home page. The registration page adds a name field and enforces client-side validation before calling Appwrite's registration endpoint, which automatically creates a session so the user is logged in immediately after signing up. Alternatively Google OAuth follows a redirect flow, with Appwrite opening the Google consent screen. Once signed up, the user is redirected back to the web app and the `secret` and `userId` parameters in the URL are detected and exchanged for an Appwrite session token, logging the user in.
+Our Application supports two authentication methods: email/password and Google OAuth 2.0. The login page presents an email and password form alongside a "Continue with Google" button. On submission, Appwrite's `createEmailPasswordSession` is called, and on success the user is redirected to the home page. The registration page adds a name field and enforces client-side validation before calling Appwrite's registration endpoint, which automatically creates a session so the user is logged in immediately after signing up. Alternativly Google OAuth follows a redirect flow, with Appwrite opening the Google consent screen. Once signed up, the user is redirected back to the web app and the `secret` and `userId` parameters in the URL are detected and exchanged for an Appwrite session token, logging the user in.
 
 The forgot password page accepts an email address, validates it, and calls `account.createRecovery` to send a recovery email. The page then transitions from the form view to a confirmation screen prompting the user to check their inbox, with a "try again" option if the email does not arrive. The reset password page reads the `userId` and `secret` from the recovery link's URL parameters and presents a new password form. On a successful reset, the user is redirected back to the login page.
 
 ### Persistent Storage
 
-Our application of persistent storage serves two purposes, first the user's uploaded `.glb` file is stored in Appwrite storage ready to be reloaded when revisiting a saved simulation. Second, the binary result returned by the C backend is uploaded to the same bucket as the `.glb` file. The database record that corresponds to a simulation links both files by their IDs (`inputFileId` and `resultFileId`), allowing for efficient retrieval and deletion of simulations from the storage bucket and database.
+Every uploaded `.glb` model file and the binary result generated by the C backend are stored in Appwrite storage. This ensures that simulations can be revisited, replayed, and managed without loss of data or manual intervention. By linking both files through their unique IDs (`inputFileId` and `resultFileId`) in the database record, the system guarantees efficient retrieval, association, and deletion of simulation assets.
 
 ## What Would be done Differently
 
