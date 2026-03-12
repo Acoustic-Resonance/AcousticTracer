@@ -420,7 +420,7 @@ where $n$ is the number of items, and $d$ is the number of "digits" in the large
 The problem with using Radix Sort is that it only works with positive integers,
 while our triangles were made up of three-dimensional vectors represented using three  `floats`.  
 We sort the array's based on the midpoint of the triangles,
-so we needed an revertible function that mapped $[-FLT\_MAX, FLT\_MAX]$ to a positive integer while maintaining relative ordering.  
+so we needed an invertible function that mapped $[-FLT\_MAX, FLT\_MAX]$ to a positive integer while maintaining relative ordering.  
 We came up with the following mapping,
 for negative floats we flip all bits,
 whereas for positive floats we only flip the sign bit.
@@ -867,7 +867,7 @@ When we create an `InstancedMesh`, Three.js allocates a GPU buffer large enough 
 
 ### Source and Direction Markers
 
-The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two Drei `TransformControls` components to interactively position two markers. A `useFrame()` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is committed to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is commited to the store.
+The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two Drei `TransformControls` components to interactively position two markers. A `useFrame()` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is committed to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is committed to the store.
 
 ## Additional Key Components
 
@@ -919,7 +919,7 @@ Authentication is provided by Appwrite, we use three clients provided by Appwrit
 - `TablesDB` for the simulation database.
 - `Storage` for file uploads.
 
-Our Application supports two authentication methods: email/password and Google OAuth 2.0. The login page presents an email and password form alongside a "Continue with Google" button. On submission, Appwrite's `createEmailPasswordSession` is called, and on success the user is redirected to the home page. The registration page adds a name field and enforces client-side validation before calling Appwrite's registration endpoint, which automatically creates a session so the user is logged in immediately after signing up. Alternativly Google OAuth follows a redirect flow, with Appwrite opening the Google consent screen. Once signed up, the user is redirected back to the web app and the `secret` and `userId` parameters in the URL are detected and exchanged for an Appwrite session token, logging the user in.
+Our Application supports two authentication methods: email/password and Google OAuth 2.0. The login page presents an email and password form alongside a "Continue with Google" button. On submission, Appwrite's `createEmailPasswordSession` is called, and on success the user is redirected to the home page. The registration page adds a name field and enforces client-side validation before calling Appwrite's registration endpoint, which automatically creates a session so the user is logged in immediately after signing up. Alternatively Google OAuth follows a redirect flow, with Appwrite opening the Google consent screen. Once signed up, the user is redirected back to the web app and the `secret` and `userId` parameters in the URL are detected and exchanged for an Appwrite session token, logging the user in.
 
 The forgot password page accepts an email address, validates it, and calls `account.createRecovery` to send a recovery email. The page then transitions from the form view to a confirmation screen prompting the user to check their inbox, with a "try again" option if the email does not arrive. The reset password page reads the `userId` and `secret` from the recovery link's URL parameters and presents a new password form. On a successful reset, the user is redirected back to the login page.
 
@@ -992,7 +992,7 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | C Server/Endpoint for Web Application, Frontend Raytracer API               |
 |             | User Flow & User Experience                                                 |
 |             | Visualisation Replay Feature                                                |
-|             | Ray and Voxel Data Optimization                                             |****
+|             | Ray and Voxel Data Optimization                                             |
 |             | InstancedMesh Optimisation                                                  |
 |             | Discrete Voxel Size Slider                                                  |
 |             | Persistent Storage                                                          |
