@@ -661,25 +661,25 @@ The frontend has three responsibilities that we discussed and outlined early in 
 
 Additional challenges included writing per-frame transform matrices directly into GPU-backed buffers, clamping 3D coordinates to axis-aligned bounding boxes during drag interactions, and orchestrating an asynchronous pipeline spanning two independent backends.
 
-### Technology Decisions
+## Technology Decisions
 
 Before delving into the architectural design and implementation, this subsection briefly describes the technologies used and why they were chosen.
 
-#### React
+### React
 
 React was chosen as the UI framework because a significant amount of time had been invested into developing skills with it before and during the early stages of the project, completing Scrimba's introductory course and the majority of the advanced React course. That preparation provided enough fluency with React's component model, hooks, and ecosystem to be productive from the first week.
 
-#### TypeScript
+### TypeScript
 
 The initial skeleton was plain JavaScript. It quickly became apparent that JavaScript alone would not be sufficient, the project was hitting runtime crashes caused by misspelled `prop` names and `undefined` values propagating silently through the component tree, bugs that TypeScript's structural type system catches at compile time. Time was invested during the first three weeks of development learning TypeScript alongside developing the codebase.
 
-#### Tailwind CSS
+### Tailwind CSS
 
 Hand-written CSS files worked adequately while the project had few components. Once that count increased, issues started to arise. Tailwind eliminated this problem entirely by moving styling into utility classes located within the JSX. This co-location is where Tailwind and React complement each other naturally, because React components are self-contained, having the styling live inline as class names means a component's appearance, behaviour, and structure are all visible in a single file. Tailwind v4's CSS-native `@theme` directives allowed us to define project-wide design tokens directly in `index.css`.
 
 ### UI Design
 
-Towards the end of the project, after the core features of the frontend had been developed and optimised, the need for a polished UI could no longer be postponed. Building these from scratch would have been a significant time investment that we did not have the luxury of. We found **shadcn/ui**, a collection of copy-and-paste React components built on **Radix UI** primitives and styled with Tailwind. This approach aligned with our existing Tailwind-based styling and allowed incremental adoption.
+In the early stages of the project, we manually designed and implemented the UI. However, it soon became clear that achieving a working product would require us to prioritize the more technically demanding aspects of the project. Building every UI component from scratch would have been a significant time investment, luckily we were still able to focus on the these technically demanding features by leveraging the **shadcn/ui** library: a collection of ready-to-use React components built on **Radix UI** primitives and styled with Tailwind. This approach fit seamlessly with our existing Tailwind-based styling, and still allowed us to develop custom components as required.
 
 ## The Architecture
 
@@ -816,11 +816,11 @@ The abstraction provided by these three libraries was essential to completing th
 
 The 3D rendering was by far the most technically demanding aspect of the frontend, and without these layers of abstractions, it would not have been possible within the project's timeframe to implement the core features we wanted for the frontend.
 
-### The Components
+## The Rendering Components
 
 Having outlined the rendering stack, the following section walks through the main components that were built on top of it. Each component demonstrates how the three layers described above were combined in actual practice.
 
-#### SceneCanvas
+### SceneCanvas
 
 The `SceneCanvas` composes the scene:
 
@@ -857,21 +857,21 @@ So a voxel with zero energy maps towards blue, and a voxel at maximum energy map
 
 ![Voxel Heatmap](../assets/images/coloredImage.png){width=70%}
 
-#### Grid Dimensions
+### Grid Dimensions
 
 The grid dimensions `nx`, `ny` and `nz` are derived from the scene's bounding box and the user defined voxel size, The dimensions are calculated identically to the C backend, `ceil((max - min) / voxelsize )`. The `gridIndexToPos` callback then converts each voxels flat index back to the actual world space coordinates, which is then offset by the bounding box minimum plus half the voxel size to centre each cube within its cell.
 
-#### InstanceMesh Optimisation
+### InstanceMesh Optimisation
 
 When we create an `InstancedMesh`, Three.js allocates a GPU buffer large enough for exactly the number of voxels. This buffer size is fixed at creation time. For example if frame 1 has 500 active voxels and frame 2 has 12,000, we're unable to dynamically grow the buffer, instead we must to destroy the mesh and create a new mesh for each frame. This led to visual flickering of the grid and a substantial drop in performance. The solution we came up with was to scan every frame in the simulation result and find the frame with the largest amount of active voxels. The mesh is then allocated that buffer size. This solution led to another optimisation that had to be made; if the buffer size was set to accommodate for 12,000 voxels then at frame 1 when there is only 500 active voxels, how do we handle the remaining 11,500 voxels? For active voxels we render and position them as normal but for unused voxels we transform their cube geometry to a single point (`mesh.setMatrixAt(i, ZERO_MATRIX)`). The GPU still "draws" these instances, but they produce no pixels, reducing the cost of rendering them to essentially zero.
 
-## Source and Direction Markers
+### Source and Direction Markers
 
 The simulation requires two spatial inputs, where the source is and which direction it faces. The `SourcePlacer` component handles both using two Drei `TransformControls` components to interactively position two markers. A `useFrame()` callback runs on every animation frame, clamping the sources positions to the models bounds. This prevents the markers from being dragged outside the room geometry. To improve performance the position of the two markers are not written to the Zustand store on every frame as this would cause React to re-render 60 times per second. Instead, the final position is committed to the store on mouse release via the tracking of the `dragging-changed` event. Similarly on mouse release the direction vector is normalised to a unit vector, the direction marker snaps back to a fixed distance from the source and the normalised direction is commited to the store.
 
-### Additional Key Components
+## Additional Key Components
 
-## Config Panel
+### Config Panel
 
 The `ConfigPanel` is the primary interface through which the user configures the simulation before submitting it. It reads from and writes to the Zustand `SceneStore`, meaning that every change the user makes is immediately reflected in the `SceneCanvas`. For example: when the user adjusts the voxel size slider, the `VoxelGrid` re-renders with the new resolution in real time; when they select a different material, the value is written to the store and later included in the JSON payload sent to the C backend.
 
@@ -885,11 +885,11 @@ The panel exposes five controls during the staging phase:
 
 The voxel size slider is worth noting in particular. Rather than allowing the user to drag to any arbitrary floating point value, the panel pre-computes the set of discrete voxel sizes at which the grid dimensions actually change. This prevents the user from dragging through a range of values that all produce the same grid, which would be confusing, and would disrupt the user experience. The panel also displays the resulting voxel count in real time, warning the user if the count exceeds 500,000 — a threshold beyond which performance may degrade. Additionally, there are three visual toggles: grid visibility, texture, and wireframe, allowing the user to control how the model is displayed, making it easier to inspect the geometry and verify source placement before committing to running the simulation. When viewing a completed simulation these staging controls are hidden, and the panel displays the read-only configuration and visual toggles.
 
-## Dashboard
+### Dashboard
 
 The `Dashboard` is the central hub for managing all of the user's simulations. It presents every simulation the user has created in a tabular layout. Clicking any row navigates directly to that simulation's scene view. Each simulation row displays a colour-coded status badge: green for completed, red for failed, and yellow for pending (currently running on the C backend). These badges provide an at-a-glance overview of the user's simulation history. The dashboard also handles three distinct empty states. While data is loading, a spinner is displayed. If the fetch fails, an error message with a retry button is shown. If the user has no simulations, a prompt with a "New Simulation" button encourages them to create their first one. This same button is also available in the page header at all times.
 
-## Playback Controls
+### Playback Controls
 
 Once a simulation has completed and its binary result has been parsed, the playback controls appear as a floating toolbar at the bottom of the scene canvas. These controls allow the user to step through the voxel heat map frame by frame, replaying how sound energy propagated through the environment over time. The interval reads the current frame index directly from the Zustand store, avoiding a re-render on every frame tick. The frame slider is a standard range input spanning from frame zero to the final frame. Dragging the slider manually updates the frame index and pauses any active playback, giving the user direct control over the timeline. The frame counter beside it displays the current index and total frame count.
 
@@ -992,7 +992,7 @@ We were ambitious throughout the duration for this project and had many ideas fo
 |             | C Server/Endpoint for Web Application, Frontend Raytracer API               |
 |             | User Flow & User Experience                                                 |
 |             | Visualisation Replay Feature                                                |
-|             | Ray and Voxel Data Optimisation                                             |
+|             | Ray and Voxel Data Optimization                                             |****
 |             | InstancedMesh Optimisation                                                  |
 |             | Discrete Voxel Size Slider                                                  |
 |             | Persistent Storage                                                          |
