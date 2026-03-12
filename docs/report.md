@@ -361,6 +361,80 @@ We found a size of about `100 - 1000` for a scene of size `50,000 - 200,000` (av
 this range favoured the higher performant operation, triangle groups generation,
 whilst splitting our scene into a manageable number of groupings, reducing `malloc` calls.
 
+#### Generating Mini BVH Trees
+
+This step involves turning the previously created triangle groups into a number BVH trees, henceforth referred to as 'mini trees',
+the difference being, they bound subsections of scenes, as opposed to full scenes.
+
+This transformation is done through a variation of the MacDonald-Booth Sweep SAH algorithm[^ref17].  
+SAH refers to the Surface Area Heuristic, which is a number representing the quality of a given split.
+This number is calculated through the following formula: $SAH = C_t + C_i((SA(L) / SA(tree)) * N(L) + (SA(R) / SA(tree) * N(R)))$.
+$C_t$ and $C_i$ are the cost of node traversal and an node intersection check, respectively.
+$L$ and $R$ are the left and right nodes.
+$N$ is the number of triangles in a given node,
+and the function $SA$ represents the surface area of a node's AABB.
+
+This approach is a top-down algorithm, meaning it starts from a group of triangles,
+and recursively splits until a certain condition is met, usually when each leaf node contains ~1 object (in our case, triangles).  
+A brief overview of the algorithm is as follows.  
+The array of triangles is iterated (swept) through, calculating the result of a given formula if a split was to occur at the current index.
+In this algorithm, the formula is the SAH of the resultant tree.[^foot2]
+The group is then split on the index that provided the lowest SAH,
+and the process is repeated on each split.
+
+[^foot2]: There are other proposed formula, but the standard is to use SAH,
+as it is easily calculated and generally results in high quality splits.
+
+The problem with the original Sweep SAH algorithm was that it required sorting the array of triangles after each split,
+whereas the Bonsai variant introduced pre-sorting the arrays, saving the sorted arrays,
+and then partitioning after each split, as partitioning is $O(n)$,
+compared to the comparison sort lower bound of $O(n log(n))$.
+
+And so follows an overview of the Bonsai Sweep SAH variant.  
+The group is traversed along each axis in order to find the optimal splitting point based on the SAH.[^foot3]
+Once an optimal split has been found it is checked against the cost of no split ($SA(node) * N(node)$);
+if the cost of splitting is greater, then no split occurs and the node becomes a leaf node.
+Otherwise the optimal axis is then split down the middle,
+and the remaining three arrays are partitioned based on the split.
+This is repeated recursively using a stack in a similar manner to the triangle groups.
+
+[^foot3]: We optimised this sweep by finding the spatial and object median points, and sweeping the range between those two indices.
+
+##### Sorting the Arrays
+
+The Bonsai implementation has another trick that solves the $O(n log(n))$ lower bound of sorting when using a comparison based algorithm,
+by instead using Radix Sort to give an $O(n * d)$,
+where $n$ is the number of items, and $d$ is the number of "digits" in the largest item.  
+The problem with using Radix Sort is that it only works with positive integers,
+while our triangles were made up of three-dimensional vectors represented using three  `floats`.  
+We sort the array's based on the midpoint of the triangles,
+so we needed an invertible function that mapped $[-FLT\_MAX, FLT\_MAX]$ to a positive integer while maintaining relative ordering.  
+We came up with the following mapping,
+for negative floats we flip all bits,
+whereas for positive floats we only flip the sign.
+This solved our mapping but they were still floats;
+that was solved using a trick the Quake III developers used to calculate inverse square roots[^ref18]:
+  `*(int *)&num`  
+You take a reference to the float, then cast that pointer to an integer pointer, then dereference that pointer.
+It has to be done this way and not just cast to an integer,
+as casting to an `(int)` alters the original number, which is not wanted.  
+This process can easily be undone by following it in reverse,
+if the integer's sign bit is set, then flip it, otherwise flip all bits.
+Then convert the integer back to a float in the same way.
+
+Radix Sort could then be carried out on the integer representations,
+without altering the underlying number.
+We decided to use a single byte to represent a "digit" in our implementation of counting sort, as this kept the value of $d$ down and so our final complexity was $O(4n)$.
+A byte is captured from an integer using simple bit-masking:
+
+```C
+unsigned char get_nth_byte(float num, int byte)
+{
+    int offset = 8 * byte;
+    return (flt_to_int(num) & (0xFF << offset)) >> offset;
+}
+```
+
 ## C Library
 
 As mentioned before, C has no classes or namespaces. Building a library with a clean public interface that hides internals therefore requires deliberate design choices. The following describes the pattern we used to achieve this.
@@ -856,3 +930,7 @@ We were ambitious throughout the duration for this project and had many ideas fo
 [^ref15]: [Bonsai Paper](https://jcgt.org/published/0004/03/02/paper-lowres.pdf)
 
 [^ref16]: [Overview of geometrical room acoustic modeling technique](https://pubs.aip.org/asa/jasa/article/138/2/708/917382/Overview-of-geometrical-room-acoustic-modeling)
+
+[^ref17]: [MacDonald-Booth Sweep SAH](https://link.springer.com/article/10.1007/BF01911006)
+
+[^ref18]: [Quake III fast inverse square root](https://en.wikipedia.org/wiki/Fast_inverse_square_root)
