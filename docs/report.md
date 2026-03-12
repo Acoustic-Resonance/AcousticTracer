@@ -274,7 +274,7 @@ The _original_ Bonsai algorithm is composed of the following 5 steps:
 Our implementation closely follows the first three steps, but diverges from there;
 we will briefly discuss each step, but only go further into detail on the relevant steps.
 
-#### Triangle arrays
+#### Triangle Arrays
 
 Before the implementation can be discussed,
 our representation of a scene's list of triangles must be made clear.
