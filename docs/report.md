@@ -6,10 +6,16 @@ GitHub Repository Link: [Acoustic Tracer](https://github.com/Acoustic-Resonance/
 
 Team Members:
 
-- Alex Wright - Simulation Core / Front-end
-- Patryk Mrozek - Simulation Core
-- Eoghan Murphy - Simulation Core / Optimisation
-- Michael McCarthy - Front-end
+- Alex Wright (123439374) - Simulation Core / Front-end
+- Patryk Mrozek (123435202) - Simulation Core
+- Eoghan Murphy (123330861) - Simulation Core / Optimisation
+- Michael McCarthy (123340421) - Front-end
+
+## Integrity
+
+This project and its outputs were created solely by the individual team members.
+Gen AI was used for the purpose of debugging,
+and the explanation of complex topics in tandem with academic papers, and language/library documentation.
 
 ## Introduction
 
@@ -250,7 +256,6 @@ The most common representations are a sphere or a cuboid (also known as an Axis-
 We went with an AABB representation as while the intersection test is more computationally intensive,
 the resultant bounding box is much tighter for triangles when using an AABB,
 than with a sphere.  
-\newpage
 We kept the definition of an AABB simple:
 
 ```C
