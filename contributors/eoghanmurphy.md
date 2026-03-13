@@ -45,5 +45,15 @@
 - Completed BVH implementation.
   - This involved breaking up grouped triangles into binary trees balanced based on resultant AABB sizes.
 - Refactor triangle struct, changing from lists of triangle pointers to arrays of indices into one READ-ONLY array.
-  - This removes unnecessary malloc calls.
+  - This removes unnecessary `malloc` calls.
   - Removes fragile nature of triangle arrays with memory address approach.
+
+## Week 8
+
+This week was spent finalising the project, fixing any remaining bugs.
+After the project's code had been finalised, we planned our approach to the final report.
+The report was then split into sections and each team member was given a piece.
+We all wrote our pieces in parallel and then went over the report as a team,
+correcting any mistakes and roughly synchronising our writing styles.
+Then the demo video's outline was written and a rough draft for the script was created.
+We met up, filmed and edited the demo video.
