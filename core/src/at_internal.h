@@ -8,22 +8,23 @@
 
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
+#include <stdint.h>
+#include <stdbool.h>
 
 // Private Types (typedef + define)
-typedef struct {
+typedef struct AT_Ray AT_Ray;
+
+struct AT_Ray {
+    AT_Ray *child;
     AT_Vec3 origin;
     AT_Vec3 direction;
+    AT_Vec3 hit_point;
     float energy;
     float total_distance;
     uint32_t ray_id;
     uint32_t bounce_count;
-} AT_Ray;
-
-typedef struct {
-    AT_Vec3 position;
-    AT_Vec3 normal;
-    float t;
-} AT_RayHit;
+    bool has_died;
+};
 
 // dynamic array structure
 // called "items" instead of "bins" since the dynamic array macros are
@@ -36,34 +37,49 @@ typedef struct {
 } AT_Voxel;
 
 // API Type definitions (just struct definitions, theyre already typedefed when forward declaring)
+typedef struct AT_MiniTree AT_MiniTree;
+typedef struct AT_TriangleArrays AT_TriangleArrays;
+
 struct AT_Scene {
     AT_Source *sources;
     AT_AABB world_AABB;
+    AT_TriangleArrays *triangle_arrs;
+    AT_MiniTree **mini_trees;
+    uint32_t num_trees;
     uint32_t num_sources;
-    AT_Material material;
+    AT_MaterialType material;
     const AT_Model *environment;
 };
 
 struct AT_Model {
     AT_Vec3 *vertices;
-    // TODO: normals
+    AT_Vec3 *normals;
     uint32_t *indices;
+    uint32_t *triangle_materials;
     size_t vertex_count;
     size_t index_count;
 };
 
 struct AT_Simulation {
+    //using the scene struct within the simulation struct we can access its members like this:
+    // simulation->scene->sources etc..
+    const AT_Scene *scene; //borrowed: must remain valid for the lifetime of AT_Simulation
     AT_Voxel *voxel_grid;
     AT_Ray *rays;
     AT_Vec3 origin;
     AT_Vec3 dimensions;
     AT_Vec3 grid_dimensions;
     float voxel_size;
-    uint32_t num_rays;
     float bin_width;
+    uint32_t num_rays;
+    uint32_t num_voxels;
     uint8_t fps;
 };
 
-
+static const AT_Material AT_MATERIAL_TABLE[AT_MATERIAL_COUNT] = {
+    [AT_MATERIAL_CONCRETE] = {.absorption = 0.02f, .scattering = 0.10f},
+    [AT_MATERIAL_PLASTIC] = {.absorption = 0.03f, .scattering = 0.05f},
+    [AT_MATERIAL_WOOD] = {.absorption = 0.10f, .scattering = 0.20f},
+};
 
 #endif // AT_INTERAL_H

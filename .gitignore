@@ -1,5 +1,7 @@
-# VsCode files
+# VsCode/Zed files
 .vscode/*
+.zed/*
+.github
 
 # Documentation whitelist
 docs/*
@@ -7,6 +9,8 @@ docs/*
 !docs/*.tex
 !docs/*.pdf
 !docs/core/
+!docs/Makefile
+!docs/header.yaml
 
 # C files
 **/build/*
@@ -19,3 +23,6 @@ build/
 # Mac files
 **/.DS_Store
 .DS_Store
+
+#env fle
+**/.env

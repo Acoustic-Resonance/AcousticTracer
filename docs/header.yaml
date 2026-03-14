@@ -1,0 +1,9 @@
+---
+header-includes: |
+  \usepackage{float}
+  \usepackage{caption}
+  \floatplacement{figure}{H}
+geometry: margin=2cm
+fontsize: 11pt
+---
+

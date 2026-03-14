@@ -52,3 +52,4 @@ VITE_API_PROXY_TARGET=http://localhost:3000 npm run dev
 - Implement HTTP + backend API calls in [web/src/api](web/src/api)
 - Implement R3F renderer placeholders in [web/src/r3f](web/src/r3f)
 - Implement playback/chunk decoding placeholders in [web/src/playback](web/src/playback)
+
