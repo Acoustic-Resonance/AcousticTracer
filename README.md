@@ -4,9 +4,9 @@ Our project 'Acoustic Tracer' is a three-dimensional, acoustic visualiser that a
 
 Some demonstrations of it's functionality:
 
-![Conference Gif](assets/clips/bathroom.gif){width=45%} ![Conference Gif](assets/clips/conference.gif){width=45%}
-![Conference Gif](assets/clips/Cathedral.gif)
-
+!<img src="bathroom.gif" width="400">
+!<img src="cathedral.gif" width="400">
+![Conference Demo](assets/clips/conference.gif)
 Link to our report: [Here](docs/report.pdf)
 Project website: [link to the documentation](https://acoustic-resonance.github.io/AcousticTracer/)
 
