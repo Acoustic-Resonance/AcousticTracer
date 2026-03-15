@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,12 +67,33 @@ $(function(){initNavTree('at__scene_8h.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
-  <div class="headertitle"><div class="title">at_scene.h File Reference</div></div>
+  <div class="headertitle"><div class="title">at_scene.h File Reference<div class="ingroups"><a class="el" href="group__scene.html">Scene</a></div></div></div>
 </div><!--header-->
 <div class="contents">
 
-<p><a class="el" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460" title="Groups the necessary information representing the scene.">AT_Scene</a> and related functions.  
+<p><a class="el" href="struct_a_t___scene.html" title="Groups the necessary information representing the scene.">AT_Scene</a> and related functions.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="at_8h_source.html">at.h</a>&quot;</code><br />
 </div>
@@ -82,44 +101,12 @@ $(function(){initNavTree('at__scene_8h.html','',''); });
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a396d9232cddc7c05799bdca43526a848" id="r_a396d9232cddc7c05799bdca43526a848"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a396d9232cddc7c05799bdca43526a848">AT_scene_destroy</a> (<a class="el" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a> *scene)</td></tr>
-<tr class="memdesc:a396d9232cddc7c05799bdca43526a848"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroys an allocated <a class="el" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460" title="Groups the necessary information representing the scene.">AT_Scene</a>.  <br /></td></tr>
+<tr class="memitem:ga396d9232cddc7c05799bdca43526a848" id="r_ga396d9232cddc7c05799bdca43526a848"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__scene.html#ga396d9232cddc7c05799bdca43526a848">AT_scene_destroy</a> (<a class="el" href="struct_a_t___scene.html">AT_Scene</a> *scene)</td></tr>
+<tr class="memdesc:ga396d9232cddc7c05799bdca43526a848"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroys an allocated <a class="el" href="struct_a_t___scene.html" title="Groups the necessary information representing the scene.">AT_Scene</a>.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p><a class="el" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460" title="Groups the necessary information representing the scene.">AT_Scene</a> and related functions. </p>
-</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
-<a id="a396d9232cddc7c05799bdca43526a848" name="a396d9232cddc7c05799bdca43526a848"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a396d9232cddc7c05799bdca43526a848">&#9670;&#160;</a></span>AT_scene_destroy()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void AT_scene_destroy </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a> *</td>          <td class="paramname"><span class="paramname"><em>scene</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Destroys an allocated <a class="el" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460" title="Groups the necessary information representing the scene.">AT_Scene</a>. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">scene</td><td>Pointer to an initialised <a class="el" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460" title="Groups the necessary information representing the scene.">AT_Scene</a>.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">void</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-</div><!-- contents -->
+<div class="textblock"><p><a class="el" href="struct_a_t___scene.html" title="Groups the necessary information representing the scene.">AT_Scene</a> and related functions. </p>
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">
 <div id="page-nav-resize-handle"></div>

@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,6 +67,27 @@ $(function(){initNavTree('dir_32685ae3843b5ca2e1d1062cb00ef9fd.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
   <div class="headertitle"><div class="title">acoustic Directory Reference</div></div>
 </div><!--header-->
@@ -79,13 +98,15 @@ Files</h2></td></tr>
 <tr class="memitem:at_2Eh" id="r_at_2Eh"><td class="memItemLeft"><a href="at_8h_source.html"><span class="icondoc"><div class="doc-icon"></div></span></a>&#160;</td><td class="memItemRight"><a class="el" href="at_8h.html">at.h</a></td></tr>
 <tr class="memdesc:at_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">The libraries public types and functions. <br /></td></tr>
 <tr class="memitem:at_5Fmath_2Eh" id="r_at_5Fmath_2Eh"><td class="memItemLeft"><a href="at__math_8h_source.html"><span class="icondoc"><div class="doc-icon"></div></span></a>&#160;</td><td class="memItemRight"><a class="el" href="at__math_8h.html">at_math.h</a></td></tr>
-<tr class="memdesc:at__math_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_a_t___triangle.html" title="Groups three AT_Vec3 to represent a triangle.">AT_Triangle</a>, <a class="el" href="struct_a_t___vec3.html" title="Groups three floats to represent a vector of size 3.">AT_Vec3</a> and related functions. <br /></td></tr>
+<tr class="memdesc:at__math_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_a_t___triangle.html" title="Groups three AT_Vec3 to represent a triangle.">AT_Triangle</a>, <a class="el" href="union_a_t___vec3.html" title="Groups three floats to represent a vector of size 3.">AT_Vec3</a> and related functions. <br /></td></tr>
 <tr class="memitem:at_5Fmodel_2Eh" id="r_at_5Fmodel_2Eh"><td class="memItemLeft"><a href="at__model_8h_source.html"><span class="icondoc"><div class="doc-icon"></div></span></a>&#160;</td><td class="memItemRight"><a class="el" href="at__model_8h.html">at_model.h</a></td></tr>
-<tr class="memdesc:at__model_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57" title="Groups the necessary information representing the 3D model.">AT_Model</a> and related functions. <br /></td></tr>
+<tr class="memdesc:at__model_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_a_t___model.html" title="Groups the necessary information representing the 3D model.">AT_Model</a> and related functions. <br /></td></tr>
+<tr class="memitem:at_5Fresult_2Eh" id="r_at_5Fresult_2Eh"><td class="memItemLeft"><a href="at__result_8h_source.html"><span class="icondoc"><div class="doc-icon"></div></span></a>&#160;</td><td class="memItemRight"><a class="el" href="at__result_8h.html">at_result.h</a></td></tr>
+<tr class="memdesc:at__result_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">Result handling functions. <br /></td></tr>
 <tr class="memitem:at_5Fscene_2Eh" id="r_at_5Fscene_2Eh"><td class="memItemLeft"><a href="at__scene_8h_source.html"><span class="icondoc"><div class="doc-icon"></div></span></a>&#160;</td><td class="memItemRight"><a class="el" href="at__scene_8h.html">at_scene.h</a></td></tr>
-<tr class="memdesc:at__scene_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460" title="Groups the necessary information representing the scene.">AT_Scene</a> and related functions. <br /></td></tr>
+<tr class="memdesc:at__scene_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_a_t___scene.html" title="Groups the necessary information representing the scene.">AT_Scene</a> and related functions. <br /></td></tr>
 <tr class="memitem:at_5Fsimulation_2Eh" id="r_at_5Fsimulation_2Eh"><td class="memItemLeft"><a href="at__simulation_8h_source.html"><span class="icondoc"><div class="doc-icon"></div></span></a>&#160;</td><td class="memItemRight"><a class="el" href="at__simulation_8h.html">at_simulation.h</a></td></tr>
-<tr class="memdesc:at__simulation_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="at_8h.html#a245ff9fc7829f4ef55a135160369a42e" title="Groups the necessary simulation data.">AT_Simulation</a> and related functions. <br /></td></tr>
+<tr class="memdesc:at__simulation_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_a_t___simulation.html" title="Groups the necessary simulation data.">AT_Simulation</a> and related functions. <br /></td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

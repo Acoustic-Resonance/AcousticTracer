@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,100 +67,226 @@ $(function(){initNavTree('at__math_8h_source.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
   <div class="headertitle"><div class="title">at_math.h</div></div>
 </div><!--header-->
 <div class="contents">
 <a href="at__math_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#ifndef AT_MATH_H</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#define AT_MATH_H</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;math.h&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span></div>
-<div class="foldopen" id="foldopen00012" data-start="{" data-end="};">
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="struct_a_t___vec3.html">   12</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    <span class="keywordtype">float</span> x, y, z;</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>} <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a>;</div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#ifndef AT_MATH_H</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#define AT_MATH_H</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#define EPSILON 1e-6f</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;math.h&gt;</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &lt;float.h&gt;</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &lt;stdbool.h&gt;</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span></div>
+<div class="foldopen" id="foldopen00029" data-start="{" data-end="};">
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno"><a class="line" href="union_a_t___vec3.html">   29</a></span><span class="keyword">typedef</span> <span class="keyword">union </span>{</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>        <span class="keywordtype">float</span> x, y, z;</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    }; </div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="union_a_t___vec3.html#a7a6883f251ec2e1d24483b3349a27a86">   33</a></span>    <span class="keywordtype">float</span> <a class="code hl_variable" href="union_a_t___vec3.html#a7a6883f251ec2e1d24483b3349a27a86">arr</a>[3]; </div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>} <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a>;</div>
 </div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span></div>
-<div class="foldopen" id="foldopen00018" data-start="{" data-end="};">
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="struct_a_t___triangle.html">   18</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> v1, v2, v3;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>} <a class="code hl_struct" href="struct_a_t___triangle.html">AT_Triangle</a>;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span></div>
+<div class="foldopen" id="foldopen00039" data-start="{" data-end="};">
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="struct_a_t___vec3i.html">   39</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="struct_a_t___vec3i.html#a201c46f8636e6aa9e13452b8c8e1aab8">   40</a></span>    <span class="keywordtype">int</span> <a class="code hl_variable" href="struct_a_t___vec3i.html#a201c46f8636e6aa9e13452b8c8e1aab8">x</a>; </div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno"><a class="line" href="struct_a_t___vec3i.html#a5310e47f557ea23eabdb342f3937c3f5">   41</a></span>    <span class="keywordtype">int</span> <a class="code hl_variable" href="struct_a_t___vec3i.html#a5310e47f557ea23eabdb342f3937c3f5">y</a>; </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="struct_a_t___vec3i.html#a99947f647f665249c7c4df07cbfaed19">   42</a></span>    <span class="keywordtype">int</span> <a class="code hl_variable" href="struct_a_t___vec3i.html#a99947f647f665249c7c4df07cbfaed19">z</a>; </div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>} <a class="code hl_struct" href="struct_a_t___vec3i.html">AT_Vec3i</a>;</div>
 </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span></div>
-<div class="foldopen" id="foldopen00027" data-start="{" data-end="}">
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="struct_a_t___vec3.html#a9a692583a0362700f2d7c76441d6bccd">   27</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="struct_a_t___vec3.html#a9a692583a0362700f2d7c76441d6bccd">AT_vec3</a>(<span class="keywordtype">float</span> x, <span class="keywordtype">float</span> y, <span class="keywordtype">float</span> z) {</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keywordflow">return</span> (<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a>){ x, y, z };</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>}</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span></div>
+<div class="foldopen" id="foldopen00048" data-start="{" data-end="};">
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno"><a class="line" href="struct_a_t___a_a_b_b.html">   48</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="struct_a_t___a_a_b_b.html#aa74e5cc6b83e19fc510b6248d2d622d4">   49</a></span>    <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_variable" href="struct_a_t___a_a_b_b.html#aa74e5cc6b83e19fc510b6248d2d622d4">min</a>; </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="struct_a_t___a_a_b_b.html#aa676a84914e5553308866398507846f1">   50</a></span>    <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_variable" href="struct_a_t___a_a_b_b.html#aa676a84914e5553308866398507846f1">max</a>; </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> midpoint;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordtype">float</span> SA;</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>} <a class="code hl_struct" href="struct_a_t___a_a_b_b.html">AT_AABB</a>;</div>
 </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span></div>
-<div class="foldopen" id="foldopen00036" data-start="{" data-end="}">
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="struct_a_t___vec3.html#a339b6ab8b6dba3275ada0ab6cdf82475">   36</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="struct_a_t___vec3.html#a339b6ab8b6dba3275ada0ab6cdf82475">AT_vec3_zero</a>(<span class="keywordtype">void</span>) {</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keywordflow">return</span> (<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a>){ 0.0f, 0.0f, 0.0f };</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>}</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span></div>
+<div class="foldopen" id="foldopen00058" data-start="{" data-end="};">
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno"><a class="line" href="struct_a_t___triangle.html">   58</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno"><a class="line" href="struct_a_t___triangle.html#a244b3cbb35d0f6ce705199967417db02">   59</a></span>    <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_variable" href="struct_a_t___triangle.html#a244b3cbb35d0f6ce705199967417db02">v1</a>;   </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno"><a class="line" href="struct_a_t___triangle.html#ae0dd35873b44b7172781c72d5bf25604">   60</a></span>    <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_variable" href="struct_a_t___triangle.html#ae0dd35873b44b7172781c72d5bf25604">v2</a>;   </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno"><a class="line" href="struct_a_t___triangle.html#ab43b027604db18ba77e04735f62ce2a4">   61</a></span>    <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_variable" href="struct_a_t___triangle.html#ab43b027604db18ba77e04735f62ce2a4">v3</a>;   </div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="struct_a_t___triangle.html#ad5911247405899fd8c8cda7fcbdf7dda">   62</a></span>    <a class="code hl_struct" href="struct_a_t___a_a_b_b.html">AT_AABB</a> <a class="code hl_variable" href="struct_a_t___triangle.html#ad5911247405899fd8c8cda7fcbdf7dda">aabb</a>; </div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    <span class="keywordtype">bool</span> left;</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>} <a class="code hl_struct" href="struct_a_t___triangle.html">AT_Triangle</a>;</div>
 </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span></div>
-<div class="foldopen" id="foldopen00045" data-start="{" data-end="}">
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="struct_a_t___vec3.html#aa4b728e9c64012c02a86c3c25523667b">   45</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="struct_a_t___vec3.html#aa4b728e9c64012c02a86c3c25523667b">AT_vec3_add</a>(<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> a, <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> b) {</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <span class="keywordflow">return</span> (<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a>){ a.x + b.x, a.y + b.y, a.z + b.z };</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>}</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span></div>
+<div class="foldopen" id="foldopen00076" data-start="{" data-end="}">
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno"><a class="line" href="group__vec.html#ga9a692583a0362700f2d7c76441d6bccd">   76</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="group__vec.html#ga9a692583a0362700f2d7c76441d6bccd">AT_vec3</a>(<span class="keywordtype">float</span> x, <span class="keywordtype">float</span> y, <span class="keywordtype">float</span> z)</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>{</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordflow">return</span> (<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a>){{x, y, z}};</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>}</div>
 </div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span></div>
-<div class="foldopen" id="foldopen00054" data-start="{" data-end="}">
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno"><a class="line" href="struct_a_t___vec3.html#aa7184d744c2b2ed858f64e5aed112374">   54</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="struct_a_t___vec3.html#aa7184d744c2b2ed858f64e5aed112374">AT_vec3_sub</a>(<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> a, <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> b) {</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordflow">return</span> (<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a>){ a.x - b.x, a.y - b.y, a.z - b.z };</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>}</div>
-</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span></div>
-<div class="foldopen" id="foldopen00066" data-start="{" data-end="}">
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno"><a class="line" href="struct_a_t___vec3.html#aa695dff738b2c7f5f8c7dc1193509df9">   66</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="struct_a_t___vec3.html#aa695dff738b2c7f5f8c7dc1193509df9">AT_vec3_scale</a>(<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> v, <span class="keywordtype">float</span> s) {</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="keywordflow">return</span> (<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a>){ v.x * s, v.y * s, v.z * s };</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>}</div>
-</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span></div>
-<div class="foldopen" id="foldopen00075" data-start="{" data-end="}">
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno"><a class="line" href="struct_a_t___vec3.html#aa4fa5bf031db9e3269cbfc751f717620">   75</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> <a class="code hl_function" href="struct_a_t___vec3.html#aa4fa5bf031db9e3269cbfc751f717620">AT_vec3_dot</a>(<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> a, <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> b) {</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    <span class="keywordflow">return</span> a.x*b.x + a.y*b.y + a.z*b.z;</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>}</div>
-</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span></div>
-<div class="foldopen" id="foldopen00084" data-start="{" data-end="}">
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno"><a class="line" href="struct_a_t___vec3.html#a9ddf255e4634d1aac2e7ec9c25d3aee9">   84</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="struct_a_t___vec3.html#a9ddf255e4634d1aac2e7ec9c25d3aee9">AT_vec3_cross</a>(<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> a, <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> b) {</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordflow">return</span> (<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a>){</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>        a.y*b.z - a.z*b.y,</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>        a.z*b.x - a.x*b.z,</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>        a.x*b.y - a.y*b.x</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    };</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span></div>
+<div class="foldopen" id="foldopen00087" data-start="{" data-end="}">
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno"><a class="line" href="group__vec.html#ga339b6ab8b6dba3275ada0ab6cdf82475">   87</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="group__vec.html#ga339b6ab8b6dba3275ada0ab6cdf82475">AT_vec3_zero</a>(<span class="keywordtype">void</span>)</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>{</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    <span class="keywordflow">return</span> (<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a>){{0.0f, 0.0f, 0.0f}};</div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>}</div>
 </div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span></div>
-<div class="foldopen" id="foldopen00097" data-start="{" data-end="}">
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno"><a class="line" href="struct_a_t___vec3.html#ac20b01d698142821a130429dad73cd8f">   97</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> <a class="code hl_function" href="struct_a_t___vec3.html#ac20b01d698142821a130429dad73cd8f">AT_vec3_length</a>(<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> v) {</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="keywordflow">return</span> sqrtf(<a class="code hl_function" href="struct_a_t___vec3.html#aa4fa5bf031db9e3269cbfc751f717620">AT_vec3_dot</a>(v, v));</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>}</div>
+<div class="foldopen" id="foldopen00101" data-start="{" data-end="}">
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno"><a class="line" href="group__vec.html#gaa4b728e9c64012c02a86c3c25523667b">  101</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="group__vec.html#gaa4b728e9c64012c02a86c3c25523667b">AT_vec3_add</a>(<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> a, <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> b)</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>{</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keywordflow">return</span> (<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a>){{a.x + b.x, a.y + b.y, a.z + b.z}};</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>}</div>
 </div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span></div>
-<div class="foldopen" id="foldopen00106" data-start="{" data-end="}">
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno"><a class="line" href="struct_a_t___vec3.html#aea012be47bb9ca262ca86b636236e04c">  106</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="struct_a_t___vec3.html#aea012be47bb9ca262ca86b636236e04c">AT_vec3_normalize</a>(<a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> v) {</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    <span class="keywordtype">float</span> len = <a class="code hl_function" href="struct_a_t___vec3.html#ac20b01d698142821a130429dad73cd8f">AT_vec3_length</a>(v);</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    <span class="keywordflow">return</span> (len &gt; 0.0f) ? <a class="code hl_function" href="struct_a_t___vec3.html#aa695dff738b2c7f5f8c7dc1193509df9">AT_vec3_scale</a>(v, 1.0f / len) : <a class="code hl_function" href="struct_a_t___vec3.html#a339b6ab8b6dba3275ada0ab6cdf82475">AT_vec3_zero</a>();</div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>}</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span></div>
+<div class="foldopen" id="foldopen00115" data-start="{" data-end="}">
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno"><a class="line" href="group__vec.html#gaa7184d744c2b2ed858f64e5aed112374">  115</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="group__vec.html#gaa7184d744c2b2ed858f64e5aed112374">AT_vec3_sub</a>(<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> a, <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> b)</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>{</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    <span class="keywordflow">return</span> (<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a>){{a.x - b.x, a.y - b.y, a.z - b.z}};</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>}</div>
 </div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span> </div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span><span class="preprocessor">#endif </span><span class="comment">// AT_MATH_H</span></div>
-<div class="ttc" id="astruct_a_t___triangle_html"><div class="ttname"><a href="struct_a_t___triangle.html">AT_Triangle</a></div><div class="ttdoc">Groups three AT_Vec3 to represent a triangle.</div><div class="ttdef"><b>Definition</b> at_math.h:18</div></div>
-<div class="ttc" id="astruct_a_t___vec3_html"><div class="ttname"><a href="struct_a_t___vec3.html">AT_Vec3</a></div><div class="ttdoc">Groups three floats to represent a vector of size 3.</div><div class="ttdef"><b>Definition</b> at_math.h:12</div></div>
-<div class="ttc" id="astruct_a_t___vec3_html_a339b6ab8b6dba3275ada0ab6cdf82475"><div class="ttname"><a href="struct_a_t___vec3.html#a339b6ab8b6dba3275ada0ab6cdf82475">AT_Vec3::AT_vec3_zero</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_zero(void)</div><div class="ttdoc">AT_Vec3 constructor for a zero initialised vector.</div><div class="ttdef"><b>Definition</b> at_math.h:36</div></div>
-<div class="ttc" id="astruct_a_t___vec3_html_a9a692583a0362700f2d7c76441d6bccd"><div class="ttname"><a href="struct_a_t___vec3.html#a9a692583a0362700f2d7c76441d6bccd">AT_Vec3::AT_vec3</a></div><div class="ttdeci">static AT_Vec3 AT_vec3(float x, float y, float z)</div><div class="ttdoc">AT_Vec3 constructor for a given point.</div><div class="ttdef"><b>Definition</b> at_math.h:27</div></div>
-<div class="ttc" id="astruct_a_t___vec3_html_a9ddf255e4634d1aac2e7ec9c25d3aee9"><div class="ttname"><a href="struct_a_t___vec3.html#a9ddf255e4634d1aac2e7ec9c25d3aee9">AT_Vec3::AT_vec3_cross</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_cross(AT_Vec3 a, AT_Vec3 b)</div><div class="ttdoc">Performs vector cross multiplication on two given AT_Vec3.</div><div class="ttdef"><b>Definition</b> at_math.h:84</div></div>
-<div class="ttc" id="astruct_a_t___vec3_html_aa4b728e9c64012c02a86c3c25523667b"><div class="ttname"><a href="struct_a_t___vec3.html#aa4b728e9c64012c02a86c3c25523667b">AT_Vec3::AT_vec3_add</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_add(AT_Vec3 a, AT_Vec3 b)</div><div class="ttdoc">Adds two AT_Vec3.</div><div class="ttdef"><b>Definition</b> at_math.h:45</div></div>
-<div class="ttc" id="astruct_a_t___vec3_html_aa4fa5bf031db9e3269cbfc751f717620"><div class="ttname"><a href="struct_a_t___vec3.html#aa4fa5bf031db9e3269cbfc751f717620">AT_Vec3::AT_vec3_dot</a></div><div class="ttdeci">static float AT_vec3_dot(AT_Vec3 a, AT_Vec3 b)</div><div class="ttdoc">Performs vector dot operation on two given AT_Vec3.</div><div class="ttdef"><b>Definition</b> at_math.h:75</div></div>
-<div class="ttc" id="astruct_a_t___vec3_html_aa695dff738b2c7f5f8c7dc1193509df9"><div class="ttname"><a href="struct_a_t___vec3.html#aa695dff738b2c7f5f8c7dc1193509df9">AT_Vec3::AT_vec3_scale</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_scale(AT_Vec3 v, float s)</div><div class="ttdoc">Scales an AT_Vec3 by a given scalar.</div><div class="ttdef"><b>Definition</b> at_math.h:66</div></div>
-<div class="ttc" id="astruct_a_t___vec3_html_aa7184d744c2b2ed858f64e5aed112374"><div class="ttname"><a href="struct_a_t___vec3.html#aa7184d744c2b2ed858f64e5aed112374">AT_Vec3::AT_vec3_sub</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_sub(AT_Vec3 a, AT_Vec3 b)</div><div class="ttdoc">Subtracts two AT_Vec3.</div><div class="ttdef"><b>Definition</b> at_math.h:54</div></div>
-<div class="ttc" id="astruct_a_t___vec3_html_ac20b01d698142821a130429dad73cd8f"><div class="ttname"><a href="struct_a_t___vec3.html#ac20b01d698142821a130429dad73cd8f">AT_Vec3::AT_vec3_length</a></div><div class="ttdeci">static float AT_vec3_length(AT_Vec3 v)</div><div class="ttdoc">Calculate the length of an AT_Vec3.</div><div class="ttdef"><b>Definition</b> at_math.h:97</div></div>
-<div class="ttc" id="astruct_a_t___vec3_html_aea012be47bb9ca262ca86b636236e04c"><div class="ttname"><a href="struct_a_t___vec3.html#aea012be47bb9ca262ca86b636236e04c">AT_Vec3::AT_vec3_normalize</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_normalize(AT_Vec3 v)</div><div class="ttdef"><b>Definition</b> at_math.h:106</div></div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span></div>
+<div class="foldopen" id="foldopen00129" data-start="{" data-end="}">
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno"><a class="line" href="group__vec.html#gad49e3f6e72c97852f36887bdbedae99e">  129</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="group__vec.html#gad49e3f6e72c97852f36887bdbedae99e">AT_vec3_mul</a>(<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> a, <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> b)</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>{</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>    <span class="keywordflow">return</span> (<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a>){{a.x * b.x, a.y * b.y, a.z * b.z}};</div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>}</div>
+</div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span></div>
+<div class="foldopen" id="foldopen00142" data-start="{" data-end="}">
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno"><a class="line" href="group__vec.html#ga047bb36541dffc4835b23c5c3fdbb38d">  142</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="group__vec.html#ga047bb36541dffc4835b23c5c3fdbb38d">AT_vec3_inv</a>(<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> v)</div>
+<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span>{</div>
+<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span>    <span class="keywordflow">return</span> (<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a>){</div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>        {(fabsf(v.x) &lt; EPSILON ? FLT_MAX : (1.0f / fabsf(v.x))),</div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>         (fabsf(v.y) &lt; EPSILON ? FLT_MAX : (1.0f / fabsf(v.y))),</div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>         (fabsf(v.z) &lt; EPSILON ? FLT_MAX : (1.0f / fabsf(v.z)))}</div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>    };</div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>}</div>
+</div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span></div>
+<div class="foldopen" id="foldopen00160" data-start="{" data-end="}">
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno"><a class="line" href="group__vec.html#gaa695dff738b2c7f5f8c7dc1193509df9">  160</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="group__vec.html#gaa695dff738b2c7f5f8c7dc1193509df9">AT_vec3_scale</a>(<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> v, <span class="keywordtype">float</span> s)</div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>{</div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>    <span class="keywordflow">return</span> (<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a>){{v.x * s, v.y * s, v.z * s}};</div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>}</div>
+</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span></div>
+<div class="foldopen" id="foldopen00174" data-start="{" data-end="}">
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno"><a class="line" href="group__vec.html#gaa4fa5bf031db9e3269cbfc751f717620">  174</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> <a class="code hl_function" href="group__vec.html#gaa4fa5bf031db9e3269cbfc751f717620">AT_vec3_dot</a>(<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> a, <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> b)</div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>{</div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>    <span class="keywordflow">return</span> a.x * b.x + a.y * b.y + a.z * b.z;</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>}</div>
+</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span></div>
+<div class="foldopen" id="foldopen00188" data-start="{" data-end="}">
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno"><a class="line" href="group__vec.html#ga9ddf255e4634d1aac2e7ec9c25d3aee9">  188</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="group__vec.html#ga9ddf255e4634d1aac2e7ec9c25d3aee9">AT_vec3_cross</a>(<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> a, <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> b)</div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>{</div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>    <span class="keywordflow">return</span> (<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a>){</div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>        {a.y * b.z - a.z * b.y,</div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>         a.z * b.x - a.x * b.z,</div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>         a.x * b.y - a.y * b.x}</div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>    };</div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>}</div>
+</div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span></div>
+<div class="foldopen" id="foldopen00205" data-start="{" data-end="}">
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno"><a class="line" href="group__vec.html#gac20b01d698142821a130429dad73cd8f">  205</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> <a class="code hl_function" href="group__vec.html#gac20b01d698142821a130429dad73cd8f">AT_vec3_length</a>(<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> v)</div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>{</div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>    <span class="keywordflow">return</span> sqrtf(<a class="code hl_function" href="group__vec.html#gaa4fa5bf031db9e3269cbfc751f717620">AT_vec3_dot</a>(v, v));</div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>}</div>
+</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span></div>
+<div class="foldopen" id="foldopen00218" data-start="{" data-end="}">
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno"><a class="line" href="group__vec.html#gaea012be47bb9ca262ca86b636236e04c">  218</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_function" href="group__vec.html#gaea012be47bb9ca262ca86b636236e04c">AT_vec3_normalize</a>(<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> v)</div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>{</div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>    <span class="keywordtype">float</span> len = <a class="code hl_function" href="group__vec.html#gac20b01d698142821a130429dad73cd8f">AT_vec3_length</a>(v);</div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>    <span class="keywordflow">return</span> (len &gt; 0.0f) ? <a class="code hl_function" href="group__vec.html#gaa695dff738b2c7f5f8c7dc1193509df9">AT_vec3_scale</a>(v, 1.0f / len) : <a class="code hl_function" href="group__vec.html#ga339b6ab8b6dba3275ada0ab6cdf82475">AT_vec3_zero</a>();</div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>}</div>
+</div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span></div>
+<div class="foldopen" id="foldopen00233" data-start="{" data-end="}">
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno"><a class="line" href="group__vec.html#gaad5dd0022daba9c473e57717729bf98b">  233</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> <a class="code hl_function" href="group__vec.html#gaad5dd0022daba9c473e57717729bf98b">AT_vec3_distance</a>(<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> a, <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> b)</div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>{</div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>    <span class="keywordflow">return</span> sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y) + (b.z - a.z) * (b.z - a.z));</div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>}</div>
+</div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span></div>
+<div class="foldopen" id="foldopen00247" data-start="{" data-end="}">
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno"><a class="line" href="group__vec.html#gad1ed8cbf43d112c4f33b0cb5f09ad516">  247</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> <a class="code hl_function" href="group__vec.html#gad1ed8cbf43d112c4f33b0cb5f09ad516">AT_vec3_distance_sq</a>(<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> a, <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> b)</div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>{</div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>    <span class="keywordflow">return</span> (b.x - a.x) * (b.x - a.x) +</div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>           (b.y - a.y) * (b.y - a.y) +</div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>           (b.z - a.z) * (b.z - a.z);</div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>}</div>
+</div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span> </div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span><span class="comment">/* \brief Computes per axis step distance used in DDA.</span></div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span><span class="comment">   \relates AT_Vec3</span></div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span><span class="comment">   \ingroup vec</span></div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span><span class="comment"></span> </div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span><span class="comment">   \param v Vector being traversed.</span></div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span><span class="comment"></span> </div>
+<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span><span class="comment">  \retval AT_Vec3 Per axis step distance.</span></div>
+<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span><span class="comment"> */</span></div>
+<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span><span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> AT_vec3_delta(<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> v)</div>
+<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>{</div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>    <span class="keywordflow">return</span> (<a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a>){</div>
+<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>        {v.x != 0.0f ? fabsf(1.0f / v.x) : FLT_MAX,</div>
+<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>         v.y != 0.0f ? fabsf(1.0f / v.y) : FLT_MAX,</div>
+<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>         v.z != 0.0f ? fabsf(1.0f / v.z) : FLT_MAX}</div>
+<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>    };</div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>}</div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span> </div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span><span class="preprocessor">#endif </span><span class="comment">// AT_MATH_H</span></div>
+<div class="ttc" id="agroup__vec_html_ga047bb36541dffc4835b23c5c3fdbb38d"><div class="ttname"><a href="group__vec.html#ga047bb36541dffc4835b23c5c3fdbb38d">AT_Vec3::AT_vec3_inv</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_inv(AT_Vec3 v)</div><div class="ttdoc">Calculates the inverse of a vector.</div><div class="ttdef"><b>Definition</b> at_math.h:142</div></div>
+<div class="ttc" id="agroup__vec_html_ga339b6ab8b6dba3275ada0ab6cdf82475"><div class="ttname"><a href="group__vec.html#ga339b6ab8b6dba3275ada0ab6cdf82475">AT_Vec3::AT_vec3_zero</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_zero(void)</div><div class="ttdoc">AT_Vec3 constructor for a zero initialised vector.</div><div class="ttdef"><b>Definition</b> at_math.h:87</div></div>
+<div class="ttc" id="agroup__vec_html_ga9a692583a0362700f2d7c76441d6bccd"><div class="ttname"><a href="group__vec.html#ga9a692583a0362700f2d7c76441d6bccd">AT_Vec3::AT_vec3</a></div><div class="ttdeci">static AT_Vec3 AT_vec3(float x, float y, float z)</div><div class="ttdoc">AT_Vec3 constructor for a given point.</div><div class="ttdef"><b>Definition</b> at_math.h:76</div></div>
+<div class="ttc" id="agroup__vec_html_ga9ddf255e4634d1aac2e7ec9c25d3aee9"><div class="ttname"><a href="group__vec.html#ga9ddf255e4634d1aac2e7ec9c25d3aee9">AT_Vec3::AT_vec3_cross</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_cross(AT_Vec3 a, AT_Vec3 b)</div><div class="ttdoc">Performs vector cross multiplication on two given AT_Vec3.</div><div class="ttdef"><b>Definition</b> at_math.h:188</div></div>
+<div class="ttc" id="agroup__vec_html_gaa4b728e9c64012c02a86c3c25523667b"><div class="ttname"><a href="group__vec.html#gaa4b728e9c64012c02a86c3c25523667b">AT_Vec3::AT_vec3_add</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_add(AT_Vec3 a, AT_Vec3 b)</div><div class="ttdoc">Adds two AT_Vec3.</div><div class="ttdef"><b>Definition</b> at_math.h:101</div></div>
+<div class="ttc" id="agroup__vec_html_gaa4fa5bf031db9e3269cbfc751f717620"><div class="ttname"><a href="group__vec.html#gaa4fa5bf031db9e3269cbfc751f717620">AT_Vec3::AT_vec3_dot</a></div><div class="ttdeci">static float AT_vec3_dot(AT_Vec3 a, AT_Vec3 b)</div><div class="ttdoc">Performs vector dot operation on two given AT_Vec3.</div><div class="ttdef"><b>Definition</b> at_math.h:174</div></div>
+<div class="ttc" id="agroup__vec_html_gaa695dff738b2c7f5f8c7dc1193509df9"><div class="ttname"><a href="group__vec.html#gaa695dff738b2c7f5f8c7dc1193509df9">AT_Vec3::AT_vec3_scale</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_scale(AT_Vec3 v, float s)</div><div class="ttdoc">Scales an AT_Vec3 by a given scalar.</div><div class="ttdef"><b>Definition</b> at_math.h:160</div></div>
+<div class="ttc" id="agroup__vec_html_gaa7184d744c2b2ed858f64e5aed112374"><div class="ttname"><a href="group__vec.html#gaa7184d744c2b2ed858f64e5aed112374">AT_Vec3::AT_vec3_sub</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_sub(AT_Vec3 a, AT_Vec3 b)</div><div class="ttdoc">Subtracts two AT_Vec3.</div><div class="ttdef"><b>Definition</b> at_math.h:115</div></div>
+<div class="ttc" id="agroup__vec_html_gaad5dd0022daba9c473e57717729bf98b"><div class="ttname"><a href="group__vec.html#gaad5dd0022daba9c473e57717729bf98b">AT_Vec3::AT_vec3_distance</a></div><div class="ttdeci">static float AT_vec3_distance(AT_Vec3 a, AT_Vec3 b)</div><div class="ttdoc">Calculates the distance between two AT_Vec3&#39;s.</div><div class="ttdef"><b>Definition</b> at_math.h:233</div></div>
+<div class="ttc" id="agroup__vec_html_gac20b01d698142821a130429dad73cd8f"><div class="ttname"><a href="group__vec.html#gac20b01d698142821a130429dad73cd8f">AT_Vec3::AT_vec3_length</a></div><div class="ttdeci">static float AT_vec3_length(AT_Vec3 v)</div><div class="ttdoc">Calculate the length of an AT_Vec3.</div><div class="ttdef"><b>Definition</b> at_math.h:205</div></div>
+<div class="ttc" id="agroup__vec_html_gad1ed8cbf43d112c4f33b0cb5f09ad516"><div class="ttname"><a href="group__vec.html#gad1ed8cbf43d112c4f33b0cb5f09ad516">AT_Vec3::AT_vec3_distance_sq</a></div><div class="ttdeci">static float AT_vec3_distance_sq(AT_Vec3 a, AT_Vec3 b)</div><div class="ttdoc">Calculates the squared distance between two AT_Vec3&#39;s.</div><div class="ttdef"><b>Definition</b> at_math.h:247</div></div>
+<div class="ttc" id="agroup__vec_html_gad49e3f6e72c97852f36887bdbedae99e"><div class="ttname"><a href="group__vec.html#gad49e3f6e72c97852f36887bdbedae99e">AT_Vec3::AT_vec3_mul</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_mul(AT_Vec3 a, AT_Vec3 b)</div><div class="ttdoc">Product of two AT_Vec3.</div><div class="ttdef"><b>Definition</b> at_math.h:129</div></div>
+<div class="ttc" id="agroup__vec_html_gaea012be47bb9ca262ca86b636236e04c"><div class="ttname"><a href="group__vec.html#gaea012be47bb9ca262ca86b636236e04c">AT_Vec3::AT_vec3_normalize</a></div><div class="ttdeci">static AT_Vec3 AT_vec3_normalize(AT_Vec3 v)</div><div class="ttdoc">Normalise a given vector to be within 0.0 -&gt; 1.0.</div><div class="ttdef"><b>Definition</b> at_math.h:218</div></div>
+<div class="ttc" id="astruct_a_t___a_a_b_b_html"><div class="ttname"><a href="struct_a_t___a_a_b_b.html">AT_AABB</a></div><div class="ttdoc">Axis-Aligned Bounding Box for triangle(s).</div><div class="ttdef"><b>Definition</b> at_math.h:48</div></div>
+<div class="ttc" id="astruct_a_t___a_a_b_b_html_aa676a84914e5553308866398507846f1"><div class="ttname"><a href="struct_a_t___a_a_b_b.html#aa676a84914e5553308866398507846f1">AT_AABB::max</a></div><div class="ttdeci">AT_Vec3 max</div><div class="ttdef"><b>Definition</b> at_math.h:50</div></div>
+<div class="ttc" id="astruct_a_t___a_a_b_b_html_aa74e5cc6b83e19fc510b6248d2d622d4"><div class="ttname"><a href="struct_a_t___a_a_b_b.html#aa74e5cc6b83e19fc510b6248d2d622d4">AT_AABB::min</a></div><div class="ttdeci">AT_Vec3 min</div><div class="ttdef"><b>Definition</b> at_math.h:49</div></div>
+<div class="ttc" id="astruct_a_t___triangle_html"><div class="ttname"><a href="struct_a_t___triangle.html">AT_Triangle</a></div><div class="ttdoc">Groups three AT_Vec3 to represent a triangle.</div><div class="ttdef"><b>Definition</b> at_math.h:58</div></div>
+<div class="ttc" id="astruct_a_t___triangle_html_a244b3cbb35d0f6ce705199967417db02"><div class="ttname"><a href="struct_a_t___triangle.html#a244b3cbb35d0f6ce705199967417db02">AT_Triangle::v1</a></div><div class="ttdeci">AT_Vec3 v1</div><div class="ttdef"><b>Definition</b> at_math.h:59</div></div>
+<div class="ttc" id="astruct_a_t___triangle_html_ab43b027604db18ba77e04735f62ce2a4"><div class="ttname"><a href="struct_a_t___triangle.html#ab43b027604db18ba77e04735f62ce2a4">AT_Triangle::v3</a></div><div class="ttdeci">AT_Vec3 v3</div><div class="ttdef"><b>Definition</b> at_math.h:61</div></div>
+<div class="ttc" id="astruct_a_t___triangle_html_ad5911247405899fd8c8cda7fcbdf7dda"><div class="ttname"><a href="struct_a_t___triangle.html#ad5911247405899fd8c8cda7fcbdf7dda">AT_Triangle::aabb</a></div><div class="ttdeci">AT_AABB aabb</div><div class="ttdef"><b>Definition</b> at_math.h:62</div></div>
+<div class="ttc" id="astruct_a_t___triangle_html_ae0dd35873b44b7172781c72d5bf25604"><div class="ttname"><a href="struct_a_t___triangle.html#ae0dd35873b44b7172781c72d5bf25604">AT_Triangle::v2</a></div><div class="ttdeci">AT_Vec3 v2</div><div class="ttdef"><b>Definition</b> at_math.h:60</div></div>
+<div class="ttc" id="astruct_a_t___vec3i_html"><div class="ttname"><a href="struct_a_t___vec3i.html">AT_Vec3i</a></div><div class="ttdoc">Groups three integers to represent a vector of size 3.</div><div class="ttdef"><b>Definition</b> at_math.h:39</div></div>
+<div class="ttc" id="astruct_a_t___vec3i_html_a201c46f8636e6aa9e13452b8c8e1aab8"><div class="ttname"><a href="struct_a_t___vec3i.html#a201c46f8636e6aa9e13452b8c8e1aab8">AT_Vec3i::x</a></div><div class="ttdeci">int x</div><div class="ttdef"><b>Definition</b> at_math.h:40</div></div>
+<div class="ttc" id="astruct_a_t___vec3i_html_a5310e47f557ea23eabdb342f3937c3f5"><div class="ttname"><a href="struct_a_t___vec3i.html#a5310e47f557ea23eabdb342f3937c3f5">AT_Vec3i::y</a></div><div class="ttdeci">int y</div><div class="ttdef"><b>Definition</b> at_math.h:41</div></div>
+<div class="ttc" id="astruct_a_t___vec3i_html_a99947f647f665249c7c4df07cbfaed19"><div class="ttname"><a href="struct_a_t___vec3i.html#a99947f647f665249c7c4df07cbfaed19">AT_Vec3i::z</a></div><div class="ttdeci">int z</div><div class="ttdef"><b>Definition</b> at_math.h:42</div></div>
+<div class="ttc" id="aunion_a_t___vec3_html"><div class="ttname"><a href="union_a_t___vec3.html">AT_Vec3</a></div><div class="ttdoc">Groups three floats to represent a vector of size 3.</div><div class="ttdef"><b>Definition</b> at_math.h:29</div></div>
+<div class="ttc" id="aunion_a_t___vec3_html_a7a6883f251ec2e1d24483b3349a27a86"><div class="ttname"><a href="union_a_t___vec3.html#a7a6883f251ec2e1d24483b3349a27a86">AT_Vec3::arr</a></div><div class="ttdeci">float arr[3]</div><div class="ttdef"><b>Definition</b> at_math.h:33</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,18 +67,51 @@ $(function(){initNavTree('at__model_8h.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
-  <div class="headertitle"><div class="title">at_model.h File Reference</div></div>
+  <div class="headertitle"><div class="title">at_model.h File Reference<div class="ingroups"><a class="el" href="group__model.html">Model</a></div></div></div>
 </div><!--header-->
 <div class="contents">
 
-<p><a class="el" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57" title="Groups the necessary information representing the 3D model.">AT_Model</a> and related functions.  
+<p><a class="el" href="struct_a_t___model.html" title="Groups the necessary information representing the 3D model.">AT_Model</a> and related functions.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="at_8h_source.html">at.h</a>&quot;</code><br />
 </div>
 <p><a href="at__model_8h_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga6a2b0940a71fac205dbb0eb86eee3e13" id="r_ga6a2b0940a71fac205dbb0eb86eee3e13"><td class="memItemLeft"><a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a>&#160;</td><td class="memItemRight"><a class="el" href="group__model.html#ga6a2b0940a71fac205dbb0eb86eee3e13">AT_model_create</a> (<a class="el" href="struct_a_t___model.html">AT_Model</a> **out_model, const char *filepath)</td></tr>
+<tr class="memdesc:ga6a2b0940a71fac205dbb0eb86eee3e13"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_a_t___model.html" title="Groups the necessary information representing the 3D model.">AT_Model</a> constructor for a given <span class="tt">glb</span> filepath.  <br /></td></tr>
+<tr class="memitem:gae40957ebaef6024973a0e23ebd7efe66" id="r_gae40957ebaef6024973a0e23ebd7efe66"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__model.html#gae40957ebaef6024973a0e23ebd7efe66">AT_model_to_AABB</a> (<a class="el" href="struct_a_t___a_a_b_b.html">AT_AABB</a> *out_aabb, const <a class="el" href="struct_a_t___model.html">AT_Model</a> *model)</td></tr>
+<tr class="memdesc:gae40957ebaef6024973a0e23ebd7efe66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the min and max of a model for AABB collision.  <br /></td></tr>
+<tr class="memitem:gafa2d98ccad5b1c256dbc30da84e5a235" id="r_gafa2d98ccad5b1c256dbc30da84e5a235"><td class="memItemLeft"><a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a>&#160;</td><td class="memItemRight"><a class="el" href="group__model.html#gafa2d98ccad5b1c256dbc30da84e5a235">AT_model_get_triangles</a> (<a class="el" href="struct_a_t___triangle.html">AT_Triangle</a> **out_triangles, const <a class="el" href="struct_a_t___model.html">AT_Model</a> *model)</td></tr>
+<tr class="memdesc:gafa2d98ccad5b1c256dbc30da84e5a235"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs all triangles in a given Model.  <br /></td></tr>
+<tr class="memitem:ga9ab78d6c33157d0ae582cfca1393c3f1" id="r_ga9ab78d6c33157d0ae582cfca1393c3f1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__model.html#ga9ab78d6c33157d0ae582cfca1393c3f1">AT_model_destroy</a> (<a class="el" href="struct_a_t___model.html">AT_Model</a> *model)</td></tr>
+<tr class="memdesc:ga9ab78d6c33157d0ae582cfca1393c3f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroys an allocated <a class="el" href="struct_a_t___model.html" title="Groups the necessary information representing the 3D model.">AT_Model</a>.  <br /></td></tr>
+</table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p><a class="el" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57" title="Groups the necessary information representing the 3D model.">AT_Model</a> and related functions. </p>
+<div class="textblock"><p><a class="el" href="struct_a_t___model.html" title="Groups the necessary information representing the 3D model.">AT_Model</a> and related functions. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">

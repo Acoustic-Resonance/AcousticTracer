@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,6 +67,27 @@ $(function(){initNavTree('classes.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
   <div class="headertitle"><div class="title">Data Structure Index</div></div>
 </div><!--header-->
@@ -77,7 +96,7 @@ $(function(){initNavTree('classes.html','',''); });
 <div class="classindex">
 <dl class="classindex even">
 <dt class="alphachar"><a id="letter_A" name="letter_A">A</a></dt>
-<dd><a class="el" href="struct_a_t___a_a_b_b.html">AT_AABB</a></dd><dd><a class="el" href="struct_a_t___scene_config.html">AT_SceneConfig</a></dd><dd><a class="el" href="struct_a_t___settings.html">AT_Settings</a></dd><dd><a class="el" href="struct_a_t___source.html">AT_Source</a></dd><dd><a class="el" href="struct_a_t___triangle.html">AT_Triangle</a></dd><dd><a class="el" href="struct_a_t___vec3.html">AT_Vec3</a></dd></dl>
+<dd><a class="el" href="struct_a_t___a_a_b_b.html">AT_AABB</a></dd><dd><a class="el" href="struct_a_t___material.html">AT_Material</a></dd><dd><a class="el" href="struct_a_t___model.html">AT_Model</a></dd><dd><a class="el" href="struct_a_t___scene.html">AT_Scene</a></dd><dd><a class="el" href="struct_a_t___scene_config.html">AT_SceneConfig</a></dd><dd><a class="el" href="struct_a_t___settings.html">AT_Settings</a></dd><dd><a class="el" href="struct_a_t___simulation.html">AT_Simulation</a></dd><dd><a class="el" href="struct_a_t___source.html">AT_Source</a></dd><dd><a class="el" href="struct_a_t___triangle.html">AT_Triangle</a></dd><dd><a class="el" href="union_a_t___vec3.html">AT_Vec3</a></dd><dd><a class="el" href="struct_a_t___vec3i.html">AT_Vec3i</a></dd></dl>
 </div>
 </div><!-- contents -->
 </div><!-- doc-content -->

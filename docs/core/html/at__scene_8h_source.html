@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,29 +67,52 @@ $(function(){initNavTree('at__scene_8h_source.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
   <div class="headertitle"><div class="title">at_scene.h</div></div>
 </div><!--header-->
 <div class="contents">
 <a href="at__scene_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#ifndef AT_SCENE_H</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#define AT_SCENE_H</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &quot;<a class="code" href="at_8h.html">at.h</a>&quot;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_typedef" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a> <a class="code hl_typedef" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a>;</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span></div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><a class="code hl_enumeration" href="at_8h.html#aea4140158379906d92c0d8d97e518f65">AT_Result</a> AT_scene_create(<a class="code hl_typedef" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a> **out_scene, <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___scene_config.html">AT_SceneConfig</a>* config);</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno"><a class="line" href="at__scene_8h.html#a396d9232cddc7c05799bdca43526a848">   31</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="at__scene_8h.html#a396d9232cddc7c05799bdca43526a848">AT_scene_destroy</a>(<a class="code hl_typedef" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a> *scene);</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#endif </span><span class="comment">// AT_SCENE_H</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#ifndef AT_SCENE_H</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#define AT_SCENE_H</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &quot;<a class="code" href="at_8h.html">at.h</a>&quot;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_struct" href="struct_a_t___scene.html">AT_Scene</a> <a class="code hl_struct" href="struct_a_t___scene.html">AT_Scene</a>;</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><a class="code hl_enumeration" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a> <a class="code hl_function" href="group__scene.html#ga59a5870a05e0d467eb94d1cc24e96656">AT_scene_create</a>(<a class="code hl_struct" href="struct_a_t___scene.html">AT_Scene</a> **out_scene, <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___scene_config.html">AT_SceneConfig</a> *config);</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="group__scene.html#ga396d9232cddc7c05799bdca43526a848">   37</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="group__scene.html#ga396d9232cddc7c05799bdca43526a848">AT_scene_destroy</a>(<a class="code hl_struct" href="struct_a_t___scene.html">AT_Scene</a> *scene);</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#endif </span><span class="comment">// AT_SCENE_H</span></div>
 <div class="ttc" id="aat_8h_html"><div class="ttname"><a href="at_8h.html">at.h</a></div><div class="ttdoc">The libraries public types and functions.</div></div>
-<div class="ttc" id="aat_8h_html_a77088b0fbcf9ae1f7c42b1acc2615460"><div class="ttname"><a href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a></div><div class="ttdeci">struct AT_Scene AT_Scene</div><div class="ttdoc">Groups the necessary information representing the scene.</div><div class="ttdef"><b>Definition</b> at.h:12</div></div>
-<div class="ttc" id="aat_8h_html_aea4140158379906d92c0d8d97e518f65"><div class="ttname"><a href="at_8h.html#aea4140158379906d92c0d8d97e518f65">AT_Result</a></div><div class="ttdeci">AT_Result</div><div class="ttdoc">Defines possible result types.</div><div class="ttdef"><b>Definition</b> at.h:17</div></div>
-<div class="ttc" id="aat__scene_8h_html_a396d9232cddc7c05799bdca43526a848"><div class="ttname"><a href="at__scene_8h.html#a396d9232cddc7c05799bdca43526a848">AT_scene_destroy</a></div><div class="ttdeci">void AT_scene_destroy(AT_Scene *scene)</div><div class="ttdoc">Destroys an allocated AT_Scene.</div></div>
-<div class="ttc" id="astruct_a_t___scene_config_html"><div class="ttname"><a href="struct_a_t___scene_config.html">AT_SceneConfig</a></div><div class="ttdoc">Groups the scene config settings together.</div><div class="ttdef"><b>Definition</b> at.h:49</div></div>
+<div class="ttc" id="agroup__result_html_gaea4140158379906d92c0d8d97e518f65"><div class="ttname"><a href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a></div><div class="ttdeci">AT_Result</div><div class="ttdoc">Defines possible result types.</div><div class="ttdef"><b>Definition</b> at.h:24</div></div>
+<div class="ttc" id="agroup__scene_html_ga396d9232cddc7c05799bdca43526a848"><div class="ttname"><a href="group__scene.html#ga396d9232cddc7c05799bdca43526a848">AT_scene_destroy</a></div><div class="ttdeci">void AT_scene_destroy(AT_Scene *scene)</div><div class="ttdoc">Destroys an allocated AT_Scene.</div></div>
+<div class="ttc" id="agroup__scene_html_ga59a5870a05e0d467eb94d1cc24e96656"><div class="ttname"><a href="group__scene.html#ga59a5870a05e0d467eb94d1cc24e96656">AT_Scene::AT_scene_create</a></div><div class="ttdeci">AT_Result AT_scene_create(AT_Scene **out_scene, const AT_SceneConfig *config)</div><div class="ttdoc">AT_Scene constructor for a given AT_SceneConfig.</div></div>
+<div class="ttc" id="astruct_a_t___scene_config_html"><div class="ttname"><a href="struct_a_t___scene_config.html">AT_SceneConfig</a></div><div class="ttdoc">Groups the scene config settings together.</div><div class="ttdef"><b>Definition</b> at.h:65</div></div>
+<div class="ttc" id="astruct_a_t___scene_html"><div class="ttname"><a href="struct_a_t___scene.html">AT_Scene</a></div><div class="ttdoc">Groups the necessary information representing the scene.</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

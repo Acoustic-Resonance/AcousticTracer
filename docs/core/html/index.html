@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.16.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>AcousticTracer: Main Page</title>
+<title>AcousticTracer: AcousticTracer</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,10 +67,54 @@ $(function(){initNavTree('index.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
-<div class="header">
-  <div class="headertitle"><div class="title">AcousticTracer Documentation</div></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
+<div><div class="header">
+  <div class="headertitle"><div class="title">AcousticTracer </div></div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p><a class="anchor" id="md__2_users_2eonmurph_2_college_2_c_s3305_2_accoustic_tracer_2_r_e_a_d_m_e"></a></p>
+<p>Our project 'Acoustic Tracer' is a three-dimensional, acoustic visualiser that allows users to visualise sound travelling throughout a modelled environment as a heat map. At the core it is a C library, where the user can read in a <span class="tt">.glb</span> file (3D Model File), insert one or more speakers, specify simulation settings, and receive back a heat map of how the sound travelled through the environment over time. Our final project extends it into a web-based application that renders this heat map and makes the configuration of the scene and simulation more user-friendly, while also allowing more technical users to achieve their desired configuration.</p>
+<p>Some demonstrations of it's functionality:</p>
+<p><img src="assets/clips/bathroom.gif" alt="Conference Gif" class="inline"/> <img src="assets/clips/conference.gif" alt="Conference Gif" class="inline"/> <img src="assets/clips/Cathedral.gif" alt="Conference Gif" class="inline"/></p>
+<p>Link to our report: <a href="docs/report.pdf">Here</a> Project website: <a href="https://acoustic-resonance.github.io/AcousticTracer/">link to the documentation</a></p>
+<h1 class="doxsection"><a class="anchor" id="contributors"></a>
+Contributors</h1>
+<ul>
+<li><a href="https://github.com/mccarthy-michael">Michael McCarthy</a></li>
+<li><a href="https://github.com/patrykmrozek">Patryk Mrozek</a></li>
+<li><a href="https://github.com/eonmurph">Eoghan Murphy</a></li>
+<li><a href="https://github.com/alexodwright">Alex Wright</a></li>
+</ul>
+<p>Future Plans:</p><ul class="check">
+<li class="unchecked">Frontend Multiple Source Selection</li>
+</ul>
+<ul class="check">
+<li class="unchecked">LiDar 3D Environment Compatability</li>
+</ul>
+<ul class="check">
+<li class="unchecked">Genetic Algorithm for Optimal Source Position &amp; Orientation </li>
+</ul>
+</div></div><!-- PageDoc -->
 <a href="doxygen_crawl.html"></a>
 </div><!-- contents -->
 </div><!-- doc-content -->

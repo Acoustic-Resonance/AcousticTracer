@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,18 +67,51 @@ $(function(){initNavTree('functions_func.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="contents">
 <div class="textblock">Here is a list of all documented functions with links to the struct/union documentation for each field:</div><ul>
-<li>AT_model_to_AABB()&#160;:&#160;<a class="el" href="struct_a_t___a_a_b_b.html#ae40957ebaef6024973a0e23ebd7efe66">AT_AABB</a></li>
-<li>AT_vec3()&#160;:&#160;<a class="el" href="struct_a_t___vec3.html#a9a692583a0362700f2d7c76441d6bccd">AT_Vec3</a></li>
-<li>AT_vec3_add()&#160;:&#160;<a class="el" href="struct_a_t___vec3.html#aa4b728e9c64012c02a86c3c25523667b">AT_Vec3</a></li>
-<li>AT_vec3_cross()&#160;:&#160;<a class="el" href="struct_a_t___vec3.html#a9ddf255e4634d1aac2e7ec9c25d3aee9">AT_Vec3</a></li>
-<li>AT_vec3_dot()&#160;:&#160;<a class="el" href="struct_a_t___vec3.html#aa4fa5bf031db9e3269cbfc751f717620">AT_Vec3</a></li>
-<li>AT_vec3_length()&#160;:&#160;<a class="el" href="struct_a_t___vec3.html#ac20b01d698142821a130429dad73cd8f">AT_Vec3</a></li>
-<li>AT_vec3_normalize()&#160;:&#160;<a class="el" href="struct_a_t___vec3.html#aea012be47bb9ca262ca86b636236e04c">AT_Vec3</a></li>
-<li>AT_vec3_scale()&#160;:&#160;<a class="el" href="struct_a_t___vec3.html#aa695dff738b2c7f5f8c7dc1193509df9">AT_Vec3</a></li>
-<li>AT_vec3_sub()&#160;:&#160;<a class="el" href="struct_a_t___vec3.html#aa7184d744c2b2ed858f64e5aed112374">AT_Vec3</a></li>
-<li>AT_vec3_zero()&#160;:&#160;<a class="el" href="struct_a_t___vec3.html#a339b6ab8b6dba3275ada0ab6cdf82475">AT_Vec3</a></li>
+<li>AT_model_create()&#160;:&#160;<a class="el" href="group__model.html#ga6a2b0940a71fac205dbb0eb86eee3e13">AT_Model</a></li>
+<li>AT_model_destroy()&#160;:&#160;<a class="el" href="group__model.html#ga9ab78d6c33157d0ae582cfca1393c3f1">AT_Model</a></li>
+<li>AT_model_get_triangles()&#160;:&#160;<a class="el" href="group__model.html#gafa2d98ccad5b1c256dbc30da84e5a235">AT_Model</a></li>
+<li>AT_model_to_AABB()&#160;:&#160;<a class="el" href="group__model.html#gae40957ebaef6024973a0e23ebd7efe66">AT_AABB</a></li>
+<li>AT_scene_create()&#160;:&#160;<a class="el" href="group__scene.html#ga59a5870a05e0d467eb94d1cc24e96656">AT_Scene</a></li>
+<li>AT_scene_destroy()&#160;:&#160;<a class="el" href="group__scene.html#ga396d9232cddc7c05799bdca43526a848">AT_Scene</a></li>
+<li>AT_simulation_create()&#160;:&#160;<a class="el" href="group__sim.html#ga33a82aa5944a3f7349637fa13aa55ff0">AT_Simulation</a></li>
+<li>AT_simulation_destroy()&#160;:&#160;<a class="el" href="group__sim.html#ga03d210d67aaeeffe211de40e428f4f40">AT_Simulation</a></li>
+<li>AT_simulation_run()&#160;:&#160;<a class="el" href="group__sim.html#ga01a9919b93e0f2d8500e15c08c66861f">AT_Simulation</a></li>
+<li>AT_vec3()&#160;:&#160;<a class="el" href="group__vec.html#ga9a692583a0362700f2d7c76441d6bccd">AT_Vec3</a></li>
+<li>AT_vec3_add()&#160;:&#160;<a class="el" href="group__vec.html#gaa4b728e9c64012c02a86c3c25523667b">AT_Vec3</a></li>
+<li>AT_vec3_cross()&#160;:&#160;<a class="el" href="group__vec.html#ga9ddf255e4634d1aac2e7ec9c25d3aee9">AT_Vec3</a></li>
+<li>AT_vec3_distance()&#160;:&#160;<a class="el" href="group__vec.html#gaad5dd0022daba9c473e57717729bf98b">AT_Vec3</a></li>
+<li>AT_vec3_distance_sq()&#160;:&#160;<a class="el" href="group__vec.html#gad1ed8cbf43d112c4f33b0cb5f09ad516">AT_Vec3</a></li>
+<li>AT_vec3_dot()&#160;:&#160;<a class="el" href="group__vec.html#gaa4fa5bf031db9e3269cbfc751f717620">AT_Vec3</a></li>
+<li>AT_vec3_inv()&#160;:&#160;<a class="el" href="group__vec.html#ga047bb36541dffc4835b23c5c3fdbb38d">AT_Vec3</a></li>
+<li>AT_vec3_length()&#160;:&#160;<a class="el" href="group__vec.html#gac20b01d698142821a130429dad73cd8f">AT_Vec3</a></li>
+<li>AT_vec3_mul()&#160;:&#160;<a class="el" href="group__vec.html#gad49e3f6e72c97852f36887bdbedae99e">AT_Vec3</a></li>
+<li>AT_vec3_normalize()&#160;:&#160;<a class="el" href="group__vec.html#gaea012be47bb9ca262ca86b636236e04c">AT_Vec3</a></li>
+<li>AT_vec3_scale()&#160;:&#160;<a class="el" href="group__vec.html#gaa695dff738b2c7f5f8c7dc1193509df9">AT_Vec3</a></li>
+<li>AT_vec3_sub()&#160;:&#160;<a class="el" href="group__vec.html#gaa7184d744c2b2ed858f64e5aed112374">AT_Vec3</a></li>
+<li>AT_vec3_zero()&#160;:&#160;<a class="el" href="group__vec.html#ga339b6ab8b6dba3275ada0ab6cdf82475">AT_Vec3</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

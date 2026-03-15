@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,27 +67,59 @@ $(function(){initNavTree('at__model_8h_source.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
   <div class="headertitle"><div class="title">at_model.h</div></div>
 </div><!--header-->
 <div class="contents">
 <a href="at__model_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#ifndef AT_MODEL_H</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#define AT_MODEL_H</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &quot;<a class="code" href="at_8h.html">at.h</a>&quot;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_typedef" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> <a class="code hl_typedef" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a>;</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span></div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><a class="code hl_enumeration" href="at_8h.html#aea4140158379906d92c0d8d97e518f65">AT_Result</a> AT_model_create(<a class="code hl_typedef" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> **out_model, <span class="keyword">const</span> <span class="keywordtype">char</span> *filepath);</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keywordtype">void</span> AT_model_destroy(<a class="code hl_typedef" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> *model);</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#endif </span><span class="comment">// AT_MODEL_H</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#ifndef AT_MODEL_H</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#define AT_MODEL_H</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &quot;<a class="code" href="at_8h.html">at.h</a>&quot;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_struct" href="struct_a_t___model.html">AT_Model</a> <a class="code hl_struct" href="struct_a_t___model.html">AT_Model</a>;</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="group__model.html#ga6a2b0940a71fac205dbb0eb86eee3e13">   28</a></span><a class="code hl_enumeration" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a> <a class="code hl_function" href="group__model.html#ga6a2b0940a71fac205dbb0eb86eee3e13">AT_model_create</a>(<a class="code hl_struct" href="struct_a_t___model.html">AT_Model</a> **out_model, <span class="keyword">const</span> <span class="keywordtype">char</span> *filepath);</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="group__model.html#gae40957ebaef6024973a0e23ebd7efe66">   37</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="group__model.html#gae40957ebaef6024973a0e23ebd7efe66">AT_model_to_AABB</a>(<a class="code hl_struct" href="struct_a_t___a_a_b_b.html">AT_AABB</a> *out_aabb, <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___model.html">AT_Model</a> *model);</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno"><a class="line" href="group__model.html#gafa2d98ccad5b1c256dbc30da84e5a235">   48</a></span><a class="code hl_enumeration" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a> <a class="code hl_function" href="group__model.html#gafa2d98ccad5b1c256dbc30da84e5a235">AT_model_get_triangles</a>(<a class="code hl_struct" href="struct_a_t___triangle.html">AT_Triangle</a> **out_triangles, <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___model.html">AT_Model</a> *model);</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span></div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="group__model.html#ga9ab78d6c33157d0ae582cfca1393c3f1">   56</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="group__model.html#ga9ab78d6c33157d0ae582cfca1393c3f1">AT_model_destroy</a>(<a class="code hl_struct" href="struct_a_t___model.html">AT_Model</a> *model);</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="preprocessor">#endif </span><span class="comment">// AT_MODEL_H</span></div>
 <div class="ttc" id="aat_8h_html"><div class="ttname"><a href="at_8h.html">at.h</a></div><div class="ttdoc">The libraries public types and functions.</div></div>
-<div class="ttc" id="aat_8h_html_a26b1caac87ae1449ad4f5c60892ffd57"><div class="ttname"><a href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a></div><div class="ttdeci">struct AT_Model AT_Model</div><div class="ttdoc">Groups the necessary information representing the 3D model.</div><div class="ttdef"><b>Definition</b> at.h:11</div></div>
-<div class="ttc" id="aat_8h_html_aea4140158379906d92c0d8d97e518f65"><div class="ttname"><a href="at_8h.html#aea4140158379906d92c0d8d97e518f65">AT_Result</a></div><div class="ttdeci">AT_Result</div><div class="ttdoc">Defines possible result types.</div><div class="ttdef"><b>Definition</b> at.h:17</div></div>
+<div class="ttc" id="agroup__model_html_ga6a2b0940a71fac205dbb0eb86eee3e13"><div class="ttname"><a href="group__model.html#ga6a2b0940a71fac205dbb0eb86eee3e13">AT_model_create</a></div><div class="ttdeci">AT_Result AT_model_create(AT_Model **out_model, const char *filepath)</div><div class="ttdoc">AT_Model constructor for a given glb filepath.</div></div>
+<div class="ttc" id="agroup__model_html_ga9ab78d6c33157d0ae582cfca1393c3f1"><div class="ttname"><a href="group__model.html#ga9ab78d6c33157d0ae582cfca1393c3f1">AT_model_destroy</a></div><div class="ttdeci">void AT_model_destroy(AT_Model *model)</div><div class="ttdoc">Destroys an allocated AT_Model.</div></div>
+<div class="ttc" id="agroup__model_html_gae40957ebaef6024973a0e23ebd7efe66"><div class="ttname"><a href="group__model.html#gae40957ebaef6024973a0e23ebd7efe66">AT_model_to_AABB</a></div><div class="ttdeci">void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model)</div><div class="ttdoc">Calculates the min and max of a model for AABB collision.</div></div>
+<div class="ttc" id="agroup__model_html_gafa2d98ccad5b1c256dbc30da84e5a235"><div class="ttname"><a href="group__model.html#gafa2d98ccad5b1c256dbc30da84e5a235">AT_Model::AT_model_get_triangles</a></div><div class="ttdeci">AT_Result AT_model_get_triangles(AT_Triangle **out_triangles, const AT_Model *model)</div><div class="ttdoc">Constructs all triangles in a given Model.</div></div>
+<div class="ttc" id="agroup__result_html_gaea4140158379906d92c0d8d97e518f65"><div class="ttname"><a href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a></div><div class="ttdeci">AT_Result</div><div class="ttdoc">Defines possible result types.</div><div class="ttdef"><b>Definition</b> at.h:24</div></div>
+<div class="ttc" id="astruct_a_t___a_a_b_b_html"><div class="ttname"><a href="struct_a_t___a_a_b_b.html">AT_AABB</a></div><div class="ttdoc">Axis-Aligned Bounding Box for triangle(s).</div><div class="ttdef"><b>Definition</b> at_math.h:48</div></div>
+<div class="ttc" id="astruct_a_t___model_html"><div class="ttname"><a href="struct_a_t___model.html">AT_Model</a></div><div class="ttdoc">Groups the necessary information representing the 3D model.</div></div>
+<div class="ttc" id="astruct_a_t___triangle_html"><div class="ttname"><a href="struct_a_t___triangle.html">AT_Triangle</a></div><div class="ttdoc">Groups three AT_Vec3 to represent a triangle.</div><div class="ttdef"><b>Definition</b> at_math.h:58</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

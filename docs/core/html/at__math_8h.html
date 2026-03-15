@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,26 +67,53 @@ $(function(){initNavTree('at__math_8h.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
-  <div class="headertitle"><div class="title">at_math.h File Reference</div></div>
+  <div class="headertitle"><div class="title">at_math.h File Reference<div class="ingroups"><a class="el" href="group__math.html">Maths</a></div></div></div>
 </div><!--header-->
 <div class="contents">
 
-<p><a class="el" href="struct_a_t___triangle.html" title="Groups three AT_Vec3 to represent a triangle.">AT_Triangle</a>, <a class="el" href="struct_a_t___vec3.html" title="Groups three floats to represent a vector of size 3.">AT_Vec3</a> and related functions.  
+<p><a class="el" href="struct_a_t___triangle.html" title="Groups three AT_Vec3 to represent a triangle.">AT_Triangle</a>, <a class="el" href="union_a_t___vec3.html" title="Groups three floats to represent a vector of size 3.">AT_Vec3</a> and related functions.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;math.h&gt;</code><br />
+<code>#include &lt;float.h&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
 </div>
 <p><a href="at__math_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
-<tr class="memitem:AT_5FVec3" id="r_AT_5FVec3"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_a_t___vec3.html">AT_Vec3</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Groups three floats to represent a vector of size 3.  <a href="struct_a_t___vec3.html#details">More...</a><br /></td></tr>
+<tr class="memitem:AT_5FVec3" id="r_AT_5FVec3"><td class="memItemLeft">union &#160;</td><td class="memItemRight"><a class="el" href="union_a_t___vec3.html">AT_Vec3</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Groups three floats to represent a vector of size 3.  <a href="union_a_t___vec3.html#details">More...</a><br /></td></tr>
+<tr class="memitem:AT_5FVec3i" id="r_AT_5FVec3i"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_a_t___vec3i.html">AT_Vec3i</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Groups three integers to represent a vector of size 3.  <a href="struct_a_t___vec3i.html#details">More...</a><br /></td></tr>
+<tr class="memitem:AT_5FAABB" id="r_AT_5FAABB"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_a_t___a_a_b_b.html">AT_AABB</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Axis-Aligned Bounding Box for triangle(s).  <a href="struct_a_t___a_a_b_b.html#details">More...</a><br /></td></tr>
 <tr class="memitem:AT_5FTriangle" id="r_AT_5FTriangle"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_a_t___triangle.html">AT_Triangle</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Groups three <a class="el" href="struct_a_t___vec3.html" title="Groups three floats to represent a vector of size 3.">AT_Vec3</a> to represent a triangle.  <a href="struct_a_t___triangle.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Groups three <a class="el" href="union_a_t___vec3.html" title="Groups three floats to represent a vector of size 3.">AT_Vec3</a> to represent a triangle.  <a href="struct_a_t___triangle.html#details">More...</a><br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p><a class="el" href="struct_a_t___triangle.html" title="Groups three AT_Vec3 to represent a triangle.">AT_Triangle</a>, <a class="el" href="struct_a_t___vec3.html" title="Groups three floats to represent a vector of size 3.">AT_Vec3</a> and related functions. </p>
+<div class="textblock"><p><a class="el" href="struct_a_t___triangle.html" title="Groups three AT_Vec3 to represent a triangle.">AT_Triangle</a>, <a class="el" href="union_a_t___vec3.html" title="Groups three floats to represent a vector of size 3.">AT_Vec3</a> and related functions. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">

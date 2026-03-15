@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,14 +67,35 @@ $(function(){initNavTree('at_8h.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
-  <div class="headertitle"><div class="title">at.h File Reference</div></div>
+  <div class="headertitle"><div class="title">at.h File Reference<div class="ingroups"><a class="el" href="group__model.html">Model</a> &#124; <a class="el" href="group__scene.html">Scene</a> &#124; <a class="el" href="group__sim.html">Simulation</a></div></div></div>
 </div><!--header-->
 <div class="contents">
 
 <p>The libraries public types and functions.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="at__math_8h_source.html">at_math.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="at__math_8h_source.html">acoustic/at_math.h</a>&quot;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
 </div>
@@ -84,8 +103,8 @@ $(function(){initNavTree('at_8h.html','',''); });
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
-<tr class="memitem:AT_5FAABB" id="r_AT_5FAABB"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_a_t___a_a_b_b.html">AT_AABB</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Groups the min and max of a voxel for AABB collision detection.  <a href="struct_a_t___a_a_b_b.html#details">More...</a><br /></td></tr>
+<tr class="memitem:AT_5FMaterial" id="r_AT_5FMaterial"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_a_t___material.html">AT_Material</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds the material absorption and scattering coefficients.  <a href="struct_a_t___material.html#details">More...</a><br /></td></tr>
 <tr class="memitem:AT_5FSource" id="r_AT_5FSource"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_a_t___source.html">AT_Source</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Groups the information required for the sound source.  <a href="struct_a_t___source.html#details">More...</a><br /></td></tr>
 <tr class="memitem:AT_5FSceneConfig" id="r_AT_5FSceneConfig"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_a_t___scene_config.html">AT_SceneConfig</a></td></tr>
@@ -93,72 +112,248 @@ Data Structures</h2></td></tr>
 <tr class="memitem:AT_5FSettings" id="r_AT_5FSettings"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_a_t___settings.html">AT_Settings</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The simulation's settings.  <a href="struct_a_t___settings.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:a26b1caac87ae1449ad4f5c60892ffd57" id="r_a26b1caac87ae1449ad4f5c60892ffd57"><td class="memItemLeft"><a id="a26b1caac87ae1449ad4f5c60892ffd57" name="a26b1caac87ae1449ad4f5c60892ffd57"></a>
-typedef struct <a class="el" href="#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a>&#160;</td><td class="memItemRight"><b>AT_Model</b></td></tr>
-<tr class="memdesc:a26b1caac87ae1449ad4f5c60892ffd57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Groups the necessary information representing the 3D model. <br /></td></tr>
-<tr class="memitem:a77088b0fbcf9ae1f7c42b1acc2615460" id="r_a77088b0fbcf9ae1f7c42b1acc2615460"><td class="memItemLeft"><a id="a77088b0fbcf9ae1f7c42b1acc2615460" name="a77088b0fbcf9ae1f7c42b1acc2615460"></a>
-typedef struct <a class="el" href="#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a>&#160;</td><td class="memItemRight"><b>AT_Scene</b></td></tr>
-<tr class="memdesc:a77088b0fbcf9ae1f7c42b1acc2615460"><td class="mdescLeft">&#160;</td><td class="mdescRight">Groups the necessary information representing the scene. <br /></td></tr>
-<tr class="memitem:a245ff9fc7829f4ef55a135160369a42e" id="r_a245ff9fc7829f4ef55a135160369a42e"><td class="memItemLeft"><a id="a245ff9fc7829f4ef55a135160369a42e" name="a245ff9fc7829f4ef55a135160369a42e"></a>
-typedef struct <a class="el" href="#a245ff9fc7829f4ef55a135160369a42e">AT_Simulation</a>&#160;</td><td class="memItemRight"><b>AT_Simulation</b></td></tr>
-<tr class="memdesc:a245ff9fc7829f4ef55a135160369a42e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Groups the necessary simulation data. <br /></td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:aea4140158379906d92c0d8d97e518f65" id="r_aea4140158379906d92c0d8d97e518f65"><td class="memItemLeft">enum &#160;</td><td class="memItemRight"><a class="el" href="#aea4140158379906d92c0d8d97e518f65">AT_Result</a> { <a class="el" href="#aea4140158379906d92c0d8d97e518f65a368dece0165e1dfea21f96efaf3c8495">AT_OK</a> = 0
-, <a class="el" href="#aea4140158379906d92c0d8d97e518f65ace599c57e1581dba2418ea4cd870ecff">AT_ERR_INVALID_ARGUMENT</a>
-, <a class="el" href="#aea4140158379906d92c0d8d97e518f65a4d1cb3428c400df9fd2a93c9542b2cd4">AT_ERR_ALLOC_ERROR</a>
+<tr class="memitem:gaea4140158379906d92c0d8d97e518f65" id="r_gaea4140158379906d92c0d8d97e518f65"><td class="memItemLeft">enum &#160;</td><td class="memItemRight"><a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a> { <a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65a368dece0165e1dfea21f96efaf3c8495">AT_OK</a> = 0
+, <a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65ace599c57e1581dba2418ea4cd870ecff">AT_ERR_INVALID_ARGUMENT</a>
+, <a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65a4d1cb3428c400df9fd2a93c9542b2cd4">AT_ERR_ALLOC_ERROR</a>
+, <a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65a1097d23031fda9a7d1a12a6daad3f960">AT_ERR_NETWORK_FAILURE</a>
  }</td></tr>
-<tr class="memdesc:aea4140158379906d92c0d8d97e518f65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines possible result types.  <a href="#aea4140158379906d92c0d8d97e518f65">More...</a><br /></td></tr>
-<tr class="memitem:a359bb06298ec3945742fbe8d6f10654e" id="r_a359bb06298ec3945742fbe8d6f10654e"><td class="memItemLeft"><a id="a359bb06298ec3945742fbe8d6f10654e" name="a359bb06298ec3945742fbe8d6f10654e"></a>enum &#160;</td><td class="memItemRight"><a class="el" href="#a359bb06298ec3945742fbe8d6f10654e">AT_Material</a> { <b>AT_MATERIAL_CONCRETE</b>
-, <b>AT_MATERIAL_PLASTIC</b>
-, <b>AT_MATERIAL_WOOD</b>
- }</td></tr>
-<tr class="memdesc:a359bb06298ec3945742fbe8d6f10654e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines possible material types. <br /></td></tr>
+<tr class="memdesc:gaea4140158379906d92c0d8d97e518f65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines possible result types.  <a href="group__result.html#gaea4140158379906d92c0d8d97e518f65">More...</a><br /></td></tr>
+<tr class="memitem:gabe36b986faf544ba62a08c0df6fd1883" id="r_gabe36b986faf544ba62a08c0df6fd1883"><td class="memItemLeft"><a id="gabe36b986faf544ba62a08c0df6fd1883" name="gabe36b986faf544ba62a08c0df6fd1883"></a>enum &#160;</td><td class="memItemRight"><a class="el" href="group__mat.html#gabe36b986faf544ba62a08c0df6fd1883">AT_MaterialType</a> </td></tr>
+<tr class="memdesc:gabe36b986faf544ba62a08c0df6fd1883"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines possible material types. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a6a2b0940a71fac205dbb0eb86eee3e13" id="r_a6a2b0940a71fac205dbb0eb86eee3e13"><td class="memItemLeft"><a id="a6a2b0940a71fac205dbb0eb86eee3e13" name="a6a2b0940a71fac205dbb0eb86eee3e13"></a>
-<a class="el" href="#aea4140158379906d92c0d8d97e518f65">AT_Result</a>&#160;</td><td class="memItemRight"><b>AT_model_create</b> (<a class="el" href="#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> **out_model, const char *filepath)</td></tr>
-<tr class="memitem:a9ab78d6c33157d0ae582cfca1393c3f1" id="r_a9ab78d6c33157d0ae582cfca1393c3f1"><td class="memItemLeft"><a id="a9ab78d6c33157d0ae582cfca1393c3f1" name="a9ab78d6c33157d0ae582cfca1393c3f1"></a>
-void&#160;</td><td class="memItemRight"><b>AT_model_destroy</b> (<a class="el" href="#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> *model)</td></tr>
-<tr class="memitem:a59a5870a05e0d467eb94d1cc24e96656" id="r_a59a5870a05e0d467eb94d1cc24e96656"><td class="memItemLeft"><a id="a59a5870a05e0d467eb94d1cc24e96656" name="a59a5870a05e0d467eb94d1cc24e96656"></a>
-<a class="el" href="#aea4140158379906d92c0d8d97e518f65">AT_Result</a>&#160;</td><td class="memItemRight"><b>AT_scene_create</b> (<a class="el" href="#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a> **out_scene, const <a class="el" href="struct_a_t___scene_config.html">AT_SceneConfig</a> *config)</td></tr>
-<tr class="memitem:a396d9232cddc7c05799bdca43526a848" id="r_a396d9232cddc7c05799bdca43526a848"><td class="memItemLeft"><a id="a396d9232cddc7c05799bdca43526a848" name="a396d9232cddc7c05799bdca43526a848"></a>
-void&#160;</td><td class="memItemRight"><b>AT_scene_destroy</b> (<a class="el" href="#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a> *scene)</td></tr>
-<tr class="memitem:a33a82aa5944a3f7349637fa13aa55ff0" id="r_a33a82aa5944a3f7349637fa13aa55ff0"><td class="memItemLeft"><a id="a33a82aa5944a3f7349637fa13aa55ff0" name="a33a82aa5944a3f7349637fa13aa55ff0"></a>
-<a class="el" href="#aea4140158379906d92c0d8d97e518f65">AT_Result</a>&#160;</td><td class="memItemRight"><b>AT_simulation_create</b> (<a class="el" href="#a245ff9fc7829f4ef55a135160369a42e">AT_Simulation</a> **out_simulation, const <a class="el" href="#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a> *scene, const <a class="el" href="struct_a_t___settings.html">AT_Settings</a> *settings)</td></tr>
-<tr class="memitem:a01a9919b93e0f2d8500e15c08c66861f" id="r_a01a9919b93e0f2d8500e15c08c66861f"><td class="memItemLeft"><a id="a01a9919b93e0f2d8500e15c08c66861f" name="a01a9919b93e0f2d8500e15c08c66861f"></a>
-<a class="el" href="#aea4140158379906d92c0d8d97e518f65">AT_Result</a>&#160;</td><td class="memItemRight"><b>AT_simulation_run</b> (<a class="el" href="#a245ff9fc7829f4ef55a135160369a42e">AT_Simulation</a> *simulation)</td></tr>
-<tr class="memitem:a03d210d67aaeeffe211de40e428f4f40" id="r_a03d210d67aaeeffe211de40e428f4f40"><td class="memItemLeft"><a id="a03d210d67aaeeffe211de40e428f4f40" name="a03d210d67aaeeffe211de40e428f4f40"></a>
-void&#160;</td><td class="memItemRight"><b>AT_simulation_destroy</b> (<a class="el" href="#a245ff9fc7829f4ef55a135160369a42e">AT_Simulation</a> *simulation)</td></tr>
+<tr class="memitem:ga6a2b0940a71fac205dbb0eb86eee3e13" id="r_ga6a2b0940a71fac205dbb0eb86eee3e13"><td class="memItemLeft"><a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a>&#160;</td><td class="memItemRight"><a class="el" href="#ga6a2b0940a71fac205dbb0eb86eee3e13">AT_model_create</a> (<a class="el" href="struct_a_t___model.html">AT_Model</a> **out_model, const char *filepath)</td></tr>
+<tr class="memdesc:ga6a2b0940a71fac205dbb0eb86eee3e13"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_a_t___model.html" title="Groups the necessary information representing the 3D model.">AT_Model</a> constructor for a given <span class="tt">glb</span> filepath.  <br /></td></tr>
+<tr class="memitem:ga9ab78d6c33157d0ae582cfca1393c3f1" id="r_ga9ab78d6c33157d0ae582cfca1393c3f1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga9ab78d6c33157d0ae582cfca1393c3f1">AT_model_destroy</a> (<a class="el" href="struct_a_t___model.html">AT_Model</a> *model)</td></tr>
+<tr class="memdesc:ga9ab78d6c33157d0ae582cfca1393c3f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroys an allocated <a class="el" href="struct_a_t___model.html" title="Groups the necessary information representing the 3D model.">AT_Model</a>.  <br /></td></tr>
+<tr class="memitem:gae40957ebaef6024973a0e23ebd7efe66" id="r_gae40957ebaef6024973a0e23ebd7efe66"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gae40957ebaef6024973a0e23ebd7efe66">AT_model_to_AABB</a> (<a class="el" href="struct_a_t___a_a_b_b.html">AT_AABB</a> *out_aabb, const <a class="el" href="struct_a_t___model.html">AT_Model</a> *model)</td></tr>
+<tr class="memdesc:gae40957ebaef6024973a0e23ebd7efe66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the min and max of a model for AABB collision.  <br /></td></tr>
+<tr class="memitem:ga396d9232cddc7c05799bdca43526a848" id="r_ga396d9232cddc7c05799bdca43526a848"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga396d9232cddc7c05799bdca43526a848">AT_scene_destroy</a> (<a class="el" href="struct_a_t___scene.html">AT_Scene</a> *scene)</td></tr>
+<tr class="memdesc:ga396d9232cddc7c05799bdca43526a848"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroys an allocated <a class="el" href="struct_a_t___scene.html" title="Groups the necessary information representing the scene.">AT_Scene</a>.  <br /></td></tr>
+<tr class="memitem:ga33a82aa5944a3f7349637fa13aa55ff0" id="r_ga33a82aa5944a3f7349637fa13aa55ff0"><td class="memItemLeft"><a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a>&#160;</td><td class="memItemRight"><a class="el" href="#ga33a82aa5944a3f7349637fa13aa55ff0">AT_simulation_create</a> (<a class="el" href="struct_a_t___simulation.html">AT_Simulation</a> **out_simulation, const <a class="el" href="struct_a_t___scene.html">AT_Scene</a> *scene, const <a class="el" href="struct_a_t___settings.html">AT_Settings</a> *settings)</td></tr>
+<tr class="memdesc:ga33a82aa5944a3f7349637fa13aa55ff0"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_a_t___simulation.html" title="Groups the necessary simulation data.">AT_Simulation</a> constructor using defined <a class="el" href="struct_a_t___settings.html" title="The simulation&#39;s settings.">AT_Settings</a>.  <br /></td></tr>
+<tr class="memitem:ga01a9919b93e0f2d8500e15c08c66861f" id="r_ga01a9919b93e0f2d8500e15c08c66861f"><td class="memItemLeft"><a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a>&#160;</td><td class="memItemRight"><a class="el" href="#ga01a9919b93e0f2d8500e15c08c66861f">AT_simulation_run</a> (<a class="el" href="struct_a_t___simulation.html">AT_Simulation</a> *simulation)</td></tr>
+<tr class="memdesc:ga01a9919b93e0f2d8500e15c08c66861f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts the simulation.  <br /></td></tr>
+<tr class="memitem:ga03d210d67aaeeffe211de40e428f4f40" id="r_ga03d210d67aaeeffe211de40e428f4f40"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga03d210d67aaeeffe211de40e428f4f40">AT_simulation_destroy</a> (<a class="el" href="struct_a_t___simulation.html">AT_Simulation</a> *simulation)</td></tr>
+<tr class="memdesc:ga03d210d67aaeeffe211de40e428f4f40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroys an allocated <a class="el" href="struct_a_t___simulation.html" title="Groups the necessary simulation data.">AT_Simulation</a>.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The libraries public types and functions. </p>
-</div><a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
-<a id="aea4140158379906d92c0d8d97e518f65" name="aea4140158379906d92c0d8d97e518f65"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aea4140158379906d92c0d8d97e518f65">&#9670;&#160;</a></span>AT_Result</h2>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="ga6a2b0940a71fac205dbb0eb86eee3e13" name="ga6a2b0940a71fac205dbb0eb86eee3e13"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6a2b0940a71fac205dbb0eb86eee3e13">&#9670;&#160;</a></span>AT_model_create()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="#aea4140158379906d92c0d8d97e518f65">AT_Result</a></td>
+          <td class="memname"><a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a> AT_model_create </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_a_t___model.html">AT_Model</a> **</td>          <td class="paramname"><span class="paramname"><em>out_model</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>filepath</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Defines possible result types. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="aea4140158379906d92c0d8d97e518f65a368dece0165e1dfea21f96efaf3c8495" name="aea4140158379906d92c0d8d97e518f65a368dece0165e1dfea21f96efaf3c8495"></a>AT_OK&#160;</td><td class="fielddoc"><p>Function executed successfully. </p>
-</td></tr>
-<tr><td class="fieldname"><a id="aea4140158379906d92c0d8d97e518f65ace599c57e1581dba2418ea4cd870ecff" name="aea4140158379906d92c0d8d97e518f65ace599c57e1581dba2418ea4cd870ecff"></a>AT_ERR_INVALID_ARGUMENT&#160;</td><td class="fielddoc"><p>Incorrect arguments were given to the function. </p>
-</td></tr>
-<tr><td class="fieldname"><a id="aea4140158379906d92c0d8d97e518f65a4d1cb3428c400df9fd2a93c9542b2cd4" name="aea4140158379906d92c0d8d97e518f65a4d1cb3428c400df9fd2a93c9542b2cd4"></a>AT_ERR_ALLOC_ERROR&#160;</td><td class="fielddoc"><p>Memory allocation failed. </p>
-</td></tr>
-</table>
+<p><a class="el" href="struct_a_t___model.html" title="Groups the necessary information representing the 3D model.">AT_Model</a> constructor for a given <span class="tt">glb</span> filepath. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">out_model</td><td>Pointer to an empty initialised <a class="el" href="struct_a_t___model.html" title="Groups the necessary information representing the 3D model.">AT_Model</a>. </td></tr>
+    <tr><td class="paramname">filepath</td><td>String showing the location of the file.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname"><a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65" title="Defines possible result types.">AT_Result</a></td><td>Saves the created model at the location of the pointer, returning a result enum value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga9ab78d6c33157d0ae582cfca1393c3f1" name="ga9ab78d6c33157d0ae582cfca1393c3f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9ab78d6c33157d0ae582cfca1393c3f1">&#9670;&#160;</a></span>AT_model_destroy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AT_model_destroy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_a_t___model.html">AT_Model</a> *</td>          <td class="paramname"><span class="paramname"><em>model</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Destroys an allocated <a class="el" href="struct_a_t___model.html" title="Groups the necessary information representing the 3D model.">AT_Model</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname"><a class="el" href="group__model.html">Model</a></td><td>Pointer to an initialised <a class="el" href="struct_a_t___model.html" title="Groups the necessary information representing the 3D model.">AT_Model</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gae40957ebaef6024973a0e23ebd7efe66" name="gae40957ebaef6024973a0e23ebd7efe66"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae40957ebaef6024973a0e23ebd7efe66">&#9670;&#160;</a></span>AT_model_to_AABB()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AT_model_to_AABB </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_a_t___a_a_b_b.html">AT_AABB</a> *</td>          <td class="paramname"><span class="paramname"><em>out_aabb</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="struct_a_t___model.html">AT_Model</a> *</td>          <td class="paramname"><span class="paramname"><em>model</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Calculates the min and max of a model for AABB collision. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">out_aabb</td><td>Pointer to an empty initialised <a class="el" href="struct_a_t___a_a_b_b.html" title="Axis-Aligned Bounding Box for triangle(s).">AT_AABB</a>. </td></tr>
+    <tr><td class="paramname"><a class="el" href="group__model.html">Model</a></td><td>Pointer to the model. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga396d9232cddc7c05799bdca43526a848" name="ga396d9232cddc7c05799bdca43526a848"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga396d9232cddc7c05799bdca43526a848">&#9670;&#160;</a></span>AT_scene_destroy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AT_scene_destroy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_a_t___scene.html">AT_Scene</a> *</td>          <td class="paramname"><span class="paramname"><em>scene</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Destroys an allocated <a class="el" href="struct_a_t___scene.html" title="Groups the necessary information representing the scene.">AT_Scene</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname"><a class="el" href="group__scene.html">Scene</a></td><td>Pointer to an initialised <a class="el" href="struct_a_t___scene.html" title="Groups the necessary information representing the scene.">AT_Scene</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga33a82aa5944a3f7349637fa13aa55ff0" name="ga33a82aa5944a3f7349637fa13aa55ff0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga33a82aa5944a3f7349637fa13aa55ff0">&#9670;&#160;</a></span>AT_simulation_create()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a> AT_simulation_create </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_a_t___simulation.html">AT_Simulation</a> **</td>          <td class="paramname"><span class="paramname"><em>out_simulation</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="struct_a_t___scene.html">AT_Scene</a> *</td>          <td class="paramname"><span class="paramname"><em>scene</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="struct_a_t___settings.html">AT_Settings</a> *</td>          <td class="paramname"><span class="paramname"><em>settings</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><a class="el" href="struct_a_t___simulation.html" title="Groups the necessary simulation data.">AT_Simulation</a> constructor using defined <a class="el" href="struct_a_t___settings.html" title="The simulation&#39;s settings.">AT_Settings</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">out_simulation</td><td>Pointer to an empty initialised <a class="el" href="struct_a_t___simulation.html" title="Groups the necessary simulation data.">AT_Simulation</a>. </td></tr>
+    <tr><td class="paramname"><a class="el" href="group__scene.html">Scene</a></td><td>Pointer to the simulation's scene data. </td></tr>
+    <tr><td class="paramname">settings</td><td>Pointer to the simulation settings.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname"><a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65" title="Defines possible result types.">AT_Result</a></td><td>Saves the simulation at the pointer, returning a result enum value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga03d210d67aaeeffe211de40e428f4f40" name="ga03d210d67aaeeffe211de40e428f4f40"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga03d210d67aaeeffe211de40e428f4f40">&#9670;&#160;</a></span>AT_simulation_destroy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AT_simulation_destroy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_a_t___simulation.html">AT_Simulation</a> *</td>          <td class="paramname"><span class="paramname"><em>simulation</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Destroys an allocated <a class="el" href="struct_a_t___simulation.html" title="Groups the necessary simulation data.">AT_Simulation</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">simulation</td><td>Pointer to the simulation data. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga01a9919b93e0f2d8500e15c08c66861f" name="ga01a9919b93e0f2d8500e15c08c66861f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga01a9919b93e0f2d8500e15c08c66861f">&#9670;&#160;</a></span>AT_simulation_run()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a> AT_simulation_run </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_a_t___simulation.html">AT_Simulation</a> *</td>          <td class="paramname"><span class="paramname"><em>simulation</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Starts the simulation. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">simulation</td><td>Pointer to the simulation.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname"><a class="el" href="group__result.html#gaea4140158379906d92c0d8d97e518f65" title="Defines possible result types.">AT_Result</a></td><td>A result enum value which must be checked for errors. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

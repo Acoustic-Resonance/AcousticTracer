@@ -24,11 +24,25 @@
 */
 var menudata={children:[
 {text:"Main Page",url:"index.html"},
+{text:"Topics",url:"topics.html"},
 {text:"Data Structures",url:"annotated.html",children:[
 {text:"Data Structures",url:"annotated.html"},
 {text:"Data Structure Index",url:"classes.html"},
 {text:"Data Fields",url:"functions.html",children:[
-{text:"All",url:"functions.html"},
+{text:"All",url:"functions.html",children:[
+{text:"a",url:"functions.html#index_a"},
+{text:"d",url:"functions.html#index_d"},
+{text:"e",url:"functions.html#index_e"},
+{text:"f",url:"functions.html#index_f"},
+{text:"i",url:"functions.html#index_i"},
+{text:"m",url:"functions.html#index_m"},
+{text:"n",url:"functions.html#index_n"},
+{text:"p",url:"functions.html#index_p"},
+{text:"s",url:"functions.html#index_s"},
+{text:"v",url:"functions.html#index_v"},
+{text:"x",url:"functions.html#index_x"},
+{text:"y",url:"functions.html#index_y"},
+{text:"z",url:"functions.html#index_z"}]},
 {text:"Functions",url:"functions_func.html"},
 {text:"Variables",url:"functions_vars.html"}]}]},
 {text:"Files",url:"files.html",children:[
@@ -36,6 +50,5 @@ var menudata={children:[
 {text:"Globals",url:"globals.html",children:[
 {text:"All",url:"globals.html"},
 {text:"Functions",url:"globals_func.html"},
-{text:"Typedefs",url:"globals_type.html"},
 {text:"Enumerations",url:"globals_enum.html"},
 {text:"Enumerator",url:"globals_eval.html"}]}]}]}

@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,8 +67,29 @@ $(function(){initNavTree('struct_a_t___source.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
-  <div class="headertitle"><div class="title">AT_Source Struct Reference</div></div>
+  <div class="headertitle"><div class="title">AT_Source Struct Reference<div class="ingroups"><a class="el" href="group__scene.html">Scene</a></div></div></div>
 </div><!--header-->
 <div class="contents">
 
@@ -81,16 +100,59 @@ $(function(){initNavTree('struct_a_t___source.html','',''); });
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:a2b43b9758c749b49269649399d09488d" id="r_a2b43b9758c749b49269649399d09488d"><td class="memItemLeft"><a id="a2b43b9758c749b49269649399d09488d" name="a2b43b9758c749b49269649399d09488d"></a>
-<a class="el" href="struct_a_t___vec3.html">AT_Vec3</a>&#160;</td><td class="memItemRight"><b>position</b></td></tr>
-<tr class="memitem:a84f0f7ced172d902f7133ff9c0b1f1b5" id="r_a84f0f7ced172d902f7133ff9c0b1f1b5"><td class="memItemLeft"><a id="a84f0f7ced172d902f7133ff9c0b1f1b5" name="a84f0f7ced172d902f7133ff9c0b1f1b5"></a>
-<a class="el" href="struct_a_t___vec3.html">AT_Vec3</a>&#160;</td><td class="memItemRight"><b>direction</b></td></tr>
-<tr class="memitem:ab2898c930f5cbb22c86224962235c5c1" id="r_ab2898c930f5cbb22c86224962235c5c1"><td class="memItemLeft"><a id="ab2898c930f5cbb22c86224962235c5c1" name="ab2898c930f5cbb22c86224962235c5c1"></a>
-float&#160;</td><td class="memItemRight"><b>intensity</b></td></tr>
+<tr class="memitem:a2b43b9758c749b49269649399d09488d" id="r_a2b43b9758c749b49269649399d09488d"><td class="memItemLeft"><a class="el" href="union_a_t___vec3.html">AT_Vec3</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2b43b9758c749b49269649399d09488d">position</a></td></tr>
+<tr class="memitem:a84f0f7ced172d902f7133ff9c0b1f1b5" id="r_a84f0f7ced172d902f7133ff9c0b1f1b5"><td class="memItemLeft"><a class="el" href="union_a_t___vec3.html">AT_Vec3</a>&#160;</td><td class="memItemRight"><a class="el" href="#a84f0f7ced172d902f7133ff9c0b1f1b5">direction</a></td></tr>
+<tr class="memitem:ab2898c930f5cbb22c86224962235c5c1" id="r_ab2898c930f5cbb22c86224962235c5c1"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#ab2898c930f5cbb22c86224962235c5c1">intensity</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Groups the information required for the sound source. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Field Documentation</h2>
+<a id="a84f0f7ced172d902f7133ff9c0b1f1b5" name="a84f0f7ced172d902f7133ff9c0b1f1b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84f0f7ced172d902f7133ff9c0b1f1b5">&#9670;&#160;</a></span>direction</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="union_a_t___vec3.html">AT_Vec3</a> AT_Source::direction</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Direction the source it emitting in. </p>
+
+</div>
+</div>
+<a id="ab2898c930f5cbb22c86224962235c5c1" name="ab2898c930f5cbb22c86224962235c5c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2898c930f5cbb22c86224962235c5c1">&#9670;&#160;</a></span>intensity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float AT_Source::intensity</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Intensity of the source. Ray energy is relative to this. </p>
+
+</div>
+</div>
+<a id="a2b43b9758c749b49269649399d09488d" name="a2b43b9758c749b49269649399d09488d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2b43b9758c749b49269649399d09488d">&#9670;&#160;</a></span>position</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="union_a_t___vec3.html">AT_Vec3</a> AT_Source::position</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Position of the source in world coordinates. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/acoustic/<a class="el" href="at_8h_source.html">at.h</a></li>
 </ul>
 </div><!-- contents -->

@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,79 +67,85 @@ $(function(){initNavTree('struct_a_t___a_a_b_b.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
-  <div class="headertitle"><div class="title">AT_AABB Struct Reference</div></div>
+  <div class="headertitle"><div class="title">AT_AABB Struct Reference<div class="ingroups"><a class="el" href="group__model.html">Model</a> &#124; <a class="el" href="group__math.html">Maths</a> &raquo; <a class="el" href="group__tri.html">Triangles</a> &raquo; <a class="el" href="group__aabb.html">AABB</a></div></div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Groups the min and max of a voxel for AABB collision detection.  
+<p>Axis-Aligned Bounding Box for triangle(s).  
  <a href="#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="at_8h_source.html">at.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="at__math_8h_source.html">at_math.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:aa74e5cc6b83e19fc510b6248d2d622d4" id="r_aa74e5cc6b83e19fc510b6248d2d622d4"><td class="memItemLeft"><a id="aa74e5cc6b83e19fc510b6248d2d622d4" name="aa74e5cc6b83e19fc510b6248d2d622d4"></a>
-<a class="el" href="struct_a_t___vec3.html">AT_Vec3</a>&#160;</td><td class="memItemRight"><b>min</b></td></tr>
-<tr class="memitem:aa676a84914e5553308866398507846f1" id="r_aa676a84914e5553308866398507846f1"><td class="memItemLeft"><a id="aa676a84914e5553308866398507846f1" name="aa676a84914e5553308866398507846f1"></a>
-<a class="el" href="struct_a_t___vec3.html">AT_Vec3</a>&#160;</td><td class="memItemRight"><b>max</b></td></tr>
+<tr class="memitem:aa74e5cc6b83e19fc510b6248d2d622d4" id="r_aa74e5cc6b83e19fc510b6248d2d622d4"><td class="memItemLeft"><a class="el" href="union_a_t___vec3.html">AT_Vec3</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa74e5cc6b83e19fc510b6248d2d622d4">min</a></td></tr>
+<tr class="memitem:aa676a84914e5553308866398507846f1" id="r_aa676a84914e5553308866398507846f1"><td class="memItemLeft"><a class="el" href="union_a_t___vec3.html">AT_Vec3</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa676a84914e5553308866398507846f1">max</a></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-related" class="groupheader"><a id="related" name="related"></a>
 Related Symbols</h2></td></tr>
 <tr><td class="ititle" colspan="2"><p>(Note that these are not member symbols.) </p>
 </td></tr>
-<tr class="memitem:ae40957ebaef6024973a0e23ebd7efe66" id="r_ae40957ebaef6024973a0e23ebd7efe66"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ae40957ebaef6024973a0e23ebd7efe66">AT_model_to_AABB</a> (<a class="el" href="struct_a_t___a_a_b_b.html">AT_AABB</a> *out_aabb, const <a class="el" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> *model)</td></tr>
-<tr class="memdesc:ae40957ebaef6024973a0e23ebd7efe66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the min and max of a model for AABB collision.  <br /></td></tr>
+<tr class="memitem:gae40957ebaef6024973a0e23ebd7efe66" id="r_gae40957ebaef6024973a0e23ebd7efe66"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__model.html#gae40957ebaef6024973a0e23ebd7efe66">AT_model_to_AABB</a> (<a class="el" href="struct_a_t___a_a_b_b.html">AT_AABB</a> *out_aabb, const <a class="el" href="struct_a_t___model.html">AT_Model</a> *model)</td></tr>
+<tr class="memdesc:gae40957ebaef6024973a0e23ebd7efe66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the min and max of a model for AABB collision.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Groups the min and max of a voxel for AABB collision detection. </p>
-</div><a name="doc-related-members" id="doc-related-members"></a><h2 id="header-doc-related-members" class="groupheader">Friends And Related Symbol Documentation</h2>
-<a id="ae40957ebaef6024973a0e23ebd7efe66" name="ae40957ebaef6024973a0e23ebd7efe66"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae40957ebaef6024973a0e23ebd7efe66">&#9670;&#160;</a></span>AT_model_to_AABB()</h2>
+<div class="textblock"><p>Axis-Aligned Bounding Box for triangle(s). </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Field Documentation</h2>
+<a id="aa676a84914e5553308866398507846f1" name="aa676a84914e5553308866398507846f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa676a84914e5553308866398507846f1">&#9670;&#160;</a></span>max</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void AT_model_to_AABB </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="struct_a_t___a_a_b_b.html">AT_AABB</a> *</td>          <td class="paramname"><span class="paramname"><em>out_aabb</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> *</td>          <td class="paramname"><span class="paramname"><em>model</em></span>&#160;)</td>
+          <td class="memname"><a class="el" href="union_a_t___vec3.html">AT_Vec3</a> AT_AABB::max</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel related">related</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
-
-<p>Calculates the min and max of a model for AABB collision. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">out_aabb</td><td>Pointer to an empty initialised <a class="el" href="struct_a_t___a_a_b_b.html" title="Groups the min and max of a voxel for AABB collision detection.">AT_AABB</a>. </td></tr>
-    <tr><td class="paramname">model</td><td>Pointer to the model.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">void</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Maximum <span class="tt">x</span>, <span class="tt">y</span>, and <span class="tt">z</span> in one vector. </p>
 
 </div>
 </div>
-<hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/acoustic/<a class="el" href="at_8h_source.html">at.h</a></li>
+<a id="aa74e5cc6b83e19fc510b6248d2d622d4" name="aa74e5cc6b83e19fc510b6248d2d622d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa74e5cc6b83e19fc510b6248d2d622d4">&#9670;&#160;</a></span>min</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="union_a_t___vec3.html">AT_Vec3</a> AT_AABB::min</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Minimum <span class="tt">x</span>, <span class="tt">y</span>, and <span class="tt">z</span> in one vector. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following files:<ul>
+<li>include/acoustic/<a class="el" href="at__math_8h_source.html">at_math.h</a></li>
+<li>include/acoustic/<a class="el" href="at__model_8h_source.html">at_model.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

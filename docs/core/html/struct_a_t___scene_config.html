@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,8 +67,29 @@ $(function(){initNavTree('struct_a_t___scene_config.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
-  <div class="headertitle"><div class="title">AT_SceneConfig Struct Reference</div></div>
+  <div class="headertitle"><div class="title">AT_SceneConfig Struct Reference<div class="ingroups"><a class="el" href="group__scene.html">Scene</a></div></div></div>
 </div><!--header-->
 <div class="contents">
 
@@ -81,11 +100,10 @@ $(function(){initNavTree('struct_a_t___scene_config.html','',''); });
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:a5cf4c8bb23d5b6abdefbd8002ba71509" id="r_a5cf4c8bb23d5b6abdefbd8002ba71509"><td class="memItemLeft">const <a class="el" href="struct_a_t___source.html">AT_Source</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a5cf4c8bb23d5b6abdefbd8002ba71509">source</a></td></tr>
-<tr class="memitem:a780caee6ec6f1f66c27f22264aac294d" id="r_a780caee6ec6f1f66c27f22264aac294d"><td class="memItemLeft"><a id="a780caee6ec6f1f66c27f22264aac294d" name="a780caee6ec6f1f66c27f22264aac294d"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>num_sources</b></td></tr>
-<tr class="memitem:aab7cd7973c22a4017a528433044a114a" id="r_aab7cd7973c22a4017a528433044a114a"><td class="memItemLeft"><a class="el" href="at_8h.html#a359bb06298ec3945742fbe8d6f10654e">AT_Material</a>&#160;</td><td class="memItemRight"><a class="el" href="#aab7cd7973c22a4017a528433044a114a">material</a></td></tr>
-<tr class="memitem:a624b42d15ab8e42ba0864c506d28ca97" id="r_a624b42d15ab8e42ba0864c506d28ca97"><td class="memItemLeft">const <a class="el" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a624b42d15ab8e42ba0864c506d28ca97">environment</a></td></tr>
+<tr class="memitem:a6c44d6bdcf7bb9257422a4b51dfda795" id="r_a6c44d6bdcf7bb9257422a4b51dfda795"><td class="memItemLeft">const <a class="el" href="struct_a_t___source.html">AT_Source</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a6c44d6bdcf7bb9257422a4b51dfda795">sources</a></td></tr>
+<tr class="memitem:a780caee6ec6f1f66c27f22264aac294d" id="r_a780caee6ec6f1f66c27f22264aac294d"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a780caee6ec6f1f66c27f22264aac294d">num_sources</a></td></tr>
+<tr class="memitem:a64e4a402bf822cccf3d9508202ad91f7" id="r_a64e4a402bf822cccf3d9508202ad91f7"><td class="memItemLeft"><a class="el" href="group__mat.html#gabe36b986faf544ba62a08c0df6fd1883">AT_MaterialType</a>&#160;</td><td class="memItemRight"><a class="el" href="#a64e4a402bf822cccf3d9508202ad91f7">material</a></td></tr>
+<tr class="memitem:a624b42d15ab8e42ba0864c506d28ca97" id="r_a624b42d15ab8e42ba0864c506d28ca97"><td class="memItemLeft">const <a class="el" href="struct_a_t___model.html">AT_Model</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a624b42d15ab8e42ba0864c506d28ca97">environment</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Groups the scene config settings together. </p>
@@ -97,7 +115,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>num_sources</b></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a>* AT_SceneConfig::environment</td>
+          <td class="memname">const <a class="el" href="struct_a_t___model.html">AT_Model</a>* AT_SceneConfig::environment</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -105,14 +123,14 @@ uint32_t&#160;</td><td class="memItemRight"><b>num_sources</b></td></tr>
 
 </div>
 </div>
-<a id="aab7cd7973c22a4017a528433044a114a" name="aab7cd7973c22a4017a528433044a114a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aab7cd7973c22a4017a528433044a114a">&#9670;&#160;</a></span>material</h2>
+<a id="a64e4a402bf822cccf3d9508202ad91f7" name="a64e4a402bf822cccf3d9508202ad91f7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a64e4a402bf822cccf3d9508202ad91f7">&#9670;&#160;</a></span>material</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="at_8h.html#a359bb06298ec3945742fbe8d6f10654e">AT_Material</a> AT_SceneConfig::material</td>
+          <td class="memname"><a class="el" href="group__mat.html#gabe36b986faf544ba62a08c0df6fd1883">AT_MaterialType</a> AT_SceneConfig::material</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -120,14 +138,29 @@ uint32_t&#160;</td><td class="memItemRight"><b>num_sources</b></td></tr>
 
 </div>
 </div>
-<a id="a5cf4c8bb23d5b6abdefbd8002ba71509" name="a5cf4c8bb23d5b6abdefbd8002ba71509"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5cf4c8bb23d5b6abdefbd8002ba71509">&#9670;&#160;</a></span>source</h2>
+<a id="a780caee6ec6f1f66c27f22264aac294d" name="a780caee6ec6f1f66c27f22264aac294d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a780caee6ec6f1f66c27f22264aac294d">&#9670;&#160;</a></span>num_sources</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="struct_a_t___source.html">AT_Source</a>* AT_SceneConfig::source</td>
+          <td class="memname">uint32_t AT_SceneConfig::num_sources</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of sources in the scene. </p>
+
+</div>
+</div>
+<a id="a6c44d6bdcf7bb9257422a4b51dfda795" name="a6c44d6bdcf7bb9257422a4b51dfda795"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c44d6bdcf7bb9257422a4b51dfda795">&#9670;&#160;</a></span>sources</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="struct_a_t___source.html">AT_Source</a>* AT_SceneConfig::sources</td>
         </tr>
       </table>
 </div><div class="memdoc">

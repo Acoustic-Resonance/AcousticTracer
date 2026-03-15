@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,10 +67,30 @@ $(function(){initNavTree('globals_type.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="contents">
-<div class="textblock">Here is a list of all documented typedefs with links to the documentation:</div><ul>
-<li>AT_Model&#160;:&#160;<a class="el" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">at.h</a></li>
-<li>AT_Scene&#160;:&#160;<a class="el" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">at.h</a></li>
+<div class="textblock">Here is a list of all typedefs with links to the files they belong to:</div><ul>
+<li>AT_Scene&#160;:&#160;<a class="el" href="at__scene_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">at_scene.h</a></li>
 <li>AT_Simulation&#160;:&#160;<a class="el" href="at_8h.html#a245ff9fc7829f4ef55a135160369a42e">at.h</a></li>
 </ul>
 </div><!-- contents -->

@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,18 +67,44 @@ $(function(){initNavTree('annotated.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
   <div class="headertitle"><div class="title">Data Structures</div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock">Here are the data structures with brief descriptions:</div><div class="directory">
 <table class="directory">
-<tr id="row_0_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___a_a_b_b.html" target="_self">AT_AABB</a></td><td class="desc">Groups the min and max of a voxel for AABB collision detection </td></tr>
-<tr id="row_1_" class="odd"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___scene_config.html" target="_self">AT_SceneConfig</a></td><td class="desc">Groups the scene config settings together </td></tr>
-<tr id="row_2_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___settings.html" target="_self">AT_Settings</a></td><td class="desc">The simulation's settings </td></tr>
-<tr id="row_3_" class="odd"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___source.html" target="_self">AT_Source</a></td><td class="desc">Groups the information required for the sound source </td></tr>
-<tr id="row_4_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___triangle.html" target="_self">AT_Triangle</a></td><td class="desc">Groups three <a class="el" href="struct_a_t___vec3.html" title="Groups three floats to represent a vector of size 3.">AT_Vec3</a> to represent a triangle </td></tr>
-<tr id="row_5_" class="odd"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___vec3.html" target="_self">AT_Vec3</a></td><td class="desc">Groups three floats to represent a vector of size 3 </td></tr>
+<tr id="row_0_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___a_a_b_b.html" target="_self">AT_AABB</a></td><td class="desc">Axis-Aligned Bounding Box for triangle(s) </td></tr>
+<tr id="row_1_" class="odd"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___material.html" target="_self">AT_Material</a></td><td class="desc">Holds the material absorption and scattering coefficients </td></tr>
+<tr id="row_2_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___model.html" target="_self">AT_Model</a></td><td class="desc">Groups the necessary information representing the 3D model </td></tr>
+<tr id="row_3_" class="odd"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___scene.html" target="_self">AT_Scene</a></td><td class="desc">Groups the necessary information representing the scene </td></tr>
+<tr id="row_4_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___scene_config.html" target="_self">AT_SceneConfig</a></td><td class="desc">Groups the scene config settings together </td></tr>
+<tr id="row_5_" class="odd"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___settings.html" target="_self">AT_Settings</a></td><td class="desc">The simulation's settings </td></tr>
+<tr id="row_6_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___simulation.html" target="_self">AT_Simulation</a></td><td class="desc">Groups the necessary simulation data </td></tr>
+<tr id="row_7_" class="odd"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___source.html" target="_self">AT_Source</a></td><td class="desc">Groups the information required for the sound source </td></tr>
+<tr id="row_8_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___triangle.html" target="_self">AT_Triangle</a></td><td class="desc">Groups three <a class="el" href="union_a_t___vec3.html" title="Groups three floats to represent a vector of size 3.">AT_Vec3</a> to represent a triangle </td></tr>
+<tr id="row_9_" class="odd"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="union_a_t___vec3.html" target="_self">AT_Vec3</a></td><td class="desc">Groups three floats to represent a vector of size 3 </td></tr>
+<tr id="row_10_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_a_t___vec3i.html" target="_self">AT_Vec3i</a></td><td class="desc">Groups three integers to represent a vector of size 3 </td></tr>
 </table>
 </div><!-- directory -->
 </div><!-- contents -->

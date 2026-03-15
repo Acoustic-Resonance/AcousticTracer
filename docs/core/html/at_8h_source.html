@@ -15,8 +15,8 @@
 <script type="text/javascript" src="navtree.js"></script>
 <script type="text/javascript" src="cookie.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="AcousticTracer"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,10 +46,8 @@ $(function() { codefold.init(); });
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
 $(function() {
-  initMenu('',true,true,'search.php','Search',true);
-  $(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search',true);
+  $(function() { init_search(); });
 });
 </script>
 <div id="main-nav"></div>
@@ -69,134 +67,175 @@ $(function(){initNavTree('at_8h_source.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
 <div class="header">
   <div class="headertitle"><div class="title">at.h</div></div>
 </div><!--header-->
 <div class="contents">
 <a href="at_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#ifndef AT_H</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#define AT_H</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &quot;<a class="code" href="at__math_8h.html">at_math.h</a>&quot;</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;stdint.h&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;stddef.h&gt;</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno"><a class="line" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">   11</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_typedef" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> <a class="code hl_typedef" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a>;</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">   12</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_typedef" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a> <a class="code hl_typedef" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a>;</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno"><a class="line" href="at_8h.html#a245ff9fc7829f4ef55a135160369a42e">   13</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_typedef" href="at_8h.html#a245ff9fc7829f4ef55a135160369a42e">AT_Simulation</a> <a class="code hl_typedef" href="at_8h.html#a245ff9fc7829f4ef55a135160369a42e">AT_Simulation</a>;</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span></div>
-<div class="foldopen" id="foldopen00017" data-start="{" data-end="};">
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="at_8h.html#aea4140158379906d92c0d8d97e518f65">   17</a></span><span class="keyword">typedef</span> <span class="keyword">enum</span> {</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="at_8h.html#aea4140158379906d92c0d8d97e518f65a368dece0165e1dfea21f96efaf3c8495">   18</a></span>  <a class="code hl_enumvalue" href="at_8h.html#aea4140158379906d92c0d8d97e518f65a368dece0165e1dfea21f96efaf3c8495">AT_OK</a> = 0,               </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="at_8h.html#aea4140158379906d92c0d8d97e518f65ace599c57e1581dba2418ea4cd870ecff">   19</a></span>  <a class="code hl_enumvalue" href="at_8h.html#aea4140158379906d92c0d8d97e518f65ace599c57e1581dba2418ea4cd870ecff">AT_ERR_INVALID_ARGUMENT</a>, </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="at_8h.html#aea4140158379906d92c0d8d97e518f65a4d1cb3428c400df9fd2a93c9542b2cd4">   21</a></span>  <a class="code hl_enumvalue" href="at_8h.html#aea4140158379906d92c0d8d97e518f65a4d1cb3428c400df9fd2a93c9542b2cd4">AT_ERR_ALLOC_ERROR</a>,      </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>} <a class="code hl_enumeration" href="at_8h.html#aea4140158379906d92c0d8d97e518f65">AT_Result</a>;</div>
-</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span></div>
-<div class="foldopen" id="foldopen00026" data-start="{" data-end="};">
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="at_8h.html#a359bb06298ec3945742fbe8d6f10654e">   26</a></span><span class="keyword">typedef</span> <span class="keyword">enum</span> {</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    AT_MATERIAL_CONCRETE,</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    AT_MATERIAL_PLASTIC,</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    AT_MATERIAL_WOOD</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>} <a class="code hl_enumeration" href="at_8h.html#a359bb06298ec3945742fbe8d6f10654e">AT_Material</a>;</div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#ifndef AT_H</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#define AT_H</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &quot;<a class="code" href="at__math_8h.html">acoustic/at_math.h</a>&quot;</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;stdint.h&gt;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;stddef.h&gt;</span></div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_struct" href="struct_a_t___model.html">AT_Model</a> <a class="code hl_struct" href="struct_a_t___model.html">AT_Model</a>;</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_struct" href="struct_a_t___scene.html">AT_Scene</a> <a class="code hl_struct" href="struct_a_t___scene.html">AT_Scene</a>;</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_struct" href="struct_a_t___simulation.html">AT_Simulation</a> <a class="code hl_struct" href="struct_a_t___simulation.html">AT_Simulation</a>;</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span></div>
+<div class="foldopen" id="foldopen00024" data-start="{" data-end="};">
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno"><a class="line" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">   24</a></span><span class="keyword">typedef</span> <span class="keyword">enum</span> {</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="at_8h.html#gaea4140158379906d92c0d8d97e518f65a368dece0165e1dfea21f96efaf3c8495">   25</a></span>    <a class="code hl_enumvalue" href="at_8h.html#gaea4140158379906d92c0d8d97e518f65a368dece0165e1dfea21f96efaf3c8495">AT_OK</a> = 0,               </div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="at_8h.html#gaea4140158379906d92c0d8d97e518f65ace599c57e1581dba2418ea4cd870ecff">   26</a></span>    <a class="code hl_enumvalue" href="at_8h.html#gaea4140158379906d92c0d8d97e518f65ace599c57e1581dba2418ea4cd870ecff">AT_ERR_INVALID_ARGUMENT</a>, </div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="at_8h.html#gaea4140158379906d92c0d8d97e518f65a4d1cb3428c400df9fd2a93c9542b2cd4">   28</a></span>    <a class="code hl_enumvalue" href="at_8h.html#gaea4140158379906d92c0d8d97e518f65a4d1cb3428c400df9fd2a93c9542b2cd4">AT_ERR_ALLOC_ERROR</a>,      </div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno"><a class="line" href="at_8h.html#gaea4140158379906d92c0d8d97e518f65a1097d23031fda9a7d1a12a6daad3f960">   29</a></span>    <a class="code hl_enumvalue" href="at_8h.html#gaea4140158379906d92c0d8d97e518f65a1097d23031fda9a7d1a12a6daad3f960">AT_ERR_NETWORK_FAILURE</a>   </div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>} <a class="code hl_enumeration" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a>;</div>
 </div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span></div>
-<div class="foldopen" id="foldopen00034" data-start="{" data-end="};">
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="struct_a_t___a_a_b_b.html">   34</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> min;</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> max;</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>} <a class="code hl_struct" href="struct_a_t___a_a_b_b.html">AT_AABB</a>;</div>
+<div class="foldopen" id="foldopen00037" data-start="{" data-end="};">
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="group__mat.html#gabe36b986faf544ba62a08c0df6fd1883">   37</a></span><span class="keyword">typedef</span> <span class="keyword">enum</span> {</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    AT_MATERIAL_CONCRETE,</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    AT_MATERIAL_PLASTIC,</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    AT_MATERIAL_WOOD,</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    AT_MATERIAL_COUNT,</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>} <a class="code hl_enumeration" href="group__mat.html#gabe36b986faf544ba62a08c0df6fd1883">AT_MaterialType</a>;</div>
 </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span></div>
-<div class="foldopen" id="foldopen00041" data-start="{" data-end="};">
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno"><a class="line" href="struct_a_t___source.html">   41</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> position;</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <a class="code hl_struct" href="struct_a_t___vec3.html">AT_Vec3</a> direction;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keywordtype">float</span> intensity; <span class="comment">// relative to the source intensity</span></div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>} <a class="code hl_struct" href="struct_a_t___source.html">AT_Source</a>;</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span></div>
+<div class="foldopen" id="foldopen00047" data-start="{" data-end="};">
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno"><a class="line" href="struct_a_t___material.html">   47</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno"><a class="line" href="struct_a_t___material.html#a6cb21aef1566e56457350511aef0be80">   48</a></span>    <span class="keywordtype">float</span> <a class="code hl_variable" href="struct_a_t___material.html#a6cb21aef1566e56457350511aef0be80">absorption</a>; </div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="struct_a_t___material.html#ad3ee56a5a37bd3321fb72ccf8cfc0443">   49</a></span>    <span class="keywordtype">float</span> <a class="code hl_variable" href="struct_a_t___material.html#ad3ee56a5a37bd3321fb72ccf8cfc0443">scattering</a>; </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>} <a class="code hl_struct" href="struct_a_t___material.html">AT_Material</a>;</div>
 </div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span></div>
-<div class="foldopen" id="foldopen00049" data-start="{" data-end="};">
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="struct_a_t___scene_config.html">   49</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="struct_a_t___scene_config.html#a5cf4c8bb23d5b6abdefbd8002ba71509">   50</a></span>  <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___source.html">AT_Source</a> *<a class="code hl_variable" href="struct_a_t___scene_config.html#a5cf4c8bb23d5b6abdefbd8002ba71509">source</a>; </div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  uint32_t num_sources;</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno"><a class="line" href="struct_a_t___scene_config.html#aab7cd7973c22a4017a528433044a114a">   52</a></span>  <a class="code hl_enumeration" href="at_8h.html#a359bb06298ec3945742fbe8d6f10654e">AT_Material</a> <a class="code hl_variable" href="struct_a_t___scene_config.html#aab7cd7973c22a4017a528433044a114a">material</a>; </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  <span class="comment">// Borrowed: must remain valid for the entire lifetime of the scene</span></div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno"><a class="line" href="struct_a_t___scene_config.html#a624b42d15ab8e42ba0864c506d28ca97">   55</a></span>  <span class="keyword">const</span> <a class="code hl_typedef" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> *<a class="code hl_variable" href="struct_a_t___scene_config.html#a624b42d15ab8e42ba0864c506d28ca97">environment</a>; </div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>} <a class="code hl_struct" href="struct_a_t___scene_config.html">AT_SceneConfig</a>;</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span></div>
+<div class="foldopen" id="foldopen00055" data-start="{" data-end="};">
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno"><a class="line" href="struct_a_t___source.html">   55</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="struct_a_t___source.html#a2b43b9758c749b49269649399d09488d">   56</a></span>    <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_variable" href="struct_a_t___source.html#a2b43b9758c749b49269649399d09488d">position</a>;  </div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno"><a class="line" href="struct_a_t___source.html#a84f0f7ced172d902f7133ff9c0b1f1b5">   57</a></span>    <a class="code hl_union" href="union_a_t___vec3.html">AT_Vec3</a> <a class="code hl_variable" href="struct_a_t___source.html#a84f0f7ced172d902f7133ff9c0b1f1b5">direction</a>; </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno"><a class="line" href="struct_a_t___source.html#ab2898c930f5cbb22c86224962235c5c1">   58</a></span>    <span class="keywordtype">float</span> <a class="code hl_variable" href="struct_a_t___source.html#ab2898c930f5cbb22c86224962235c5c1">intensity</a>;   </div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>} <a class="code hl_struct" href="struct_a_t___source.html">AT_Source</a>;</div>
 </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span></div>
-<div class="foldopen" id="foldopen00059" data-start="{" data-end="};">
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno"><a class="line" href="struct_a_t___settings.html">   59</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno"><a class="line" href="struct_a_t___settings.html#a2efe21a213224b1ff27335451963762d">   60</a></span>  <span class="keywordtype">float</span> <a class="code hl_variable" href="struct_a_t___settings.html#a2efe21a213224b1ff27335451963762d">voxel_size</a>; </div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  uint32_t num_rays;</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  uint8_t fps; <span class="comment">// Bin width is always one frame</span></div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>} <a class="code hl_struct" href="struct_a_t___settings.html">AT_Settings</a>;</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span></div>
+<div class="foldopen" id="foldopen00065" data-start="{" data-end="};">
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno"><a class="line" href="struct_a_t___scene_config.html">   65</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno"><a class="line" href="struct_a_t___scene_config.html#a6c44d6bdcf7bb9257422a4b51dfda795">   66</a></span>    <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___source.html">AT_Source</a> *<a class="code hl_variable" href="struct_a_t___scene_config.html#a6c44d6bdcf7bb9257422a4b51dfda795">sources</a>; </div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno"><a class="line" href="struct_a_t___scene_config.html#a780caee6ec6f1f66c27f22264aac294d">   67</a></span>    uint32_t <a class="code hl_variable" href="struct_a_t___scene_config.html#a780caee6ec6f1f66c27f22264aac294d">num_sources</a>;     </div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno"><a class="line" href="struct_a_t___scene_config.html#a64e4a402bf822cccf3d9508202ad91f7">   68</a></span>    <a class="code hl_enumeration" href="group__mat.html#gabe36b986faf544ba62a08c0df6fd1883">AT_MaterialType</a> <a class="code hl_variable" href="struct_a_t___scene_config.html#a64e4a402bf822cccf3d9508202ad91f7">material</a>; </div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="comment">// Borrowed: must remain valid for the entire lifetime of the scene</span></div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno"><a class="line" href="struct_a_t___scene_config.html#a624b42d15ab8e42ba0864c506d28ca97">   71</a></span>    <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___model.html">AT_Model</a> *<a class="code hl_variable" href="struct_a_t___scene_config.html#a624b42d15ab8e42ba0864c506d28ca97">environment</a>; </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>} <a class="code hl_struct" href="struct_a_t___scene_config.html">AT_SceneConfig</a>;</div>
 </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="comment">// Model</span></div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><a class="code hl_enumeration" href="at_8h.html#aea4140158379906d92c0d8d97e518f65">AT_Result</a> AT_model_create(</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <a class="code hl_typedef" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> **out_model,</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    <span class="keyword">const</span> <span class="keywordtype">char</span> *filepath</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>);</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="keywordtype">void</span> AT_model_destroy(</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <a class="code hl_typedef" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> *model</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>);</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span></div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno"><a class="line" href="struct_a_t___a_a_b_b.html#ae40957ebaef6024973a0e23ebd7efe66">   83</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="struct_a_t___a_a_b_b.html#ae40957ebaef6024973a0e23ebd7efe66">AT_model_to_AABB</a>(</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    <a class="code hl_struct" href="struct_a_t___a_a_b_b.html">AT_AABB</a> *out_aabb,</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keyword">const</span> <a class="code hl_typedef" href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a> *model</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>);</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span><span class="comment">// Scene</span></div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span><a class="code hl_enumeration" href="at_8h.html#aea4140158379906d92c0d8d97e518f65">AT_Result</a> AT_scene_create(</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    <a class="code hl_typedef" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a> **out_scene,</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___scene_config.html">AT_SceneConfig</a>* config</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>);</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span><span class="keywordtype">void</span> AT_scene_destroy(</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <a class="code hl_typedef" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a> *scene</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span></div>
+<div class="foldopen" id="foldopen00077" data-start="{" data-end="};">
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno"><a class="line" href="struct_a_t___settings.html">   77</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno"><a class="line" href="struct_a_t___settings.html#a2efe21a213224b1ff27335451963762d">   78</a></span>    <span class="keywordtype">float</span> <a class="code hl_variable" href="struct_a_t___settings.html#a2efe21a213224b1ff27335451963762d">voxel_size</a>;  </div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno"><a class="line" href="struct_a_t___settings.html#a0df286c7872cfc50f8e7f637e1edf6b0">   79</a></span>    uint32_t <a class="code hl_variable" href="struct_a_t___settings.html#a0df286c7872cfc50f8e7f637e1edf6b0">num_rays</a>; </div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno"><a class="line" href="struct_a_t___settings.html#ac38a6d9f04915375958b86cf33828257">   80</a></span>    uint8_t <a class="code hl_variable" href="struct_a_t___settings.html#ac38a6d9f04915375958b86cf33828257">fps</a>;       </div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>} <a class="code hl_struct" href="struct_a_t___settings.html">AT_Settings</a>;</div>
+</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="comment">// Model</span></div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno"><a class="line" href="group__model.html#ga6a2b0940a71fac205dbb0eb86eee3e13">   84</a></span><a class="code hl_enumeration" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a> <a class="code hl_function" href="at_8h.html#ga6a2b0940a71fac205dbb0eb86eee3e13">AT_model_create</a>(</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <a class="code hl_struct" href="struct_a_t___model.html">AT_Model</a> **out_model,</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    <span class="keyword">const</span> <span class="keywordtype">char</span> *filepath</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>);</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno"><a class="line" href="group__model.html#ga9ab78d6c33157d0ae582cfca1393c3f1">   89</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="at_8h.html#ga9ab78d6c33157d0ae582cfca1393c3f1">AT_model_destroy</a>(</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    <a class="code hl_struct" href="struct_a_t___model.html">AT_Model</a> *model</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>);</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno"><a class="line" href="group__model.html#gae40957ebaef6024973a0e23ebd7efe66">   93</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="at_8h.html#gae40957ebaef6024973a0e23ebd7efe66">AT_model_to_AABB</a>(</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <a class="code hl_struct" href="struct_a_t___a_a_b_b.html">AT_AABB</a> *out_aabb,</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___model.html">AT_Model</a> *model</div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>);</div>
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span> </div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="comment">// Simulation</span></div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span><span class="comment">// Creates the simulation &quot;object&quot; and allocates voxel memory</span></div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><a class="code hl_enumeration" href="at_8h.html#aea4140158379906d92c0d8d97e518f65">AT_Result</a> AT_simulation_create(</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    <a class="code hl_typedef" href="at_8h.html#a245ff9fc7829f4ef55a135160369a42e">AT_Simulation</a> **out_simulation,</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    <span class="keyword">const</span> <a class="code hl_typedef" href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a> *scene,</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___settings.html">AT_Settings</a> *settings</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>);</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span><span class="comment">// Runs the actual simulation and updates voxel bins etc..</span></div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span><a class="code hl_enumeration" href="at_8h.html#aea4140158379906d92c0d8d97e518f65">AT_Result</a> AT_simulation_run(</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    <a class="code hl_typedef" href="at_8h.html#a245ff9fc7829f4ef55a135160369a42e">AT_Simulation</a> *simulation</div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>);</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span> </div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span><span class="keywordtype">void</span> AT_simulation_destroy(</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    <a class="code hl_typedef" href="at_8h.html#a245ff9fc7829f4ef55a135160369a42e">AT_Simulation</a> *simulation</div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>);</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span><span class="preprocessor">#endif </span><span class="comment">// AT_H</span></div>
-<div class="ttc" id="aat_8h_html_a245ff9fc7829f4ef55a135160369a42e"><div class="ttname"><a href="at_8h.html#a245ff9fc7829f4ef55a135160369a42e">AT_Simulation</a></div><div class="ttdeci">struct AT_Simulation AT_Simulation</div><div class="ttdoc">Groups the necessary simulation data.</div><div class="ttdef"><b>Definition</b> at.h:13</div></div>
-<div class="ttc" id="aat_8h_html_a26b1caac87ae1449ad4f5c60892ffd57"><div class="ttname"><a href="at_8h.html#a26b1caac87ae1449ad4f5c60892ffd57">AT_Model</a></div><div class="ttdeci">struct AT_Model AT_Model</div><div class="ttdoc">Groups the necessary information representing the 3D model.</div><div class="ttdef"><b>Definition</b> at.h:11</div></div>
-<div class="ttc" id="aat_8h_html_a359bb06298ec3945742fbe8d6f10654e"><div class="ttname"><a href="at_8h.html#a359bb06298ec3945742fbe8d6f10654e">AT_Material</a></div><div class="ttdeci">AT_Material</div><div class="ttdoc">Defines possible material types.</div><div class="ttdef"><b>Definition</b> at.h:26</div></div>
-<div class="ttc" id="aat_8h_html_a77088b0fbcf9ae1f7c42b1acc2615460"><div class="ttname"><a href="at_8h.html#a77088b0fbcf9ae1f7c42b1acc2615460">AT_Scene</a></div><div class="ttdeci">struct AT_Scene AT_Scene</div><div class="ttdoc">Groups the necessary information representing the scene.</div><div class="ttdef"><b>Definition</b> at.h:12</div></div>
-<div class="ttc" id="aat_8h_html_aea4140158379906d92c0d8d97e518f65"><div class="ttname"><a href="at_8h.html#aea4140158379906d92c0d8d97e518f65">AT_Result</a></div><div class="ttdeci">AT_Result</div><div class="ttdoc">Defines possible result types.</div><div class="ttdef"><b>Definition</b> at.h:17</div></div>
-<div class="ttc" id="aat_8h_html_aea4140158379906d92c0d8d97e518f65a368dece0165e1dfea21f96efaf3c8495"><div class="ttname"><a href="at_8h.html#aea4140158379906d92c0d8d97e518f65a368dece0165e1dfea21f96efaf3c8495">AT_OK</a></div><div class="ttdeci">@ AT_OK</div><div class="ttdef"><b>Definition</b> at.h:18</div></div>
-<div class="ttc" id="aat_8h_html_aea4140158379906d92c0d8d97e518f65a4d1cb3428c400df9fd2a93c9542b2cd4"><div class="ttname"><a href="at_8h.html#aea4140158379906d92c0d8d97e518f65a4d1cb3428c400df9fd2a93c9542b2cd4">AT_ERR_ALLOC_ERROR</a></div><div class="ttdeci">@ AT_ERR_ALLOC_ERROR</div><div class="ttdef"><b>Definition</b> at.h:21</div></div>
-<div class="ttc" id="aat_8h_html_aea4140158379906d92c0d8d97e518f65ace599c57e1581dba2418ea4cd870ecff"><div class="ttname"><a href="at_8h.html#aea4140158379906d92c0d8d97e518f65ace599c57e1581dba2418ea4cd870ecff">AT_ERR_INVALID_ARGUMENT</a></div><div class="ttdeci">@ AT_ERR_INVALID_ARGUMENT</div><div class="ttdef"><b>Definition</b> at.h:19</div></div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="comment">// Scene</span></div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno"><a class="line" href="group__scene.html#ga59a5870a05e0d467eb94d1cc24e96656">   99</a></span><a class="code hl_enumeration" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a> <a class="code hl_function" href="group__scene.html#ga59a5870a05e0d467eb94d1cc24e96656">AT_scene_create</a>(</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    <a class="code hl_struct" href="struct_a_t___scene.html">AT_Scene</a> **out_scene,</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___scene_config.html">AT_SceneConfig</a> *config</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>);</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno"><a class="line" href="group__scene.html#ga396d9232cddc7c05799bdca43526a848">  104</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="at_8h.html#ga396d9232cddc7c05799bdca43526a848">AT_scene_destroy</a>(</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    <a class="code hl_struct" href="struct_a_t___scene.html">AT_Scene</a> *scene</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>);</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span> </div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span><span class="comment">// Simulation</span></div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span><span class="comment">// Creates the simulation &quot;object&quot; and allocates voxel memory</span></div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno"><a class="line" href="group__sim.html#ga33a82aa5944a3f7349637fa13aa55ff0">  110</a></span><a class="code hl_enumeration" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a> <a class="code hl_function" href="at_8h.html#ga33a82aa5944a3f7349637fa13aa55ff0">AT_simulation_create</a>(</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    <a class="code hl_struct" href="struct_a_t___simulation.html">AT_Simulation</a> **out_simulation,</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___scene.html">AT_Scene</a> *scene,</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    <span class="keyword">const</span> <a class="code hl_struct" href="struct_a_t___settings.html">AT_Settings</a> *settings</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>);</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span> </div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span><span class="comment">// Runs the actual simulation and updates voxel bins etc..</span></div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno"><a class="line" href="group__sim.html#ga01a9919b93e0f2d8500e15c08c66861f">  117</a></span><a class="code hl_enumeration" href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a> <a class="code hl_function" href="at_8h.html#ga01a9919b93e0f2d8500e15c08c66861f">AT_simulation_run</a>(</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>    <a class="code hl_struct" href="struct_a_t___simulation.html">AT_Simulation</a> *simulation</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>);</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span> </div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno"><a class="line" href="group__sim.html#ga03d210d67aaeeffe211de40e428f4f40">  121</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="at_8h.html#ga03d210d67aaeeffe211de40e428f4f40">AT_simulation_destroy</a>(</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    <a class="code hl_struct" href="struct_a_t___simulation.html">AT_Simulation</a> *simulation</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>);</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span> </div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span><span class="preprocessor">#endif </span><span class="comment">// AT_H</span></div>
+<div class="ttc" id="aat_8h_html_ga01a9919b93e0f2d8500e15c08c66861f"><div class="ttname"><a href="at_8h.html#ga01a9919b93e0f2d8500e15c08c66861f">AT_simulation_run</a></div><div class="ttdeci">AT_Result AT_simulation_run(AT_Simulation *simulation)</div><div class="ttdoc">Starts the simulation.</div></div>
+<div class="ttc" id="aat_8h_html_ga03d210d67aaeeffe211de40e428f4f40"><div class="ttname"><a href="at_8h.html#ga03d210d67aaeeffe211de40e428f4f40">AT_simulation_destroy</a></div><div class="ttdeci">void AT_simulation_destroy(AT_Simulation *simulation)</div><div class="ttdoc">Destroys an allocated AT_Simulation.</div></div>
+<div class="ttc" id="aat_8h_html_ga33a82aa5944a3f7349637fa13aa55ff0"><div class="ttname"><a href="at_8h.html#ga33a82aa5944a3f7349637fa13aa55ff0">AT_simulation_create</a></div><div class="ttdeci">AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *scene, const AT_Settings *settings)</div><div class="ttdoc">AT_Simulation constructor using defined AT_Settings.</div></div>
+<div class="ttc" id="aat_8h_html_ga396d9232cddc7c05799bdca43526a848"><div class="ttname"><a href="at_8h.html#ga396d9232cddc7c05799bdca43526a848">AT_scene_destroy</a></div><div class="ttdeci">void AT_scene_destroy(AT_Scene *scene)</div><div class="ttdoc">Destroys an allocated AT_Scene.</div></div>
+<div class="ttc" id="aat_8h_html_ga6a2b0940a71fac205dbb0eb86eee3e13"><div class="ttname"><a href="at_8h.html#ga6a2b0940a71fac205dbb0eb86eee3e13">AT_model_create</a></div><div class="ttdeci">AT_Result AT_model_create(AT_Model **out_model, const char *filepath)</div><div class="ttdoc">AT_Model constructor for a given glb filepath.</div></div>
+<div class="ttc" id="aat_8h_html_ga9ab78d6c33157d0ae582cfca1393c3f1"><div class="ttname"><a href="at_8h.html#ga9ab78d6c33157d0ae582cfca1393c3f1">AT_model_destroy</a></div><div class="ttdeci">void AT_model_destroy(AT_Model *model)</div><div class="ttdoc">Destroys an allocated AT_Model.</div></div>
+<div class="ttc" id="aat_8h_html_gae40957ebaef6024973a0e23ebd7efe66"><div class="ttname"><a href="at_8h.html#gae40957ebaef6024973a0e23ebd7efe66">AT_model_to_AABB</a></div><div class="ttdeci">void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model)</div><div class="ttdoc">Calculates the min and max of a model for AABB collision.</div></div>
+<div class="ttc" id="aat_8h_html_gaea4140158379906d92c0d8d97e518f65a1097d23031fda9a7d1a12a6daad3f960"><div class="ttname"><a href="at_8h.html#gaea4140158379906d92c0d8d97e518f65a1097d23031fda9a7d1a12a6daad3f960">AT_ERR_NETWORK_FAILURE</a></div><div class="ttdeci">@ AT_ERR_NETWORK_FAILURE</div><div class="ttdef"><b>Definition</b> at.h:29</div></div>
+<div class="ttc" id="aat_8h_html_gaea4140158379906d92c0d8d97e518f65a368dece0165e1dfea21f96efaf3c8495"><div class="ttname"><a href="at_8h.html#gaea4140158379906d92c0d8d97e518f65a368dece0165e1dfea21f96efaf3c8495">AT_OK</a></div><div class="ttdeci">@ AT_OK</div><div class="ttdef"><b>Definition</b> at.h:25</div></div>
+<div class="ttc" id="aat_8h_html_gaea4140158379906d92c0d8d97e518f65a4d1cb3428c400df9fd2a93c9542b2cd4"><div class="ttname"><a href="at_8h.html#gaea4140158379906d92c0d8d97e518f65a4d1cb3428c400df9fd2a93c9542b2cd4">AT_ERR_ALLOC_ERROR</a></div><div class="ttdeci">@ AT_ERR_ALLOC_ERROR</div><div class="ttdef"><b>Definition</b> at.h:28</div></div>
+<div class="ttc" id="aat_8h_html_gaea4140158379906d92c0d8d97e518f65ace599c57e1581dba2418ea4cd870ecff"><div class="ttname"><a href="at_8h.html#gaea4140158379906d92c0d8d97e518f65ace599c57e1581dba2418ea4cd870ecff">AT_ERR_INVALID_ARGUMENT</a></div><div class="ttdeci">@ AT_ERR_INVALID_ARGUMENT</div><div class="ttdef"><b>Definition</b> at.h:26</div></div>
 <div class="ttc" id="aat__math_8h_html"><div class="ttname"><a href="at__math_8h.html">at_math.h</a></div><div class="ttdoc">AT_Triangle, AT_Vec3 and related functions.</div></div>
-<div class="ttc" id="astruct_a_t___a_a_b_b_html"><div class="ttname"><a href="struct_a_t___a_a_b_b.html">AT_AABB</a></div><div class="ttdoc">Groups the min and max of a voxel for AABB collision detection.</div><div class="ttdef"><b>Definition</b> at.h:34</div></div>
-<div class="ttc" id="astruct_a_t___a_a_b_b_html_ae40957ebaef6024973a0e23ebd7efe66"><div class="ttname"><a href="struct_a_t___a_a_b_b.html#ae40957ebaef6024973a0e23ebd7efe66">AT_AABB::AT_model_to_AABB</a></div><div class="ttdeci">void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model)</div><div class="ttdoc">Calculates the min and max of a model for AABB collision.</div></div>
-<div class="ttc" id="astruct_a_t___scene_config_html"><div class="ttname"><a href="struct_a_t___scene_config.html">AT_SceneConfig</a></div><div class="ttdoc">Groups the scene config settings together.</div><div class="ttdef"><b>Definition</b> at.h:49</div></div>
-<div class="ttc" id="astruct_a_t___scene_config_html_a5cf4c8bb23d5b6abdefbd8002ba71509"><div class="ttname"><a href="struct_a_t___scene_config.html#a5cf4c8bb23d5b6abdefbd8002ba71509">AT_SceneConfig::source</a></div><div class="ttdeci">const AT_Source * source</div><div class="ttdef"><b>Definition</b> at.h:50</div></div>
-<div class="ttc" id="astruct_a_t___scene_config_html_a624b42d15ab8e42ba0864c506d28ca97"><div class="ttname"><a href="struct_a_t___scene_config.html#a624b42d15ab8e42ba0864c506d28ca97">AT_SceneConfig::environment</a></div><div class="ttdeci">const AT_Model * environment</div><div class="ttdef"><b>Definition</b> at.h:55</div></div>
-<div class="ttc" id="astruct_a_t___scene_config_html_aab7cd7973c22a4017a528433044a114a"><div class="ttname"><a href="struct_a_t___scene_config.html#aab7cd7973c22a4017a528433044a114a">AT_SceneConfig::material</a></div><div class="ttdeci">AT_Material material</div><div class="ttdef"><b>Definition</b> at.h:52</div></div>
-<div class="ttc" id="astruct_a_t___settings_html"><div class="ttname"><a href="struct_a_t___settings.html">AT_Settings</a></div><div class="ttdoc">The simulation&#39;s settings.</div><div class="ttdef"><b>Definition</b> at.h:59</div></div>
-<div class="ttc" id="astruct_a_t___settings_html_a2efe21a213224b1ff27335451963762d"><div class="ttname"><a href="struct_a_t___settings.html#a2efe21a213224b1ff27335451963762d">AT_Settings::voxel_size</a></div><div class="ttdeci">float voxel_size</div><div class="ttdef"><b>Definition</b> at.h:60</div></div>
-<div class="ttc" id="astruct_a_t___source_html"><div class="ttname"><a href="struct_a_t___source.html">AT_Source</a></div><div class="ttdoc">Groups the information required for the sound source.</div><div class="ttdef"><b>Definition</b> at.h:41</div></div>
-<div class="ttc" id="astruct_a_t___vec3_html"><div class="ttname"><a href="struct_a_t___vec3.html">AT_Vec3</a></div><div class="ttdoc">Groups three floats to represent a vector of size 3.</div><div class="ttdef"><b>Definition</b> at_math.h:12</div></div>
+<div class="ttc" id="agroup__mat_html_gabe36b986faf544ba62a08c0df6fd1883"><div class="ttname"><a href="group__mat.html#gabe36b986faf544ba62a08c0df6fd1883">AT_MaterialType</a></div><div class="ttdeci">AT_MaterialType</div><div class="ttdoc">Defines possible material types.</div><div class="ttdef"><b>Definition</b> at.h:37</div></div>
+<div class="ttc" id="agroup__result_html_gaea4140158379906d92c0d8d97e518f65"><div class="ttname"><a href="group__result.html#gaea4140158379906d92c0d8d97e518f65">AT_Result</a></div><div class="ttdeci">AT_Result</div><div class="ttdoc">Defines possible result types.</div><div class="ttdef"><b>Definition</b> at.h:24</div></div>
+<div class="ttc" id="agroup__scene_html_ga59a5870a05e0d467eb94d1cc24e96656"><div class="ttname"><a href="group__scene.html#ga59a5870a05e0d467eb94d1cc24e96656">AT_Scene::AT_scene_create</a></div><div class="ttdeci">AT_Result AT_scene_create(AT_Scene **out_scene, const AT_SceneConfig *config)</div><div class="ttdoc">AT_Scene constructor for a given AT_SceneConfig.</div></div>
+<div class="ttc" id="astruct_a_t___a_a_b_b_html"><div class="ttname"><a href="struct_a_t___a_a_b_b.html">AT_AABB</a></div><div class="ttdoc">Axis-Aligned Bounding Box for triangle(s).</div><div class="ttdef"><b>Definition</b> at_math.h:48</div></div>
+<div class="ttc" id="astruct_a_t___material_html"><div class="ttname"><a href="struct_a_t___material.html">AT_Material</a></div><div class="ttdoc">Holds the material absorption and scattering coefficients.</div><div class="ttdef"><b>Definition</b> at.h:47</div></div>
+<div class="ttc" id="astruct_a_t___material_html_a6cb21aef1566e56457350511aef0be80"><div class="ttname"><a href="struct_a_t___material.html#a6cb21aef1566e56457350511aef0be80">AT_Material::absorption</a></div><div class="ttdeci">float absorption</div><div class="ttdef"><b>Definition</b> at.h:48</div></div>
+<div class="ttc" id="astruct_a_t___material_html_ad3ee56a5a37bd3321fb72ccf8cfc0443"><div class="ttname"><a href="struct_a_t___material.html#ad3ee56a5a37bd3321fb72ccf8cfc0443">AT_Material::scattering</a></div><div class="ttdeci">float scattering</div><div class="ttdef"><b>Definition</b> at.h:49</div></div>
+<div class="ttc" id="astruct_a_t___model_html"><div class="ttname"><a href="struct_a_t___model.html">AT_Model</a></div><div class="ttdoc">Groups the necessary information representing the 3D model.</div></div>
+<div class="ttc" id="astruct_a_t___scene_config_html"><div class="ttname"><a href="struct_a_t___scene_config.html">AT_SceneConfig</a></div><div class="ttdoc">Groups the scene config settings together.</div><div class="ttdef"><b>Definition</b> at.h:65</div></div>
+<div class="ttc" id="astruct_a_t___scene_config_html_a624b42d15ab8e42ba0864c506d28ca97"><div class="ttname"><a href="struct_a_t___scene_config.html#a624b42d15ab8e42ba0864c506d28ca97">AT_SceneConfig::environment</a></div><div class="ttdeci">const AT_Model * environment</div><div class="ttdef"><b>Definition</b> at.h:71</div></div>
+<div class="ttc" id="astruct_a_t___scene_config_html_a64e4a402bf822cccf3d9508202ad91f7"><div class="ttname"><a href="struct_a_t___scene_config.html#a64e4a402bf822cccf3d9508202ad91f7">AT_SceneConfig::material</a></div><div class="ttdeci">AT_MaterialType material</div><div class="ttdef"><b>Definition</b> at.h:68</div></div>
+<div class="ttc" id="astruct_a_t___scene_config_html_a6c44d6bdcf7bb9257422a4b51dfda795"><div class="ttname"><a href="struct_a_t___scene_config.html#a6c44d6bdcf7bb9257422a4b51dfda795">AT_SceneConfig::sources</a></div><div class="ttdeci">const AT_Source * sources</div><div class="ttdef"><b>Definition</b> at.h:66</div></div>
+<div class="ttc" id="astruct_a_t___scene_config_html_a780caee6ec6f1f66c27f22264aac294d"><div class="ttname"><a href="struct_a_t___scene_config.html#a780caee6ec6f1f66c27f22264aac294d">AT_SceneConfig::num_sources</a></div><div class="ttdeci">uint32_t num_sources</div><div class="ttdef"><b>Definition</b> at.h:67</div></div>
+<div class="ttc" id="astruct_a_t___scene_html"><div class="ttname"><a href="struct_a_t___scene.html">AT_Scene</a></div><div class="ttdoc">Groups the necessary information representing the scene.</div></div>
+<div class="ttc" id="astruct_a_t___settings_html"><div class="ttname"><a href="struct_a_t___settings.html">AT_Settings</a></div><div class="ttdoc">The simulation&#39;s settings.</div><div class="ttdef"><b>Definition</b> at.h:77</div></div>
+<div class="ttc" id="astruct_a_t___settings_html_a0df286c7872cfc50f8e7f637e1edf6b0"><div class="ttname"><a href="struct_a_t___settings.html#a0df286c7872cfc50f8e7f637e1edf6b0">AT_Settings::num_rays</a></div><div class="ttdeci">uint32_t num_rays</div><div class="ttdef"><b>Definition</b> at.h:79</div></div>
+<div class="ttc" id="astruct_a_t___settings_html_a2efe21a213224b1ff27335451963762d"><div class="ttname"><a href="struct_a_t___settings.html#a2efe21a213224b1ff27335451963762d">AT_Settings::voxel_size</a></div><div class="ttdeci">float voxel_size</div><div class="ttdef"><b>Definition</b> at.h:78</div></div>
+<div class="ttc" id="astruct_a_t___settings_html_ac38a6d9f04915375958b86cf33828257"><div class="ttname"><a href="struct_a_t___settings.html#ac38a6d9f04915375958b86cf33828257">AT_Settings::fps</a></div><div class="ttdeci">uint8_t fps</div><div class="ttdef"><b>Definition</b> at.h:80</div></div>
+<div class="ttc" id="astruct_a_t___simulation_html"><div class="ttname"><a href="struct_a_t___simulation.html">AT_Simulation</a></div><div class="ttdoc">Groups the necessary simulation data.</div></div>
+<div class="ttc" id="astruct_a_t___source_html"><div class="ttname"><a href="struct_a_t___source.html">AT_Source</a></div><div class="ttdoc">Groups the information required for the sound source.</div><div class="ttdef"><b>Definition</b> at.h:55</div></div>
+<div class="ttc" id="astruct_a_t___source_html_a2b43b9758c749b49269649399d09488d"><div class="ttname"><a href="struct_a_t___source.html#a2b43b9758c749b49269649399d09488d">AT_Source::position</a></div><div class="ttdeci">AT_Vec3 position</div><div class="ttdef"><b>Definition</b> at.h:56</div></div>
+<div class="ttc" id="astruct_a_t___source_html_a84f0f7ced172d902f7133ff9c0b1f1b5"><div class="ttname"><a href="struct_a_t___source.html#a84f0f7ced172d902f7133ff9c0b1f1b5">AT_Source::direction</a></div><div class="ttdeci">AT_Vec3 direction</div><div class="ttdef"><b>Definition</b> at.h:57</div></div>
+<div class="ttc" id="astruct_a_t___source_html_ab2898c930f5cbb22c86224962235c5c1"><div class="ttname"><a href="struct_a_t___source.html#ab2898c930f5cbb22c86224962235c5c1">AT_Source::intensity</a></div><div class="ttdeci">float intensity</div><div class="ttdef"><b>Definition</b> at.h:58</div></div>
+<div class="ttc" id="aunion_a_t___vec3_html"><div class="ttname"><a href="union_a_t___vec3.html">AT_Vec3</a></div><div class="ttdoc">Groups three floats to represent a vector of size 3.</div><div class="ttdef"><b>Definition</b> at_math.h:29</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->
