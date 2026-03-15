@@ -1,3 +1,6 @@
+/** \file
+    \brief Resulting handling functions
+ */
 #ifndef AT_RESULT_H
 #define AT_RESULT_H
 
@@ -6,6 +9,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/** \defgroup result Result Handling */
+
+/** \brief
+    \ingroup result
+
+    \param res Result of the function being checked
+    \param err_msg String containing the error message and any placeholders
+    \param ... Any values to be inserted into the err_msg
+
+    \retval void
+ */
 static inline void AT_handle_result(const AT_Result res, const char *err_msg, ...)
 {
     va_list args;
