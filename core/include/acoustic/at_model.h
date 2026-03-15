@@ -7,12 +7,17 @@
 
 #include "at.h"
 
-/** \brief Groups the necessary information representing the 3D model.
+/** \defgroup model Model */
+
+/** \struct AT_Model
+    \brief Groups the necessary information representing the 3D model.
+    \ingroup model
  */
 typedef struct AT_Model AT_Model;
 
 /** \brief AT_Model constructor for a given `glb` filepath.
-    \relates AT_Model
+    \relatesalso AT_Model
+    \ingroup model
 
     \param out_model Pointer to an empty initialised AT_Model.
     \param filepath String showing the location of the file.
@@ -21,34 +26,31 @@ typedef struct AT_Model AT_Model;
 */
 AT_Result AT_model_create(AT_Model **out_model, const char *filepath);
 
-
 /** \brief Calculates the min and max of a model for AABB collision.
-    \relates AT_AABB
+    \relatesalso AT_AABB
+    \ingroup model
 
     \param out_aabb Pointer to an empty initialised AT_AABB.
     \param model Pointer to the model.
-
-    \retval void
 */
 void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model);
 
+/** \brief Constructs all triangles in a given Model.
+    \relatesalso AT_Model
+    \ingroup model
 
-/* \brief Constructs all triangles in a given Model.
-   \relates AT_Model
+    \param out_triangles Pointer an allocated empty array of triangles.
+    \param model Pointer to an initialised AT_Model.
 
-   \param model Pointer to an initialised AT_Model.
-
-   \retval Pointer to an allocated array of triangles.
+    \retval AT_Result saves the created triangles at the location of the pointer, returning a result enum value.
  */
 AT_Result AT_model_get_triangles(AT_Triangle **out_triangles, const AT_Model *model);
 
-
 /** \brief Destroys an allocated AT_Model.
-    \relates AT_Model
+    \relatesalso AT_Model
+    \ingroup model
 
     \param model Pointer to an initialised AT_Model.
-
-    \retval void
 */
 void AT_model_destroy(AT_Model *model);
 
