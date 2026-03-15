@@ -1,5 +1,6 @@
 /** \file
-    \brief Resulting handling functions
+    \brief Result handling functions
+    \ingroup result
  */
 #ifndef AT_RESULT_H
 #define AT_RESULT_H

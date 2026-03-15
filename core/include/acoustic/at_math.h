@@ -1,5 +1,6 @@
 /** \file
     \brief AT_Triangle, AT_Vec3 and related functions
+    \ingroup math
 */
 
 #ifndef AT_MATH_H
@@ -11,9 +12,12 @@
 #include <float.h>
 #include <stdbool.h>
 
-/** \defgroup vec Vector Math */
+/** \defgroup math Maths */
+/** \addtogroup vec Vector Math
+    \ingroup math
+ */
 /** \addtogroup tri Triangles
-    \ingroup model
+    \ingroup model math
  */
 /** \addtogroup aabb AABB
     \ingroup tri

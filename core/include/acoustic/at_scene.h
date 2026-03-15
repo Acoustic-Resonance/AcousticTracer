@@ -1,5 +1,6 @@
 /** \file
     \brief AT_Scene and related functions
+    \ingroup scene
 */
 
 #ifndef AT_SCENE_H

@@ -1,5 +1,6 @@
 /** \file
     \brief AT_Model and related functions
+    \ingroup model
 */
 
 #ifndef AT_MODEL_H

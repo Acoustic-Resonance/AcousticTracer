@@ -1,5 +1,6 @@
 /** \file
     \brief The libraries public types and functions
+    \ingroup model scene sim
 */
 #ifndef AT_H
 #define AT_H

@@ -1,5 +1,6 @@
 /** \file
     \brief AT_Simulation and related functions
+    \ingroup sim
 */
 
 #include "acoustic/at.h"
